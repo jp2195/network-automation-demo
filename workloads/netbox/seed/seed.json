@@ -1,124 +1,206 @@
 {
+  "custom_fields": [
+    {
+      "name": "isis_sid",
+      "label": "IS-IS SID",
+      "type": "integer",
+      "object_types": [
+        "dcim.device"
+      ],
+      "description": "Segment Routing prefix-SID"
+    },
+    {
+      "name": "circuit_id",
+      "label": "Circuit ID",
+      "type": "text",
+      "object_types": [
+        "dcim.cable"
+      ],
+      "description": "Provider circuit / OSP identifier"
+    },
+    {
+      "name": "restoration_sla_hours",
+      "label": "Restoration SLA (h)",
+      "type": "integer",
+      "object_types": [
+        "dcim.cable"
+      ],
+      "description": "Provider restoration SLA in hours"
+    }
+  ],
+  "regions": [
+    {
+      "slug": "district-7",
+      "name": "District 7"
+    }
+  ],
+  "site_groups": [
+    {
+      "slug": "ga-400",
+      "name": "GA-400",
+      "description": "Highway corridor (Atlas DOT Region 7)"
+    },
+    {
+      "slug": "i-20-east",
+      "name": "I-20 East",
+      "description": "Highway corridor (Atlas DOT Region 7)"
+    },
+    {
+      "slug": "i-20-west",
+      "name": "I-20 West",
+      "description": "Highway corridor (Atlas DOT Region 7)"
+    },
+    {
+      "slug": "i-285-east",
+      "name": "I-285 East",
+      "description": "Highway corridor (Atlas DOT Region 7)"
+    },
+    {
+      "slug": "i-75-nw",
+      "name": "I-75 NW",
+      "description": "Highway corridor (Atlas DOT Region 7)"
+    },
+    {
+      "slug": "i-85-sw",
+      "name": "I-85 SW",
+      "description": "Highway corridor (Atlas DOT Region 7)"
+    }
+  ],
+  "rirs": [
+    {
+      "slug": "atlas-private",
+      "name": "Atlas Private",
+      "is_private": true
+    }
+  ],
+  "asns": [
+    {
+      "asn": 65021,
+      "rir": "atlas-private",
+      "sites": [
+        "alpharetta"
+      ],
+      "description": "BGP ASN for cabinet fc-n"
+    },
+    {
+      "asn": 65022,
+      "rir": "atlas-private",
+      "sites": [
+        "kennesaw"
+      ],
+      "description": "BGP ASN for cabinet fc-nw"
+    },
+    {
+      "asn": 65023,
+      "rir": "atlas-private",
+      "sites": [
+        "conyers"
+      ],
+      "description": "BGP ASN for cabinet fc-i20e"
+    },
+    {
+      "asn": 65024,
+      "rir": "atlas-private",
+      "sites": [
+        "newnan"
+      ],
+      "description": "BGP ASN for cabinet fc-sw"
+    }
+  ],
   "sites": [
     {
       "slug": "forest-park",
       "name": "Forest Park",
       "latitude": 33.6195,
       "longitude": -84.3705,
-      "custom_fields": {
-        "corridor": "",
-        "district": 7
-      }
+      "region": "district-7"
     },
     {
       "slug": "buckhead",
       "name": "Buckhead",
       "latitude": 33.8484,
       "longitude": -84.3781,
-      "custom_fields": {
-        "corridor": "",
-        "district": 7
-      }
+      "region": "district-7"
     },
     {
       "slug": "sandy-springs",
       "name": "Sandy Springs",
       "latitude": 33.9304,
       "longitude": -84.3733,
-      "custom_fields": {
-        "corridor": "GA-400",
-        "district": 7
-      }
+      "region": "district-7",
+      "group": "ga-400"
     },
     {
       "slug": "decatur",
       "name": "Decatur",
       "latitude": 33.7748,
       "longitude": -84.2963,
-      "custom_fields": {
-        "corridor": "I-285 East",
-        "district": 7
-      }
+      "region": "district-7",
+      "group": "i-285-east"
     },
     {
       "slug": "lithonia",
       "name": "Lithonia",
       "latitude": 33.7126,
       "longitude": -84.111,
-      "custom_fields": {
-        "corridor": "I-20 East",
-        "district": 7
-      }
+      "region": "district-7",
+      "group": "i-20-east"
     },
     {
       "slug": "marietta",
       "name": "Marietta",
       "latitude": 33.9526,
       "longitude": -84.5499,
-      "custom_fields": {
-        "corridor": "I-75 NW",
-        "district": 7
-      }
+      "region": "district-7",
+      "group": "i-75-nw"
     },
     {
       "slug": "east-point",
       "name": "East Point",
       "latitude": 33.6795,
       "longitude": -84.4394,
-      "custom_fields": {
-        "corridor": "I-85 SW",
-        "district": 7
-      }
+      "region": "district-7",
+      "group": "i-85-sw"
     },
     {
       "slug": "lithia-springs",
       "name": "Lithia Springs",
       "latitude": 33.7793,
       "longitude": -84.6427,
-      "custom_fields": {
-        "corridor": "I-20 West",
-        "district": 7
-      }
+      "region": "district-7",
+      "group": "i-20-west"
     },
     {
       "slug": "alpharetta",
       "name": "Alpharetta",
       "latitude": 34.0754,
       "longitude": -84.2941,
-      "custom_fields": {
-        "corridor": "GA-400",
-        "district": 7
-      }
+      "region": "district-7",
+      "group": "ga-400"
     },
     {
       "slug": "kennesaw",
       "name": "Kennesaw",
       "latitude": 34.0234,
       "longitude": -84.6155,
-      "custom_fields": {
-        "corridor": "I-75 NW",
-        "district": 7
-      }
+      "region": "district-7",
+      "group": "i-75-nw"
     },
     {
       "slug": "conyers",
       "name": "Conyers",
       "latitude": 33.6679,
       "longitude": -84.0177,
-      "custom_fields": {
-        "corridor": "I-20 East",
-        "district": 7
-      }
+      "region": "district-7",
+      "group": "i-20-east"
     },
     {
       "slug": "newnan",
       "name": "Newnan",
       "latitude": 33.3807,
       "longitude": -84.7997,
-      "custom_fields": {
-        "corridor": "I-85 SW",
-        "district": 7
-      }
+      "region": "district-7",
+      "group": "i-85-sw"
     }
   ],
   "tenants": [
@@ -167,18 +249,27 @@
       "name": "State Highway Patrol"
     }
   ],
-  "providers": [
+  "owner_groups": [
     {
-      "slug": "apex-fiber",
-      "name": "Apex Fiber Networks"
+      "name": "OSP Providers",
+      "description": "Outside-plant fiber lessors and operator-owned plant"
+    }
+  ],
+  "owners": [
+    {
+      "name": "Apex Fiber Networks",
+      "group": "OSP Providers",
+      "description": "Fiber owner for cabinet/ring OSP cables"
     },
     {
-      "slug": "cascade-telecom",
-      "name": "Cascade Telecom Group"
+      "name": "Cascade Telecom Group",
+      "group": "OSP Providers",
+      "description": "Fiber owner for cabinet/ring OSP cables"
     },
     {
-      "slug": "adot-owned",
-      "name": "ADOT-owned fiber"
+      "name": "ADOT-owned fiber",
+      "group": "OSP Providers",
+      "description": "Fiber owner for cabinet/ring OSP cables"
     }
   ],
   "manufacturers": [
@@ -189,6 +280,14 @@
     {
       "slug": "frrouting",
       "name": "FRRouting"
+    },
+    {
+      "slug": "atlas-vision",
+      "name": "Atlas Vision"
+    },
+    {
+      "slug": "atlas-traffic",
+      "name": "Atlas Traffic Systems"
     }
   ],
   "device_types": [
@@ -201,6 +300,26 @@
       "manufacturer": "frrouting",
       "model": "FRR Routing Stack",
       "slug": "frr"
+    },
+    {
+      "manufacturer": "atlas-vision",
+      "model": "AV-CCTV-HD",
+      "slug": "av-cctv-hd"
+    },
+    {
+      "manufacturer": "atlas-traffic",
+      "model": "AT-SIG-2070",
+      "slug": "at-sig-2070"
+    },
+    {
+      "manufacturer": "atlas-traffic",
+      "model": "AT-DMS-VMS16",
+      "slug": "at-dms-vms16"
+    },
+    {
+      "manufacturer": "atlas-traffic",
+      "model": "AT-RAMP-MID",
+      "slug": "at-ramp-mid"
     }
   ],
   "device_roles": [
@@ -218,6 +337,26 @@
       "slug": "field-cabinet",
       "name": "Field Cabinet",
       "color": "00aa00"
+    },
+    {
+      "slug": "cctv-camera",
+      "name": "CCTV Camera",
+      "color": "9c27b0"
+    },
+    {
+      "slug": "signal-controller",
+      "name": "Signal Controller",
+      "color": "ff9800"
+    },
+    {
+      "slug": "dms",
+      "name": "DMS",
+      "color": "795548"
+    },
+    {
+      "slug": "ramp-meter",
+      "name": "Ramp Meter",
+      "color": "607d8b"
     }
   ],
   "devices": [
@@ -321,13 +460,7 @@
         "adot-region-7"
       ],
       "custom_fields": {
-        "asn": 65021,
-        "cctv_count": 18,
-        "dms_count": 2,
-        "isis_sid": 0,
-        "parent_hub": "hub-n",
-        "ramp_meters": 4,
-        "signal_controllers": 22
+        "isis_sid": 0
       }
     },
     {
@@ -342,13 +475,7 @@
         "adot-region-7"
       ],
       "custom_fields": {
-        "asn": 65022,
-        "cctv_count": 24,
-        "dms_count": 3,
-        "isis_sid": 0,
-        "parent_hub": "hub-nw",
-        "ramp_meters": 6,
-        "signal_controllers": 18
+        "isis_sid": 0
       }
     },
     {
@@ -364,13 +491,7 @@
         "adot-region-7"
       ],
       "custom_fields": {
-        "asn": 65023,
-        "cctv_count": 14,
-        "dms_count": 1,
-        "isis_sid": 0,
-        "parent_hub": "hub-i20e",
-        "ramp_meters": 0,
-        "signal_controllers": 26
+        "isis_sid": 0
       }
     },
     {
@@ -386,14 +507,1205 @@
         "adot-region-7"
       ],
       "custom_fields": {
-        "asn": 65024,
-        "cctv_count": 12,
-        "dms_count": 2,
-        "isis_sid": 0,
-        "parent_hub": "hub-sw",
-        "ramp_meters": 3,
-        "signal_controllers": 16
+        "isis_sid": 0
       }
+    },
+    {
+      "name": "fc-n-cctv-01",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-02",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-03",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-04",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-05",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-06",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-07",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-08",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-09",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-10",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-11",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-12",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-13",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-14",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-15",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-16",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-17",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-cctv-18",
+      "site": "alpharetta",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-01",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-02",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-03",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-04",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-05",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-06",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-07",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-08",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-09",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-10",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-11",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-12",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-13",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-14",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-15",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-16",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-17",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-18",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-19",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-20",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-21",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-sig-22",
+      "site": "alpharetta",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-dms-01",
+      "site": "alpharetta",
+      "role": "dms",
+      "device_type": "at-dms-vms16",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-dms-02",
+      "site": "alpharetta",
+      "role": "dms",
+      "device_type": "at-dms-vms16",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-rm-01",
+      "site": "alpharetta",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-rm-02",
+      "site": "alpharetta",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-rm-03",
+      "site": "alpharetta",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-n-rm-04",
+      "site": "alpharetta",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-01",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-02",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-03",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-04",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-05",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-06",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-07",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-08",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-09",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-10",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-11",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-12",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-13",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-14",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-15",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-16",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-17",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-18",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-19",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-20",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-21",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-22",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-23",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-cctv-24",
+      "site": "kennesaw",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-01",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-02",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-03",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-04",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-05",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-06",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-07",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-08",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-09",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-10",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-11",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-12",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-13",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-14",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-15",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-16",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-17",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-sig-18",
+      "site": "kennesaw",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-dms-01",
+      "site": "kennesaw",
+      "role": "dms",
+      "device_type": "at-dms-vms16",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-dms-02",
+      "site": "kennesaw",
+      "role": "dms",
+      "device_type": "at-dms-vms16",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-dms-03",
+      "site": "kennesaw",
+      "role": "dms",
+      "device_type": "at-dms-vms16",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-rm-01",
+      "site": "kennesaw",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-rm-02",
+      "site": "kennesaw",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-rm-03",
+      "site": "kennesaw",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-rm-04",
+      "site": "kennesaw",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-rm-05",
+      "site": "kennesaw",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-nw-rm-06",
+      "site": "kennesaw",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-01",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-02",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-03",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-04",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-05",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-06",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-07",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-08",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-09",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-10",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-11",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-12",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-13",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-cctv-14",
+      "site": "conyers",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-01",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-02",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-03",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-04",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-05",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-06",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-07",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-08",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-09",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-10",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-11",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-12",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-13",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-14",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-15",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-16",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-17",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-18",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-19",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-20",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-21",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-22",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-23",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-24",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-25",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-sig-26",
+      "site": "conyers",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-i20e-dms-01",
+      "site": "conyers",
+      "role": "dms",
+      "device_type": "at-dms-vms16",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-01",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-02",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-03",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-04",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-05",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-06",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-07",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-08",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-09",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-10",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-11",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-cctv-12",
+      "site": "newnan",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-01",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-02",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-03",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-04",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-05",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-06",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-07",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-08",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-09",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-10",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-11",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-12",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-13",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-14",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-15",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-sig-16",
+      "site": "newnan",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-dms-01",
+      "site": "newnan",
+      "role": "dms",
+      "device_type": "at-dms-vms16",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-dms-02",
+      "site": "newnan",
+      "role": "dms",
+      "device_type": "at-dms-vms16",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-rm-01",
+      "site": "newnan",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-rm-02",
+      "site": "newnan",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    },
+    {
+      "name": "fc-sw-rm-03",
+      "site": "newnan",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
     }
   ],
   "interfaces": [
@@ -874,14 +2186,15 @@
         "interface": "ethernet-1/2"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "Apex Fiber Networks",
+      "description": "I-285 NB MM 30-37",
+      "length": 14.2,
+      "length_unit": "km",
+      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-RING-NE-001",
-        "corridor": "I-285",
-        "installed": "2022-09-14",
-        "length_km": 14.2,
-        "provider": "apex-fiber",
-        "restoration_sla_hours": 4,
-        "route_description": "I-285 NB MM 30-37"
+        "restoration_sla_hours": 4
       }
     },
     {
@@ -895,14 +2208,15 @@
         "interface": "ethernet-1/2"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "Apex Fiber Networks",
+      "description": "I-285 EB MM 39-46",
+      "length": 12.8,
+      "length_unit": "km",
+      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-RING-EI20E-002",
-        "corridor": "I-285",
-        "installed": "2022-09-14",
-        "length_km": 12.8,
-        "provider": "apex-fiber",
-        "restoration_sla_hours": 4,
-        "route_description": "I-285 EB MM 39-46"
+        "restoration_sla_hours": 4
       }
     },
     {
@@ -916,14 +2230,15 @@
         "interface": "ethernet-1/2"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "Cascade Telecom Group",
+      "description": "I-285 SB MM 47-58",
+      "length": 21.3,
+      "length_unit": "km",
+      "install_date": "2023-02-08",
       "custom_fields": {
         "circuit_id": "CSC-RING-I20ESW-103",
-        "corridor": "I-285",
-        "installed": "2023-02-08",
-        "length_km": 21.3,
-        "provider": "cascade-telecom",
-        "restoration_sla_hours": 4,
-        "route_description": "I-285 SB MM 47-58"
+        "restoration_sla_hours": 4
       }
     },
     {
@@ -937,14 +2252,15 @@
         "interface": "ethernet-1/2"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "Cascade Telecom Group",
+      "description": "I-285 WB MM 1-6",
+      "length": 9.7,
+      "length_unit": "km",
+      "install_date": "2023-02-08",
       "custom_fields": {
         "circuit_id": "CSC-RING-SWI20W-104",
-        "corridor": "I-285",
-        "installed": "2023-02-08",
-        "length_km": 9.7,
-        "provider": "cascade-telecom",
-        "restoration_sla_hours": 4,
-        "route_description": "I-285 WB MM 1-6"
+        "restoration_sla_hours": 4
       }
     },
     {
@@ -958,14 +2274,15 @@
         "interface": "ethernet-1/2"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "Apex Fiber Networks",
+      "description": "I-285 NB MM 11-19",
+      "length": 13.1,
+      "length_unit": "km",
+      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-RING-I20WNW-005",
-        "corridor": "I-285",
-        "installed": "2022-09-14",
-        "length_km": 13.1,
-        "provider": "apex-fiber",
-        "restoration_sla_hours": 4,
-        "route_description": "I-285 NB MM 11-19"
+        "restoration_sla_hours": 4
       }
     },
     {
@@ -979,14 +2296,15 @@
         "interface": "ethernet-1/2"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "Apex Fiber Networks",
+      "description": "I-285 NB MM 21-29",
+      "length": 12.6,
+      "length_unit": "km",
+      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-RING-NWN-006",
-        "corridor": "I-285",
-        "installed": "2022-09-14",
-        "length_km": 12.6,
-        "provider": "apex-fiber",
-        "restoration_sla_hours": 4,
-        "route_description": "I-285 NB MM 21-29"
+        "restoration_sla_hours": 4
       }
     },
     {
@@ -1000,14 +2318,15 @@
         "interface": "ethernet-1/3"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "Apex Fiber Networks",
+      "description": "I-75 NB MM 257-262",
+      "length": 4.8,
+      "length_unit": "km",
+      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-NW-01-007",
-        "corridor": "I-75 NW",
-        "installed": "2022-09-14",
-        "length_km": 4.8,
-        "provider": "apex-fiber",
-        "restoration_sla_hours": 4,
-        "route_description": "I-75 NB MM 257-262"
+        "restoration_sla_hours": 4
       }
     },
     {
@@ -1021,14 +2340,15 @@
         "interface": "ethernet-1/3"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "Apex Fiber Networks",
+      "description": "I-85 SB MM 73-77",
+      "length": 5.6,
+      "length_unit": "km",
+      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-SW-01-008",
-        "corridor": "I-85 SW",
-        "installed": "2022-09-14",
-        "length_km": 5.6,
-        "provider": "apex-fiber",
-        "restoration_sla_hours": 4,
-        "route_description": "I-85 SB MM 73-77"
+        "restoration_sla_hours": 4
       }
     },
     {
@@ -1042,14 +2362,15 @@
         "interface": "ethernet-1/3"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "Cascade Telecom Group",
+      "description": "GA-400 NB MM 5-9",
+      "length": 6.4,
+      "length_unit": "km",
+      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "CSC-N-01-109",
-        "corridor": "GA-400",
-        "installed": "2022-09-14",
-        "length_km": 6.4,
-        "provider": "cascade-telecom",
-        "restoration_sla_hours": 4,
-        "route_description": "GA-400 NB MM 5-9"
+        "restoration_sla_hours": 4
       }
     },
     {
@@ -1063,14 +2384,15 @@
         "interface": "ethernet-1/3"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "Cascade Telecom Group",
+      "description": "I-285 EB MM 38-43",
+      "length": 7.9,
+      "length_unit": "km",
+      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "CSC-E-01-110",
-        "corridor": "I-285 East",
-        "installed": "2022-09-14",
-        "length_km": 7.9,
-        "provider": "cascade-telecom",
-        "restoration_sla_hours": 4,
-        "route_description": "I-285 EB MM 38-43"
+        "restoration_sla_hours": 4
       }
     },
     {
@@ -1084,14 +2406,15 @@
         "interface": "ethernet-1/3"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "ADOT-owned fiber",
+      "description": "Forest Park ↔ Buckhead diverse path",
+      "length": 23.4,
+      "length_unit": "km",
+      "install_date": "2022-11-02",
       "custom_fields": {
         "circuit_id": "ADOT-TMC-XC-201",
-        "corridor": "TMC Interconnect",
-        "installed": "2022-11-02",
-        "length_km": 23.4,
-        "provider": "adot-owned",
-        "restoration_sla_hours": 8,
-        "route_description": "Forest Park ↔ Buckhead diverse path"
+        "restoration_sla_hours": 8
       }
     },
     {
@@ -1105,14 +2428,15 @@
         "interface": "eth1"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "ADOT-owned fiber",
+      "description": "GA-400 NB MM 12-15 (cabinet drop)",
+      "length": 3.2,
+      "length_unit": "km",
+      "install_date": "2023-04-02",
       "custom_fields": {
         "circuit_id": "ADOT-CAB-N-301",
-        "corridor": "GA-400",
-        "installed": "2023-04-02",
-        "length_km": 3.2,
-        "provider": "adot-owned",
-        "restoration_sla_hours": 8,
-        "route_description": "GA-400 NB MM 12-15 (cabinet drop)"
+        "restoration_sla_hours": 8
       }
     },
     {
@@ -1126,14 +2450,15 @@
         "interface": "eth1"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "ADOT-owned fiber",
+      "description": "I-75 NB MM 268-272 (cabinet drop)",
+      "length": 2.1,
+      "length_unit": "km",
+      "install_date": "2023-04-02",
       "custom_fields": {
         "circuit_id": "ADOT-CAB-NW-302",
-        "corridor": "I-75 NW",
-        "installed": "2023-04-02",
-        "length_km": 2.1,
-        "provider": "adot-owned",
-        "restoration_sla_hours": 8,
-        "route_description": "I-75 NB MM 268-272 (cabinet drop)"
+        "restoration_sla_hours": 8
       }
     },
     {
@@ -1147,14 +2472,15 @@
         "interface": "eth1"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "ADOT-owned fiber",
+      "description": "I-20 EB MM 53-56 (cabinet drop)",
+      "length": 4.1,
+      "length_unit": "km",
+      "install_date": "2023-05-18",
       "custom_fields": {
         "circuit_id": "ADOT-CAB-I20E-303",
-        "corridor": "I-20 East",
-        "installed": "2023-05-18",
-        "length_km": 4.1,
-        "provider": "adot-owned",
-        "restoration_sla_hours": 8,
-        "route_description": "I-20 EB MM 53-56 (cabinet drop)"
+        "restoration_sla_hours": 8
       }
     },
     {
@@ -1168,14 +2494,15 @@
         "interface": "eth1"
       },
       "status": "connected",
+      "type": "smf-os2",
+      "owner": "ADOT-owned fiber",
+      "description": "I-85 SB MM 41-43 (cabinet drop)",
+      "length": 2.8,
+      "length_unit": "km",
+      "install_date": "2023-05-18",
       "custom_fields": {
         "circuit_id": "ADOT-CAB-SW-304",
-        "corridor": "I-85 SW",
-        "installed": "2023-05-18",
-        "length_km": 2.8,
-        "provider": "adot-owned",
-        "restoration_sla_hours": 8,
-        "route_description": "I-85 SB MM 41-43 (cabinet drop)"
+        "restoration_sla_hours": 8
       }
     }
   ],

@@ -30,17 +30,21 @@ HEADERS = {
 
 def http(method, path, body=None, params=None):
     qs = ("?" + urllib.parse.urlencode(params)) if params else ""
-    req = urllib.request.Request(
-        f"{URL}{path}{qs}",
-        method=method,
-        headers=HEADERS,
-        data=json.dumps(body).encode() if body is not None else None,
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return r.status, json.loads(r.read() or b"null")
-    except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read() or b"null")
+    url = f"{URL}{path}{qs}"
+    data = json.dumps(body).encode() if body is not None else None
+    last_err = None
+    for attempt in range(8):
+        req = urllib.request.Request(url, method=method, headers=HEADERS, data=data)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                return r.status, json.loads(r.read() or b"null")
+        except urllib.error.HTTPError as e:
+            return e.code, json.loads(e.read() or b"null")
+        except (urllib.error.URLError, ConnectionError, TimeoutError) as e:
+            last_err = e
+            # Backs off when the netbox pod is under load or restarting.
+            time.sleep(2 + attempt * 2)
+    raise last_err
 
 
 def wait_ready():
@@ -112,17 +116,83 @@ def main():
     wait_ready()
     provision_token()
 
+    print("== custom fields ==", flush=True)
+    for cf in data.get("custom_fields", []):
+        upsert(
+            "/api/extras/custom-fields/",
+            {"name": cf["name"]},
+            cf,
+            f"custom-field/{cf['name']}",
+        )
+
+    print("== regions ==", flush=True)
+    region_ids = {}
+    for r in data.get("regions", []):
+        region_ids[r["slug"]] = upsert(
+            "/api/dcim/regions/",
+            {"slug": r["slug"]},
+            {"slug": r["slug"], "name": r["name"],
+             "description": r.get("description", "")},
+            f"region/{r['slug']}",
+        )
+
+    print("== site_groups ==", flush=True)
+    sg_ids = {}
+    for g in data.get("site_groups", []):
+        sg_ids[g["slug"]] = upsert(
+            "/api/dcim/site-groups/",
+            {"slug": g["slug"]},
+            {"slug": g["slug"], "name": g["name"],
+             "description": g.get("description", "")},
+            f"site-group/{g['slug']}",
+        )
+
+    print("== rirs ==", flush=True)
+    rir_ids = {}
+    for r in data.get("rirs", []):
+        rir_ids[r["slug"]] = upsert(
+            "/api/ipam/rirs/",
+            {"slug": r["slug"]},
+            {"slug": r["slug"], "name": r["name"],
+             "is_private": r.get("is_private", False)},
+            f"rir/{r['slug']}",
+        )
+
     print("== sites ==", flush=True)
     site_ids = {}
     for s in data.get("sites", []):
+        payload = {"slug": s["slug"], "name": s["name"], "status": "active",
+                   "latitude": s.get("latitude"), "longitude": s.get("longitude")}
+        if s.get("region"):
+            payload["region"] = region_ids[s["region"]]
+        if s.get("group"):
+            payload["group"] = sg_ids[s["group"]]
         site_ids[s["slug"]] = upsert(
             "/api/dcim/sites/",
             {"slug": s["slug"]},
-            {"slug": s["slug"], "name": s["name"], "status": "active",
-             "latitude": s.get("latitude"), "longitude": s.get("longitude"),
-             "custom_fields": s.get("custom_fields", {})},
+            payload,
             f"site/{s['slug']}",
         )
+
+    print("== asns ==", flush=True)
+    for a in data.get("asns", []):
+        existing = find_id("/api/ipam/asns/", asn=a["asn"])
+        payload = {
+            "asn": a["asn"],
+            "rir": rir_ids[a["rir"]],
+            "description": a.get("description", ""),
+        }
+        if a.get("sites"):
+            payload["sites"] = [site_ids[slug] for slug in a["sites"]]
+        if existing is not None:
+            print(f"  exists: asn/{a['asn']} (id={existing})", flush=True)
+            patch("/api/ipam/asns/", existing, payload, f"asn/{a['asn']}")
+        else:
+            code, body = http("POST", "/api/ipam/asns/", body=payload)
+            if code in (200, 201):
+                print(f"  created: asn/{a['asn']} (id={body['id']})", flush=True)
+            else:
+                sys.exit(f"FAILED asn/{a['asn']}: {body}")
 
     print("== tenants ==", flush=True)
     tenant_ids = {}
@@ -134,14 +204,28 @@ def main():
             f"tenant/{t['slug']}",
         )
 
-    print("== providers ==", flush=True)
-    provider_ids = {}
-    for p in data.get("providers", []):
-        provider_ids[p["slug"]] = upsert(
-            "/api/circuits/providers/",
-            {"slug": p["slug"]},
-            {"slug": p["slug"], "name": p["name"]},
-            f"provider/{p['slug']}",
+    print("== owner_groups ==", flush=True)
+    og_ids = {}
+    for og in data.get("owner_groups", []):
+        # OwnerGroup has no `slug`; look up by name.
+        og_ids[og["name"]] = upsert(
+            "/api/users/owner-groups/",
+            {"name": og["name"]},
+            {"name": og["name"], "description": og.get("description", "")},
+            f"owner-group/{og['name']}",
+        )
+
+    print("== owners ==", flush=True)
+    owner_ids = {}
+    for o in data.get("owners", []):
+        payload = {"name": o["name"], "description": o.get("description", "")}
+        if o.get("group"):
+            payload["group"] = og_ids[o["group"]]
+        owner_ids[o["name"]] = upsert(
+            "/api/users/owners/",
+            {"name": o["name"]},
+            payload,
+            f"owner/{o['name']}",
         )
 
     print("== manufacturers ==", flush=True)
@@ -255,8 +339,18 @@ def main():
             "status": c.get("status", "connected"),
             "a_terminations": [{"object_type": "dcim.interface", "object_id": a_iface}],
             "b_terminations": [{"object_type": "dcim.interface", "object_id": b_iface}],
+            "description": c.get("description", ""),
             "custom_fields": c.get("custom_fields", {}),
         }
+        if c.get("type"):
+            payload["type"] = c["type"]
+        if c.get("owner") and c["owner"] in owner_ids:
+            payload["owner"] = owner_ids[c["owner"]]
+        if c.get("length"):
+            payload["length"] = c["length"]
+            payload["length_unit"] = c.get("length_unit", "km")
+        if c.get("install_date"):
+            payload["install_date"] = c["install_date"]
         code, body = http("POST", "/api/dcim/cables/", body=payload)
         if code in (200, 201):
             cable_ids[c["label"]] = body["id"]
