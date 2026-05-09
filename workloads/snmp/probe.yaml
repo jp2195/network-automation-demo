@@ -1,0 +1,32 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: snmp-frr-cabinets
+  labels:
+    release: kps
+spec:
+  jobName: snmp-frr-cabinets
+  interval: 30s
+  scrapeTimeout: 25s
+  module: if_mib
+  prober:
+    url: snmp-exporter.monitoring.svc.cluster.local:9116
+    path: /snmp
+  targets:
+    staticConfig:
+      static:
+        - atlanta-fc-n.clabernetes.svc.cluster.local
+        - atlanta-fc-nw.clabernetes.svc.cluster.local
+        - atlanta-fc-i20e.clabernetes.svc.cluster.local
+        - atlanta-fc-sw.clabernetes.svc.cluster.local
+      labels:
+        telemetry_source: snmp
+        node_role: field-cabinet
+      relabelingConfigs:
+        # The Probe CR's static targets become the `instance` label by
+        # default; promote the bare hostname to a `node` label so it
+        # joins cleanly with link_membership_info{node=...}.
+        - sourceLabels: [__param_target]
+          regex: "atlanta-(fc-[a-z0-9]+)\\.clabernetes\\.svc\\.cluster\\.local"
+          targetLabel: node
+          replacement: "$1"

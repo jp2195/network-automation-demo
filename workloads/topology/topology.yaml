@@ -42,21 +42,33 @@ spec:
             binds:
               - configs/fc-n.frr:/etc/frr/frr.conf
               - configs/daemons:/etc/frr/daemons
+              - configs/snmpd.conf:/etc/snmp/snmpd.conf
+              - configs/wrapper.sh:/wrapper.sh
+            cmd: /wrapper.sh
           fc-nw:
             kind: linux
             binds:
               - configs/fc-nw.frr:/etc/frr/frr.conf
               - configs/daemons:/etc/frr/daemons
+              - configs/snmpd.conf:/etc/snmp/snmpd.conf
+              - configs/wrapper.sh:/wrapper.sh
+            cmd: /wrapper.sh
           fc-i20e:
             kind: linux
             binds:
               - configs/fc-i20e.frr:/etc/frr/frr.conf
               - configs/daemons:/etc/frr/daemons
+              - configs/snmpd.conf:/etc/snmp/snmpd.conf
+              - configs/wrapper.sh:/wrapper.sh
+            cmd: /wrapper.sh
           fc-sw:
             kind: linux
             binds:
               - configs/fc-sw.frr:/etc/frr/frr.conf
               - configs/daemons:/etc/frr/daemons
+              - configs/snmpd.conf:/etc/snmp/snmpd.conf
+              - configs/wrapper.sh:/wrapper.sh
+            cmd: /wrapper.sh
         links:
           - endpoints: ["hub-n:e1/1", "hub-e:e1/2"]
           - endpoints: ["hub-e:e1/1", "hub-i20e:e1/2"]
@@ -114,6 +126,13 @@ spec:
         - filePath: configs/daemons
           configMapName: topology-startup-configs
           configMapPath: daemons
+        - filePath: configs/snmpd.conf
+          configMapName: topology-startup-configs
+          configMapPath: snmpd.conf
+        - filePath: configs/wrapper.sh
+          configMapName: topology-startup-configs
+          configMapPath: wrapper.sh
+          mode: 0o755
       fc-nw:
         - filePath: configs/fc-nw.frr
           configMapName: topology-startup-configs
@@ -121,6 +140,13 @@ spec:
         - filePath: configs/daemons
           configMapName: topology-startup-configs
           configMapPath: daemons
+        - filePath: configs/snmpd.conf
+          configMapName: topology-startup-configs
+          configMapPath: snmpd.conf
+        - filePath: configs/wrapper.sh
+          configMapName: topology-startup-configs
+          configMapPath: wrapper.sh
+          mode: 0o755
       fc-i20e:
         - filePath: configs/fc-i20e.frr
           configMapName: topology-startup-configs
@@ -128,6 +154,13 @@ spec:
         - filePath: configs/daemons
           configMapName: topology-startup-configs
           configMapPath: daemons
+        - filePath: configs/snmpd.conf
+          configMapName: topology-startup-configs
+          configMapPath: snmpd.conf
+        - filePath: configs/wrapper.sh
+          configMapName: topology-startup-configs
+          configMapPath: wrapper.sh
+          mode: 0o755
       fc-sw:
         - filePath: configs/fc-sw.frr
           configMapName: topology-startup-configs
@@ -135,3 +168,10 @@ spec:
         - filePath: configs/daemons
           configMapName: topology-startup-configs
           configMapPath: daemons
+        - filePath: configs/snmpd.conf
+          configMapName: topology-startup-configs
+          configMapPath: snmpd.conf
+        - filePath: configs/wrapper.sh
+          configMapName: topology-startup-configs
+          configMapPath: wrapper.sh
+          mode: 0o755

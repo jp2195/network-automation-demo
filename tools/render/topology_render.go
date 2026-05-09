@@ -80,6 +80,10 @@ func WriteContainerlab(w io.Writer, spec *Spec) error {
 			fmt.Fprintln(w, "      binds:")
 			fmt.Fprintf(w, "        - configs/%s:/etc/frr/frr.conf\n", configFilename(n))
 			fmt.Fprintln(w, "        - configs/daemons:/etc/frr/daemons")
+			// SNMP polling target for the legacy-edge demo lane.
+			fmt.Fprintln(w, "        - configs/snmpd.conf:/etc/snmp/snmpd.conf")
+			fmt.Fprintln(w, "        - configs/wrapper.sh:/wrapper.sh")
+			fmt.Fprintln(w, "      cmd: /wrapper.sh")
 		}
 	}
 
@@ -124,6 +128,13 @@ func WriteTopology(w io.Writer, spec *Spec) error {
 			fmt.Fprintln(w, "        - filePath: configs/daemons")
 			fmt.Fprintln(w, "          configMapName: topology-startup-configs")
 			fmt.Fprintln(w, "          configMapPath: daemons")
+			fmt.Fprintln(w, "        - filePath: configs/snmpd.conf")
+			fmt.Fprintln(w, "          configMapName: topology-startup-configs")
+			fmt.Fprintln(w, "          configMapPath: snmpd.conf")
+			fmt.Fprintln(w, "        - filePath: configs/wrapper.sh")
+			fmt.Fprintln(w, "          configMapName: topology-startup-configs")
+			fmt.Fprintln(w, "          configMapPath: wrapper.sh")
+			fmt.Fprintln(w, "          mode: 0o755")
 		}
 	}
 	return nil
@@ -151,7 +162,7 @@ func WriteTopologyKustomization(w io.Writer, spec *Spec) error {
 	for _, n := range spec.Nodes {
 		files = append(files, "startup-configs/"+configFilename(n))
 	}
-	files = append(files, "startup-configs/daemons")
+	files = append(files, "startup-configs/daemons", "startup-configs/snmpd.conf", "startup-configs/wrapper.sh")
 	sort.Strings(files)
 	for _, f := range files {
 		fmt.Fprintf(w, "      - %s\n", f)

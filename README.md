@@ -30,7 +30,8 @@ a 3-step Argo Workflow with an alert-fingerprint-keyed ledger in Valkey.
 | GitOps | ArgoCD (App-of-Apps from `argocd/`) |
 | Topology | Clabernetes operator + containerlab-flavored `Topology` CR |
 | Source of truth | NetBox (CNPG Postgres + valkey-io Valkey, no Bitnami workloads) |
-| Telemetry | gNMIc → Prometheus (kube-prometheus-stack) |
+| Telemetry — modern | gNMIc streaming subscriptions on the SR Linux backbone → Prometheus |
+| Telemetry — legacy | Prometheus `snmp_exporter` polling FRR cabinets (IF-MIB) |
 | Logs | Alloy DaemonSet → Loki SingleBinary |
 | Eventing | Argo Events (NATS JetStream EventBus) → Argo Workflows |
 | Notifications | Slack (`slack-sdk` bot, `chat.update` on resolve) |
@@ -38,6 +39,34 @@ a 3-step Argo Workflow with an alert-fingerprint-keyed ledger in Valkey.
 
 Working set ≈ 25 GB on a 32 GB+ laptop. ARM64 hosts work — SR Linux
 (`ghcr.io/nokia/srlinux`) is multi-arch.
+
+## Telemetry sources — the legacy / modern split
+
+The 8 SR Linux backbone nodes stream telemetry via gNMI to gNMIc,
+which exposes it as Prometheus metrics (`srl_*`, refreshed every 5–60 s
+across five tiered subscription groups: `if-state`, `if-counters`,
+`transceiver`, `routing`, `system`). This is the modern lane —
+push-based, schema-defined, sub-second detection latency.
+
+The 4 FRR field cabinets are deliberately *not* on that pipeline. Each
+cabinet runs a tiny `snmpd` (installed on first boot via
+`apk add net-snmp` in the entrypoint wrapper) listening for SNMPv2c on
+UDP/161. A `prom/snmp_exporter` deployment polls each cabinet every
+30 s for the standard `IF-MIB` tables, and a Prometheus-Operator
+`Probe` CR registers them with kube-prometheus-stack.
+
+The point: the rest of the demo — Alertmanager → EventSource → Sensor
+→ enriched-notify Workflow → Slack — is **identical** for both
+telemetry sources. The legacy edge and the modern core land at the same
+incident response flow, with the same NetBox enrichment and impact
+analysis. Mixed legacy/modern fleets don't have to rip-and-replace to
+get modern incident response — that decoupling is the operational
+takeaway.
+
+| Lane | Nodes | Collection | Sample rate | Metric prefix |
+|---|---|---|---|---|
+| Modern | 8 SR Linux backbone | gNMI streaming → gNMIc | 5 s state / 10 s counters / 30 s DOM / 60 s system | `srl_*` |
+| Legacy | 4 FRR field cabinets | SNMPv2c polling → snmp_exporter | 30 s | `ifOperStatus`, `ifInOctets`, … |
 
 ## Prerequisites
 
@@ -74,18 +103,30 @@ UIs after sync settles:
 
 ## Demo flow
 
-Once IS-IS has converged across the 8 SR Linux backbone nodes:
+Once IS-IS has converged across the 8 SR Linux backbone nodes and
+snmp_exporter is reaching all 4 cabinets:
+
+**Modern lane (gNMI / SR Linux):**
 
 ```bash
-# Disable an interface — gNMIc sees oper-status DOWN, Prometheus rule
-# fires, Alertmanager webhooks the EventSource, Sensor triggers the
-# enriched-notify Workflow, Slack gets a Block Kit message.
+# Disable an interface via SR Linux CLI — gNMIc sees oper-status DOWN,
+# Prometheus rule fires, Alertmanager webhooks the EventSource, Sensor
+# triggers the enriched-notify Workflow, Slack gets a Block Kit message.
 make demo-cut     NODE=tmc-1 INTERFACE=ethernet-1/1
 
 # Re-enable it — same alert fingerprint resolves; the original Slack
 # message is updated in place to RESOLVED with downtime, and a thread
 # reply summarizes which downstream cabinets/agencies are restored.
 make demo-restore NODE=tmc-1 INTERFACE=ethernet-1/1
+```
+
+**Legacy lane (SNMP / FRR cabinet):**
+
+```bash
+# Same enrich/analyze/notify pipeline, but the alert is sourced from
+# snmp_exporter polling the cabinet's snmpd rather than streaming gNMI.
+make demo-cut-cabinet     NODE=fc-n INTERFACE=eth1
+make demo-restore-cabinet NODE=fc-n INTERFACE=eth1
 ```
 
 The 3-step DAG:
@@ -129,7 +170,10 @@ platform/values/           helm values for each platform chart
 workloads/
   netbox/                    netbox-chart values + CNPG Cluster + seed Job
   topology/                  Clabernetes Topology CR + startup-config bundle
-  gnmic/                     gNMIc Deployment + ServiceMonitor
+                               (SR Linux .cfg, FRR .frr, daemons, snmpd.conf,
+                               wrapper.sh entrypoint)
+  gnmic/                     gNMIc Deployment + ServiceMonitor (modern lane)
+  snmp/                      snmp_exporter + Probe CR + PromRule (legacy lane)
   observability/             PromRules + AlertmanagerConfig + dashboards
   eventing/                  EventSource + Sensors + WorkflowTemplates +
                                Python step scripts (enrich/analyze/notify)
@@ -152,9 +196,11 @@ SECRETS.md                 how to use real credentials without committing them
 
 Edit `spec/atlanta.yaml` and run `make render`. The renderer rewrites:
 
-- `workloads/topology/startup-configs/*` (per-node SR Linux + FRR configs)
+- `workloads/topology/startup-configs/*` (per-node SR Linux + FRR configs,
+  shared `daemons` for FRR, shared `snmpd.conf` + `wrapper.sh` for the
+  legacy-edge lane)
 - `workloads/topology/topology.yaml` + `kustomization.yaml`
-- `workloads/gnmic/targets.yaml`
+- `workloads/gnmic/targets.yaml` (with the 5 tiered subscription groups)
 - `workloads/netbox/seed/seed.json`
 - `workloads/observability/dashboards/links.geojson`
 - `workloads/observability/link-membership.yaml`

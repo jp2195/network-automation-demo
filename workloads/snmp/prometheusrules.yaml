@@ -1,0 +1,44 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: snmp-cabinet-alerts
+  labels:
+    app.kubernetes.io/name: snmp-cabinet-alerts
+    release: kps
+spec:
+  groups:
+    - name: snmp-cabinet
+      interval: 30s
+      rules:
+        # ifOperStatus values: 1=up, 2=down, 3=testing, 4=unknown,
+        # 5=dormant, 6=notPresent, 7=lowerLayerDown.
+        - alert: CabinetInterfaceOperDown
+          expr: |
+            ifOperStatus{telemetry_source="snmp"} == 2
+            and on (instance, ifIndex)
+            ifAdminStatus{telemetry_source="snmp"} == 1
+          for: 1m
+          labels:
+            severity: critical
+            telemetry: snmp
+          annotations:
+            summary: "FRR cabinet {{ $labels.node }} interface (ifIndex {{ $labels.ifIndex }}) is DOWN"
+            description: |
+              SNMP poll on {{ $labels.instance }} reports oper-status DOWN
+              while admin-status is UP. Same enrich/analyze/notify pipeline
+              applies — this alert demonstrates the legacy-edge telemetry
+              lane (legacy SNMP polling) reaching the same incident response
+              flow as the streaming-telemetry lane on the SR Linux backbone.
+
+        - alert: CabinetSNMPUnreachable
+          expr: up{job="snmp-frr-cabinets"} == 0
+          for: 2m
+          labels:
+            severity: warning
+            telemetry: snmp
+          annotations:
+            summary: "FRR cabinet {{ $labels.node }} SNMP target is unreachable"
+            description: |
+              snmp_exporter cannot reach {{ $labels.instance }} over SNMP.
+              Either the cabinet pod is down or its snmpd hasn't started
+              yet (the apk-installed snmpd takes a few seconds on first boot).
