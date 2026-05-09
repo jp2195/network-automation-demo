@@ -87,6 +87,11 @@ grafana:
       label: grafana_dashboard
       labelValue: "1"
       searchNamespace: ALL
+      # Each dashboard ConfigMap can set this annotation to route the
+      # dashboard into a Grafana folder. Created on first sync.
+      folderAnnotation: grafana_folder
+      provider:
+        foldersFromFilesStructure: true
     datasources:
       enabled: true
       label: grafana_datasource

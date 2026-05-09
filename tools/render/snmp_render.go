@@ -6,8 +6,9 @@ import (
 )
 
 // snmpCommunity is the read-only SNMPv2c community used for the demo.
-// Documented as a demo string in SECRETS.md; not a real credential.
-const snmpCommunity = "demo-public"
+// Matches the `public_v2` auth in snmp_exporter's bundled snmp.yml so we
+// can use the upstream-shipped module config without a hand-rolled override.
+const snmpCommunity = "public"
 
 // frrSNMPDConf is the snmpd configuration baked into the FRR cabinet
 // containers. Listens on 161 on all interfaces, allows the demo community
