@@ -1,4 +1,4 @@
-.PHONY: up down status render demo-cut demo-restore help
+.PHONY: up down status render demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet help
 
 CLUSTER_NAME ?= gdot-demo
 TOPO_NS      ?= clabernetes
@@ -9,8 +9,10 @@ help:
 	@echo "  down         Delete the k3d cluster"
 	@echo "  status       Show node + ArgoCD application state, print URL and admin password"
 	@echo "  render       Re-render workloads/* outputs from spec/atlanta.yaml"
-	@echo "  demo-cut     Disable an interface on an SR Linux node (NODE=, INTERFACE= required)"
-	@echo "  demo-restore Re-enable an interface on an SR Linux node (NODE=, INTERFACE= required)"
+	@echo "  demo-cut             Disable an interface on an SR Linux node (NODE=, INTERFACE= required)"
+	@echo "  demo-restore         Re-enable an interface on an SR Linux node (NODE=, INTERFACE= required)"
+	@echo "  demo-cut-cabinet     Disable an interface on an FRR cabinet via vtysh (NODE=, INTERFACE= required)"
+	@echo "  demo-restore-cabinet Re-enable an interface on an FRR cabinet via vtysh (NODE=, INTERFACE= required)"
 
 up:
 	@echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"
@@ -60,3 +62,19 @@ demo-restore: _require_cut_vars
 	  echo "==> Enabling $(INTERFACE) on $(NODE) ($$POD)"; \
 	  kubectl -n $(TOPO_NS) exec $$POD -- \
 	    sr_cli "enter candidate; set interface $(INTERFACE) admin-state enable; commit now"
+
+# --- FRR cabinet failure injection (legacy-edge / SNMP-driven demo lane) ---
+
+demo-cut-cabinet: _require_cut_vars
+	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
+	  echo "==> Shutting down $(INTERFACE) on $(NODE) ($$POD) via vtysh"; \
+	  kubectl -n $(TOPO_NS) exec $$POD -- \
+	    vtysh -c "configure terminal" -c "interface $(INTERFACE)" -c "shutdown" -c "end" -c "write memory"
+
+demo-restore-cabinet: _require_cut_vars
+	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
+	  echo "==> Bringing up $(INTERFACE) on $(NODE) ($$POD) via vtysh"; \
+	  kubectl -n $(TOPO_NS) exec $$POD -- \
+	    vtysh -c "configure terminal" -c "interface $(INTERFACE)" -c "no shutdown" -c "end" -c "write memory"

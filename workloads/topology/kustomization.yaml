@@ -23,5 +23,7 @@ configMapGenerator:
       - startup-configs/hub-n.cfg
       - startup-configs/hub-nw.cfg
       - startup-configs/hub-sw.cfg
+      - startup-configs/snmpd.conf
       - startup-configs/tmc-1.cfg
       - startup-configs/tmc-2.cfg
+      - startup-configs/wrapper.sh

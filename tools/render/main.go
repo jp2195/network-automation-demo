@@ -112,6 +112,18 @@ func main() {
 	must(WriteFRRDaemons(f))
 	f.Close()
 
+	snmpdConfPath := filepath.Join(cfgDir, "snmpd.conf")
+	fmt.Printf("==> Writing %s (FRR cabinet snmpd.conf)\n", snmpdConfPath)
+	f = mustCreate(snmpdConfPath)
+	must(WriteSNMPDConf(f))
+	f.Close()
+
+	wrapperPath := filepath.Join(cfgDir, "wrapper.sh")
+	fmt.Printf("==> Writing %s (FRR cabinet entrypoint wrapper)\n", wrapperPath)
+	f = mustCreate(wrapperPath)
+	must(WriteFRRWrapper(f))
+	f.Close()
+
 	obsDir := filepath.Join(*outDir, "workloads", "observability")
 	must(os.MkdirAll(obsDir, 0o755))
 
