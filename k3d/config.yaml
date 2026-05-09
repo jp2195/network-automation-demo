@@ -1,7 +1,7 @@
 apiVersion: k3d.io/v1alpha5
 kind: Simple
 metadata:
-  name: gdot-demo
+  name: atlas-demo
 servers: 1
 agents: 2
 ports:
@@ -13,7 +13,7 @@ ports:
       - loadbalancer
 registries:
   create:
-    name: gdot-demo-registry
+    name: atlas-demo-registry
     host: "0.0.0.0"
     hostPort: "5001"
 options:

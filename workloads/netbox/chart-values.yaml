@@ -1,10 +1,10 @@
 superuser:
   name: admin
-  email: admin@gdot-demo.local
+  email: admin@atlas-demo.local
   password: admin
   apiToken: 0123456789abcdef0123456789abcdef01234567
 
-secretKey: gdot-demo-not-secret-but-50-plus-chars-long-padding-yes
+secretKey: atlas-demo-not-secret-but-50-plus-chars-long-padding-yes
 
 allowedHosts:
   - "*"
