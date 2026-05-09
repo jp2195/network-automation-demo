@@ -30,3 +30,7 @@ spec:
           regex: "atlanta-(fc-[a-z0-9]+)\\.clabernetes\\.svc\\.cluster\\.local"
           targetLabel: node
           replacement: "$1"
+        # snmp_exporter v0.27 requires an explicit auth selector. Use the
+        # `public_v2` auth bundled in the upstream snmp.yml (community = public).
+        - targetLabel: __param_auth
+          replacement: public_v2
