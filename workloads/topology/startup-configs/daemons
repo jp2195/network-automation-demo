@@ -20,3 +20,10 @@ pathd=no
 vtysh_enable=yes
 zebra_options="  -A 127.0.0.1 -s 90000000"
 bgpd_options="   -A 127.0.0.1"
+
+# Run daemons as root so they keep CAP_NET_ADMIN/CAP_SYS_ADMIN. The
+# upstream frrouting/frr image ships binaries without file capabilities,
+# so dropping to the 'frr' user strips the caps the routing daemons need
+# (privs_init in mgmtd/zebra/bgpd fails with EPERM otherwise).
+frr_user="root"
+frr_group="root"
