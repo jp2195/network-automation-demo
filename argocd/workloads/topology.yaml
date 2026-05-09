@@ -23,3 +23,17 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+  ignoreDifferences:
+    # The clabernetes admission webhook fills in defaults for these fields on
+    # every Topology, so we omit them from source and ignore them in diffs.
+    - group: clabernetes.containerlab.dev
+      kind: Topology
+      jsonPointers:
+        - /spec/imagePull
+        - /spec/expose
+        - /spec/statusProbes
+        - /spec/connectivity
+        - /spec/naming
+        - /spec/deployment/containerlabTimeout
+        - /spec/deployment/persistence
+        - /spec/deployment/scheduling

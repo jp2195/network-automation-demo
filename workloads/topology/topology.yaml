@@ -85,44 +85,55 @@ spec:
         - filePath: configs/tmc-1.cfg
           configMapName: topology-startup-configs
           configMapPath: tmc-1.cfg
+          mode: read
       tmc-2:
         - filePath: configs/tmc-2.cfg
           configMapName: topology-startup-configs
           configMapPath: tmc-2.cfg
+          mode: read
       hub-n:
         - filePath: configs/hub-n.cfg
           configMapName: topology-startup-configs
           configMapPath: hub-n.cfg
+          mode: read
       hub-e:
         - filePath: configs/hub-e.cfg
           configMapName: topology-startup-configs
           configMapPath: hub-e.cfg
+          mode: read
       hub-i20e:
         - filePath: configs/hub-i20e.cfg
           configMapName: topology-startup-configs
           configMapPath: hub-i20e.cfg
+          mode: read
       hub-nw:
         - filePath: configs/hub-nw.cfg
           configMapName: topology-startup-configs
           configMapPath: hub-nw.cfg
+          mode: read
       hub-sw:
         - filePath: configs/hub-sw.cfg
           configMapName: topology-startup-configs
           configMapPath: hub-sw.cfg
+          mode: read
       hub-i20w:
         - filePath: configs/hub-i20w.cfg
           configMapName: topology-startup-configs
           configMapPath: hub-i20w.cfg
+          mode: read
       fc-n:
         - filePath: configs/fc-n.frr
           configMapName: topology-startup-configs
           configMapPath: fc-n.frr
+          mode: read
         - filePath: configs/daemons
           configMapName: topology-startup-configs
           configMapPath: daemons
+          mode: read
         - filePath: configs/snmpd.conf
           configMapName: topology-startup-configs
           configMapPath: snmpd.conf
+          mode: read
         - filePath: configs/wrapper.sh
           configMapName: topology-startup-configs
           configMapPath: wrapper.sh
@@ -131,12 +142,15 @@ spec:
         - filePath: configs/fc-nw.frr
           configMapName: topology-startup-configs
           configMapPath: fc-nw.frr
+          mode: read
         - filePath: configs/daemons
           configMapName: topology-startup-configs
           configMapPath: daemons
+          mode: read
         - filePath: configs/snmpd.conf
           configMapName: topology-startup-configs
           configMapPath: snmpd.conf
+          mode: read
         - filePath: configs/wrapper.sh
           configMapName: topology-startup-configs
           configMapPath: wrapper.sh
@@ -145,12 +159,15 @@ spec:
         - filePath: configs/fc-i20e.frr
           configMapName: topology-startup-configs
           configMapPath: fc-i20e.frr
+          mode: read
         - filePath: configs/daemons
           configMapName: topology-startup-configs
           configMapPath: daemons
+          mode: read
         - filePath: configs/snmpd.conf
           configMapName: topology-startup-configs
           configMapPath: snmpd.conf
+          mode: read
         - filePath: configs/wrapper.sh
           configMapName: topology-startup-configs
           configMapPath: wrapper.sh
@@ -159,12 +176,15 @@ spec:
         - filePath: configs/fc-sw.frr
           configMapName: topology-startup-configs
           configMapPath: fc-sw.frr
+          mode: read
         - filePath: configs/daemons
           configMapName: topology-startup-configs
           configMapPath: daemons
+          mode: read
         - filePath: configs/snmpd.conf
           configMapName: topology-startup-configs
           configMapPath: snmpd.conf
+          mode: read
         - filePath: configs/wrapper.sh
           configMapName: topology-startup-configs
           configMapPath: wrapper.sh
