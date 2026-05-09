@@ -14,11 +14,15 @@ spec:
     path: /snmp
   targets:
     staticConfig:
+      # Alpine's net-snmp 5.9.4 refuses to bind privileged ports inside the
+      # FRR launcher's DinD; snmpd listens on udp:1161 instead (see
+      # tools/render/snmp_render.go's agentaddress). Demo-only departure
+      # from the SNMP convention.
       static:
-        - atlanta-fc-n.clabernetes.svc.cluster.local
-        - atlanta-fc-nw.clabernetes.svc.cluster.local
-        - atlanta-fc-i20e.clabernetes.svc.cluster.local
-        - atlanta-fc-sw.clabernetes.svc.cluster.local
+        - atlanta-fc-n.clabernetes.svc.cluster.local:1161
+        - atlanta-fc-nw.clabernetes.svc.cluster.local:1161
+        - atlanta-fc-i20e.clabernetes.svc.cluster.local:1161
+        - atlanta-fc-sw.clabernetes.svc.cluster.local:1161
       labels:
         telemetry_source: snmp
         node_role: field-cabinet
@@ -27,7 +31,7 @@ spec:
         # default; promote the bare hostname to a `node` label so it
         # joins cleanly with link_membership_info{node=...}.
         - sourceLabels: [__param_target]
-          regex: "atlanta-(fc-[a-z0-9]+)\\.clabernetes\\.svc\\.cluster\\.local"
+          regex: "atlanta-(fc-[a-z0-9]+)\\.clabernetes\\.svc\\.cluster\\.local:[0-9]+"
           targetLabel: node
           replacement: "$1"
         # snmp_exporter v0.27 requires an explicit auth selector. Use the
