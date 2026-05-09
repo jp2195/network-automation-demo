@@ -1,0 +1,350 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-RING-NE",
+        "corridor": "I-285",
+        "kind": "backbone",
+        "link_id": "ring-n-e",
+        "route_description": "I-285 NB MM 30-37"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.3733,
+            33.9304
+          ],
+          [
+            -84.2963,
+            33.7748
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-RING-EI20E",
+        "corridor": "I-285",
+        "kind": "backbone",
+        "link_id": "ring-e-i20e",
+        "route_description": "I-285 EB MM 39-46"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.2963,
+            33.7748
+          ],
+          [
+            -84.111,
+            33.7126
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-RING-I20ESW",
+        "corridor": "I-285",
+        "kind": "backbone",
+        "link_id": "ring-i20e-sw",
+        "route_description": "I-285 SB MM 47-58"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.111,
+            33.7126
+          ],
+          [
+            -84.4394,
+            33.6795
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-RING-SWI20W",
+        "corridor": "I-285",
+        "kind": "backbone",
+        "link_id": "ring-sw-i20w",
+        "route_description": "I-285 WB MM 1-6"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.4394,
+            33.6795
+          ],
+          [
+            -84.6427,
+            33.7793
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-RING-I20WNW",
+        "corridor": "I-285",
+        "kind": "backbone",
+        "link_id": "ring-i20w-nw",
+        "route_description": "I-285 NB MM 11-19"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.6427,
+            33.7793
+          ],
+          [
+            -84.5499,
+            33.9526
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-RING-NWN",
+        "corridor": "I-285",
+        "kind": "backbone",
+        "link_id": "ring-nw-n",
+        "route_description": "I-285 NB MM 21-29"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.5499,
+            33.9526
+          ],
+          [
+            -84.3733,
+            33.9304
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-NW-01",
+        "corridor": "I-75 NW",
+        "kind": "backbone",
+        "link_id": "tmc1-hubnw",
+        "route_description": "I-75 NB MM 257-262"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.3705,
+            33.6195
+          ],
+          [
+            -84.5499,
+            33.9526
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-SW-01",
+        "corridor": "I-85 SW",
+        "kind": "backbone",
+        "link_id": "tmc1-hubsw",
+        "route_description": "I-85 SB MM 73-77"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.3705,
+            33.6195
+          ],
+          [
+            -84.4394,
+            33.6795
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-N-01",
+        "corridor": "GA-400",
+        "kind": "backbone",
+        "link_id": "tmc2-hubn",
+        "route_description": "GA-400 NB MM 5-9"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.3781,
+            33.8484
+          ],
+          [
+            -84.3733,
+            33.9304
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-E-01",
+        "corridor": "I-285 East",
+        "kind": "backbone",
+        "link_id": "tmc2-hube",
+        "route_description": "I-285 EB MM 38-43"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.3781,
+            33.8484
+          ],
+          [
+            -84.2963,
+            33.7748
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-TMC-XC",
+        "corridor": "TMC Interconnect",
+        "kind": "backbone",
+        "link_id": "tmc1-tmc2",
+        "route_description": "Forest Park ↔ Buckhead diverse path"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.3705,
+            33.6195
+          ],
+          [
+            -84.3781,
+            33.8484
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-CAB-N",
+        "corridor": "GA-400",
+        "kind": "cabinet",
+        "link_id": "hubn-fcn",
+        "route_description": "GA-400 NB MM 12-15 (cabinet drop)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.3733,
+            33.9304
+          ],
+          [
+            -84.2941,
+            34.0754
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-CAB-NW",
+        "corridor": "I-75 NW",
+        "kind": "cabinet",
+        "link_id": "hubnw-fcnw",
+        "route_description": "I-75 NB MM 268-272 (cabinet drop)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.5499,
+            33.9526
+          ],
+          [
+            -84.6155,
+            34.0234
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-CAB-I20E",
+        "corridor": "I-20 East",
+        "kind": "cabinet",
+        "link_id": "hubi20e-fci20e",
+        "route_description": "I-20 EB MM 53-56 (cabinet drop)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.111,
+            33.7126
+          ],
+          [
+            -84.0177,
+            33.6679
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "cable_label": "FOC-CAB-SW",
+        "corridor": "I-85 SW",
+        "kind": "cabinet",
+        "link_id": "hubsw-fcsw",
+        "route_description": "I-85 SB MM 41-43 (cabinet drop)"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -84.4394,
+            33.6795
+          ],
+          [
+            -84.7997,
+            33.3807
+          ]
+        ]
+      }
+    }
+  ]
+}

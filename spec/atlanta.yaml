@@ -1,0 +1,494 @@
+# Atlas DOT (ADOT) — Region 7 Atlanta Metro
+# District-rich tier: 12 nodes (2 TMC + 6 corridor hubs as SR Linux + 4 FRR field cabinets).
+# This file is the canonical input to tools/render. Every IP, prefix-SID, link, and tenant
+# in the demo traces back to this spec.
+
+metadata:
+  name: atlanta
+  description: Atlas DOT Region 7 Atlanta Metro — District-rich tier (12 nodes)
+  isis:
+    area: "49.0001"
+    level: L2
+  asn:
+    backbone: 65000
+  ipam:
+    loopback_v4: 10.0.0.0/24
+    backbone_v4: 10.1.0.0/16
+    cabinet_v4:  10.2.0.0/16
+
+dot:
+  slug: adot
+  name: Atlas DOT
+  region: Region 7 Atlanta Metro
+  on_call:
+    primary: "Region 7 NMS — pager A"
+    secondary: "ADOT NOC — pager B"
+
+# Agencies / tenants riding the network. Slugs are stable identifiers used by
+# nodes.agencies[] and end up as NetBox tenants.
+agencies:
+  - slug: adot-region-7
+    name: Atlas DOT Region 7 Operations
+  - slug: capitol-metro-public-works
+    name: Capitol Metro Public Works
+  - slug: northridge-transportation-authority
+    name: Northridge Transportation Authority
+  - slug: eastfield-county-dot
+    name: Eastfield County DOT
+  - slug: lakeside-county-dot
+    name: Lakeside County DOT
+  - slug: pinecrest-public-works
+    name: Pinecrest Public Works
+  - slug: westridge-county-authority
+    name: Westridge County Authority
+  - slug: southfield-highway-department
+    name: Southfield Highway Department
+  - slug: sandstone-municipal-works
+    name: Sandstone Municipal Works
+  - slug: metro-transit-operations
+    name: Metro Transit Operations (MTO)
+  - slug: state-highway-patrol
+    name: State Highway Patrol
+
+# Fiber providers. Slugs end up on NetBox cable custom fields.
+providers:
+  - slug: apex-fiber
+    name: Apex Fiber Networks
+  - slug: cascade-telecom
+    name: Cascade Telecom Group
+  - slug: adot-owned
+    name: ADOT-owned fiber
+
+# 12 nodes. Order is meaningful: defines deterministic interface and IP allocation,
+# and is the order in which devices appear in the NetBox seed.
+nodes:
+  # --- TMCs ---
+  - name: tmc-1
+    kind: srlinux
+    role: tmc
+    description: Primary TMC head end
+    site:
+      label: forest-park
+      city: Forest Park
+      lat: 33.6195
+      lon: -84.3705
+      district: 7
+    loopback_v4: 10.0.0.1
+    isis_sid: 16001
+
+  - name: tmc-2
+    kind: srlinux
+    role: tmc
+    description: Backup TMC head end (active-active via iBGP)
+    site:
+      label: buckhead
+      city: Buckhead
+      lat: 33.8484
+      lon: -84.3781
+      district: 7
+    loopback_v4: 10.0.0.2
+    isis_sid: 16002
+
+  # --- Corridor hubs ---
+  - name: hub-n
+    kind: srlinux
+    role: corridor-hub
+    description: GA-400 corridor hub
+    site:
+      label: sandy-springs
+      city: Sandy Springs
+      corridor: GA-400
+      lat: 33.9304
+      lon: -84.3733
+      district: 7
+    loopback_v4: 10.0.0.11
+    isis_sid: 16101
+
+  - name: hub-e
+    kind: srlinux
+    role: corridor-hub
+    description: I-285 east corridor hub
+    site:
+      label: decatur
+      city: Decatur
+      corridor: I-285 East
+      lat: 33.7748
+      lon: -84.2963
+      district: 7
+    loopback_v4: 10.0.0.12
+    isis_sid: 16102
+
+  - name: hub-i20e
+    kind: srlinux
+    role: corridor-hub
+    description: I-20 east corridor hub
+    site:
+      label: lithonia
+      city: Lithonia
+      corridor: I-20 East
+      lat: 33.7126
+      lon: -84.1110
+      district: 7
+    loopback_v4: 10.0.0.13
+    isis_sid: 16103
+
+  - name: hub-nw
+    kind: srlinux
+    role: corridor-hub
+    description: I-75 NW corridor hub
+    site:
+      label: marietta
+      city: Marietta
+      corridor: I-75 NW
+      lat: 33.9526
+      lon: -84.5499
+      district: 7
+    loopback_v4: 10.0.0.14
+    isis_sid: 16104
+
+  - name: hub-sw
+    kind: srlinux
+    role: corridor-hub
+    description: I-85 SW corridor hub
+    site:
+      label: east-point
+      city: East Point
+      corridor: I-85 SW
+      lat: 33.6795
+      lon: -84.4394
+      district: 7
+    loopback_v4: 10.0.0.15
+    isis_sid: 16105
+
+  - name: hub-i20w
+    kind: srlinux
+    role: corridor-hub
+    description: I-20 west corridor hub
+    site:
+      label: lithia-springs
+      city: Lithia Springs
+      corridor: I-20 West
+      lat: 33.7793
+      lon: -84.6427
+      district: 7
+    loopback_v4: 10.0.0.16
+    isis_sid: 16106
+
+  # --- FRR field cabinets ---
+  - name: fc-n
+    kind: frr
+    role: field-cabinet
+    description: GA-400 field cabinet (Alpharetta)
+    site:
+      label: alpharetta
+      city: Alpharetta
+      corridor: GA-400
+      lat: 34.0754
+      lon: -84.2941
+      district: 7
+    loopback_v4: 10.0.0.21
+    asn: 65021
+    parent_hub: hub-n
+    its_inventory:
+      cctv: 18
+      signal_controllers: 22
+      dms: 2
+      ramp_meters: 4
+    agencies: [northridge-transportation-authority, adot-region-7]
+
+  - name: fc-nw
+    kind: frr
+    role: field-cabinet
+    description: I-75 NW field cabinet (Kennesaw)
+    site:
+      label: kennesaw
+      city: Kennesaw
+      corridor: I-75 NW
+      lat: 34.0234
+      lon: -84.6155
+      district: 7
+    loopback_v4: 10.0.0.22
+    asn: 65022
+    parent_hub: hub-nw
+    its_inventory:
+      cctv: 24
+      signal_controllers: 18
+      dms: 3
+      ramp_meters: 6
+    agencies: [pinecrest-public-works, adot-region-7]
+
+  - name: fc-i20e
+    kind: frr
+    role: field-cabinet
+    description: I-20 East field cabinet (Conyers)
+    site:
+      label: conyers
+      city: Conyers
+      corridor: I-20 East
+      lat: 33.6679
+      lon: -84.0177
+      district: 7
+    loopback_v4: 10.0.0.23
+    asn: 65023
+    parent_hub: hub-i20e
+    its_inventory:
+      cctv: 14
+      signal_controllers: 26
+      dms: 1
+      ramp_meters: 0
+    agencies: [lakeside-county-dot, eastfield-county-dot, adot-region-7]
+
+  - name: fc-sw
+    kind: frr
+    role: field-cabinet
+    description: I-85 SW field cabinet (Newnan)
+    site:
+      label: newnan
+      city: Newnan
+      corridor: I-85 SW
+      lat: 33.3807
+      lon: -84.7997
+      district: 7
+    loopback_v4: 10.0.0.24
+    asn: 65024
+    parent_hub: hub-sw
+    its_inventory:
+      cctv: 12
+      signal_controllers: 16
+      dms: 2
+      ramp_meters: 3
+    agencies: [sandstone-municipal-works, southfield-highway-department, adot-region-7]
+
+# 15 links. Endpoints are { node, intf } where intf is the SR Linux nominal name
+# (ethernet-1/N) for srlinux nodes and the Linux netdev name (ethN) for frr nodes.
+# subnet_v4 is a /30; .1 sits on side a, .2 on side b.
+# kind is "backbone" (SRL↔SRL, runs IS-IS + SR) or "cabinet" (SRL↔FRR, runs eBGP).
+links:
+  # --- I-285 perimeter ring (6 backbone links) ---
+  - id: ring-n-e
+    kind: backbone
+    a: { node: hub-n, intf: ethernet-1/1 }
+    b: { node: hub-e, intf: ethernet-1/2 }
+    subnet_v4: 10.1.1.0/30
+    cable:
+      label: FOC-RING-NE
+      corridor: I-285
+      route_description: "I-285 NB MM 30-37"
+      length_km: 14.2
+      installed: 2022-09-14
+      provider: apex-fiber
+      circuit_id: APX-RING-NE-001
+      restoration_sla_hours: 4
+
+  - id: ring-e-i20e
+    kind: backbone
+    a: { node: hub-e, intf: ethernet-1/1 }
+    b: { node: hub-i20e, intf: ethernet-1/2 }
+    subnet_v4: 10.1.2.0/30
+    cable:
+      label: FOC-RING-EI20E
+      corridor: I-285
+      route_description: "I-285 EB MM 39-46"
+      length_km: 12.8
+      installed: 2022-09-14
+      provider: apex-fiber
+      circuit_id: APX-RING-EI20E-002
+      restoration_sla_hours: 4
+
+  - id: ring-i20e-sw
+    kind: backbone
+    a: { node: hub-i20e, intf: ethernet-1/1 }
+    b: { node: hub-sw, intf: ethernet-1/2 }
+    subnet_v4: 10.1.3.0/30
+    cable:
+      label: FOC-RING-I20ESW
+      corridor: I-285
+      route_description: "I-285 SB MM 47-58"
+      length_km: 21.3
+      installed: 2023-02-08
+      provider: cascade-telecom
+      circuit_id: CSC-RING-I20ESW-103
+      restoration_sla_hours: 4
+
+  - id: ring-sw-i20w
+    kind: backbone
+    a: { node: hub-sw, intf: ethernet-1/1 }
+    b: { node: hub-i20w, intf: ethernet-1/2 }
+    subnet_v4: 10.1.4.0/30
+    cable:
+      label: FOC-RING-SWI20W
+      corridor: I-285
+      route_description: "I-285 WB MM 1-6"
+      length_km: 9.7
+      installed: 2023-02-08
+      provider: cascade-telecom
+      circuit_id: CSC-RING-SWI20W-104
+      restoration_sla_hours: 4
+
+  - id: ring-i20w-nw
+    kind: backbone
+    a: { node: hub-i20w, intf: ethernet-1/1 }
+    b: { node: hub-nw, intf: ethernet-1/2 }
+    subnet_v4: 10.1.5.0/30
+    cable:
+      label: FOC-RING-I20WNW
+      corridor: I-285
+      route_description: "I-285 NB MM 11-19"
+      length_km: 13.1
+      installed: 2022-09-14
+      provider: apex-fiber
+      circuit_id: APX-RING-I20WNW-005
+      restoration_sla_hours: 4
+
+  - id: ring-nw-n
+    kind: backbone
+    a: { node: hub-nw, intf: ethernet-1/1 }
+    b: { node: hub-n, intf: ethernet-1/2 }
+    subnet_v4: 10.1.6.0/30
+    cable:
+      label: FOC-RING-NWN
+      corridor: I-285
+      route_description: "I-285 NB MM 21-29"
+      length_km: 12.6
+      installed: 2022-09-14
+      provider: apex-fiber
+      circuit_id: APX-RING-NWN-006
+      restoration_sla_hours: 4
+
+  # --- TMC redundant uplinks (4 backbone links) ---
+  - id: tmc1-hubnw
+    kind: backbone
+    a: { node: tmc-1, intf: ethernet-1/1 }
+    b: { node: hub-nw, intf: ethernet-1/3 }
+    subnet_v4: 10.1.7.0/30
+    cable:
+      label: FOC-NW-01
+      corridor: I-75 NW
+      route_description: "I-75 NB MM 257-262"
+      length_km: 4.8
+      installed: 2022-09-14
+      provider: apex-fiber
+      circuit_id: APX-NW-01-007
+      restoration_sla_hours: 4
+
+  - id: tmc1-hubsw
+    kind: backbone
+    a: { node: tmc-1, intf: ethernet-1/2 }
+    b: { node: hub-sw, intf: ethernet-1/3 }
+    subnet_v4: 10.1.8.0/30
+    cable:
+      label: FOC-SW-01
+      corridor: I-85 SW
+      route_description: "I-85 SB MM 73-77"
+      length_km: 5.6
+      installed: 2022-09-14
+      provider: apex-fiber
+      circuit_id: APX-SW-01-008
+      restoration_sla_hours: 4
+
+  - id: tmc2-hubn
+    kind: backbone
+    a: { node: tmc-2, intf: ethernet-1/1 }
+    b: { node: hub-n, intf: ethernet-1/3 }
+    subnet_v4: 10.1.9.0/30
+    cable:
+      label: FOC-N-01
+      corridor: GA-400
+      route_description: "GA-400 NB MM 5-9"
+      length_km: 6.4
+      installed: 2022-09-14
+      provider: cascade-telecom
+      circuit_id: CSC-N-01-109
+      restoration_sla_hours: 4
+
+  - id: tmc2-hube
+    kind: backbone
+    a: { node: tmc-2, intf: ethernet-1/2 }
+    b: { node: hub-e, intf: ethernet-1/3 }
+    subnet_v4: 10.1.10.0/30
+    cable:
+      label: FOC-E-01
+      corridor: I-285 East
+      route_description: "I-285 EB MM 38-43"
+      length_km: 7.9
+      installed: 2022-09-14
+      provider: cascade-telecom
+      circuit_id: CSC-E-01-110
+      restoration_sla_hours: 4
+
+  # --- TMC primary↔backup direct (1 backbone link) ---
+  - id: tmc1-tmc2
+    kind: backbone
+    a: { node: tmc-1, intf: ethernet-1/3 }
+    b: { node: tmc-2, intf: ethernet-1/3 }
+    subnet_v4: 10.1.11.0/30
+    cable:
+      label: FOC-TMC-XC
+      corridor: TMC Interconnect
+      route_description: "Forest Park ↔ Buckhead diverse path"
+      length_km: 23.4
+      installed: 2022-11-02
+      provider: adot-owned
+      circuit_id: ADOT-TMC-XC-201
+      restoration_sla_hours: 8
+
+  # --- Cabinet uplinks (4 cabinet links) ---
+  - id: hubn-fcn
+    kind: cabinet
+    a: { node: hub-n, intf: ethernet-1/4 }
+    b: { node: fc-n, intf: eth1 }
+    subnet_v4: 10.2.1.0/30
+    cable:
+      label: FOC-CAB-N
+      corridor: GA-400
+      route_description: "GA-400 NB MM 12-15 (cabinet drop)"
+      length_km: 3.2
+      installed: 2023-04-02
+      provider: adot-owned
+      circuit_id: ADOT-CAB-N-301
+      restoration_sla_hours: 8
+
+  - id: hubnw-fcnw
+    kind: cabinet
+    a: { node: hub-nw, intf: ethernet-1/4 }
+    b: { node: fc-nw, intf: eth1 }
+    subnet_v4: 10.2.2.0/30
+    cable:
+      label: FOC-CAB-NW
+      corridor: I-75 NW
+      route_description: "I-75 NB MM 268-272 (cabinet drop)"
+      length_km: 2.1
+      installed: 2023-04-02
+      provider: adot-owned
+      circuit_id: ADOT-CAB-NW-302
+      restoration_sla_hours: 8
+
+  - id: hubi20e-fci20e
+    kind: cabinet
+    a: { node: hub-i20e, intf: ethernet-1/4 }
+    b: { node: fc-i20e, intf: eth1 }
+    subnet_v4: 10.2.3.0/30
+    cable:
+      label: FOC-CAB-I20E
+      corridor: I-20 East
+      route_description: "I-20 EB MM 53-56 (cabinet drop)"
+      length_km: 4.1
+      installed: 2023-05-18
+      provider: adot-owned
+      circuit_id: ADOT-CAB-I20E-303
+      restoration_sla_hours: 8
+
+  - id: hubsw-fcsw
+    kind: cabinet
+    a: { node: hub-sw, intf: ethernet-1/4 }
+    b: { node: fc-sw, intf: eth1 }
+    subnet_v4: 10.2.4.0/30
+    cable:
+      label: FOC-CAB-SW
+      corridor: I-85 SW
+      route_description: "I-85 SB MM 41-43 (cabinet drop)"
+      length_km: 2.8
+      installed: 2023-05-18
+      provider: adot-owned
+      circuit_id: ADOT-CAB-SW-304
+      restoration_sla_hours: 8
