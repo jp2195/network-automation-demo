@@ -1,0 +1,82 @@
+superuser:
+  name: admin
+  email: admin@gdot-demo.local
+  password: admin
+  apiToken: 0123456789abcdef0123456789abcdef01234567
+
+secretKey: gdot-demo-not-secret-but-50-plus-chars-long-padding-yes
+
+allowedHosts:
+  - "*"
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 1Gi
+
+persistence:
+  enabled: true
+  size: 1Gi
+
+worker:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+
+postgresql:
+  enabled: false
+
+externalDatabase:
+  host: netbox-postgres-rw
+  port: 5432
+  username: netbox
+  database: netbox
+  existingSecretName: netbox-postgres-app
+  existingSecretKey: password
+
+valkey:
+  enabled: false
+
+tasksDatabase:
+  host: valkey.valkey.svc.cluster.local
+  port: 6379
+  database: 0
+  ssl: false
+  username: ""
+  password: ""
+
+cachingDatabase:
+  host: valkey.valkey.svc.cluster.local
+  port: 6379
+  database: 1
+  ssl: false
+  username: ""
+  password: ""
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
+  hosts:
+    - host: netbox.127-0-0-1.nip.io
+      paths:
+        - /
+  tls:
+    - secretName: netbox-tls
+      hosts:
+        - netbox.127-0-0-1.nip.io
+
+metrics:
+  enabled: false
+
+housekeeping:
+  enabled: true

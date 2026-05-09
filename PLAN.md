@@ -889,3 +889,76 @@ anything.
   cert-manager, kube-prometheus-stack, NetBox chart, etc.
 - Doesn't presume your Slack workspace or webhook URL — Claude Code will ask
   for those when it gets to step 6.
+
+---
+
+## 16. Build progress
+
+Tracking against the §15 kickoff prompt's six-step plan. Update on every
+verification gate; tag the matching commit so rollbacks are clean.
+
+| Step | Description | Status | Tag |
+|---|---|---|---|
+| 1 | Bootstrap layer (k3d, Makefile, ArgoCD install, App-of-Apps root) | ✅ Done | `v0.1-bootstrap` |
+| 2 | Topology spec + Go renderer (5 outputs) | ✅ Done | `v0.2-render` |
+| 3 | NetBox + CNPG Postgres + Valkey + seed Job | ✅ Done | `v0.3-netbox` |
+| 4 | Clabernetes Topology + rendered configs | ⏳ Not started | — |
+| 5 | gNMIc + Prometheus + Loki + dashboards | ⏳ Not started | — |
+| 6 | Eventing + enriched workflow | ⏳ Not started | — |
+
+### Deviations from the original plan
+
+Decisions made during the build that depart from PLAN as originally written.
+Listed here so the rest of PLAN can stay as the architectural reference while
+the as-built reality is honest.
+
+- **Atlas DOT (ADOT) instead of Georgia DOT (GDOT).** Replaced the GDOT framing
+  with a fictional state DOT named **Atlas DOT** (Region 7 Atlanta Metro), and
+  replaced all real agency / fiber-provider names with fictional ones (Capitol
+  Metro Public Works, Northridge Transportation Authority, Pinecrest Public
+  Works, Apex Fiber Networks, Cascade Telecom Group, etc.). Real Atlanta
+  geography — cities, interstates, lat/lon — kept for credibility. Affects
+  every step from §10 onward.
+
+- **NetBox stack — operators + non-Bitnami runtime (step 3).** §4 listed CNPG
+  operator + bundled Bitnami Redis. The earlier "Bitnami unavailable" memory
+  turned out to be wrong (the OCI catalog and bitnami/* images both still
+  resolve), but the user's preference is to avoid Bitnami runtime regardless,
+  and there's no Redis subchart anymore — upstream switched to Valkey.
+  Resolved as: keep CNPG (it's non-Bitnami), bring in `valkey-io/valkey-helm`
+  (the standalone `valkey` chart, image `valkey/valkey`), and run the upstream
+  `netbox-community/netbox-chart` with `postgresql.enabled=false` and
+  `valkey.enabled=false` so the only Bitnami artifact in the dep tree is the
+  helper-only `bitnamicharts/common` template library (zero workloads, zero
+  images contributed). Postgres uses ephemeral storage per user direction.
+
+- **cert-manager landed in step 3 instead of being deferred.** PLAN listed
+  cert-manager at platform sync-wave -1 but didn't say which step would land
+  it. NetBox ingress was opted into TLS in step 3 (self-signed ClusterIssuer,
+  Traefik class, host `netbox.127-0-0-1.nip.io:8443`), which forced
+  cert-manager into the same step.
+
+- **Step 3 sync-wave numbering.** -1 cert-manager · 0 CNPG operator · 1 Valkey
+  StatefulSet · 2 NetBox prereqs (ClusterIssuer + CNPG Cluster CR) · 3 NetBox
+  chart · 4 NetBox seed Job. ArgoCD child Applications carry the wave on their
+  metadata; resources within each Application inherit it.
+
+- **Seed Job is a Python script, not pynetbox.** The seed payload uses
+  human-friendly slug/name FK references (e.g. `device.site = "forest-park"`)
+  that NetBox's API doesn't accept directly. The seed Job runs a stdlib-only
+  Python script (`workloads/netbox/seed/seed.py`) on `python:3.12-slim` that
+  walks the JSON, resolves FKs to numeric IDs via lookup-by-slug, and POSTs
+  to the API in dependency order. Idempotent: skips items that already exist
+  by slug/name. seed.json moved from `workloads/netbox/seed.json` to
+  `workloads/netbox/seed/seed.json` so kustomize's configMapGenerator can
+  pick it up without `--load-restrictor` overrides; renderer updated to match.
+
+- **ArgoCD chart pin.** Bootstrap installs `argo-cd` chart `9.5.13` rather than
+  unpinned latest, set via `bootstrap/argocd-install.sh` and overridable through
+  `ARGOCD_CHART_VERSION`. PLAN didn't prescribe a version.
+
+- **Renderer is plain Go, not templated.** §6 mentions a render tool generally;
+  the actual `tools/render/` is a small Go program (single dependency:
+  `gopkg.in/yaml.v3`) that emits the five PLAN-specified outputs by direct
+  `fmt.Fprintf`. Outputs are committed to `workloads/*` so ArgoCD syncs what's
+  in git — no init containers, no deploy-time render.
