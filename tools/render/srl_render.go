@@ -20,7 +20,7 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	p("")
 
 	syslog := "alloy-syslog.observability.svc.cluster.local"
-	p("set / system logging remote-server %s network-instance default", syslog)
+	p("set / system logging network-instance default")
 	p("set / system logging remote-server %s transport udp", syslog)
 	p("set / system logging remote-server %s remote-port 514", syslog)
 	p("")

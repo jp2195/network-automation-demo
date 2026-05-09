@@ -73,6 +73,10 @@ func WriteContainerlab(w io.Writer, spec *Spec) error {
 	fmt.Fprintln(w, "  kinds:")
 	fmt.Fprintln(w, "    nokia_srlinux:")
 	fmt.Fprintf(w, "      image: %s\n", srlImage)
+	// Default chassis type is ixrd2l, a TOR with no MPLS / segment-routing
+	// support. ixrd3 is the smallest type that exposes /network-instance
+	// segment-routing and IS-IS prefix-sid configuration.
+	fmt.Fprintln(w, "      type: ixrd3")
 	// FRR cabinets share daemons, snmpd.conf, and wrapper.sh; only the
 	// per-node frr.conf is unique. Containerlab merges per-node binds with
 	// kind-level binds, so the shared mounts live here.
