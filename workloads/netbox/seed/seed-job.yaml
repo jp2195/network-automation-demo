@@ -2,6 +2,10 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: netbox-seed
+  annotations:
+    # Job spec.template is immutable; tell Argo to recreate (rather than
+    # patch) when the script ConfigMap, env, or pod template changes.
+    argocd.argoproj.io/sync-options: Force=true,Replace=true
 spec:
   backoffLimit: 5
   ttlSecondsAfterFinished: 3600

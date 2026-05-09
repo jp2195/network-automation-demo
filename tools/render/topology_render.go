@@ -43,8 +43,9 @@ bgpd_options="   -A 127.0.0.1"
 // Linux kinds (FRR cabinets) keep their native "ethN" form.
 func clabIntf(kind, intf string) string {
 	if kind == "srlinux" && strings.HasPrefix(intf, "ethernet-") {
-		// ethernet-1/3 -> e1-3
-		return "e" + strings.TrimPrefix(intf, "ethernet-")
+		// ethernet-1/3 -> e1-3 (containerlab expects hyphens, not slashes)
+		short := strings.TrimPrefix(intf, "ethernet-")
+		return "e" + strings.ReplaceAll(short, "/", "-")
 	}
 	return intf
 }
