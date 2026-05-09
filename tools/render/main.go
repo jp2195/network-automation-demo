@@ -37,8 +37,9 @@ func main() {
 	cfgDir := filepath.Join(*outDir, "workloads", "topology", "startup-configs")
 	gnmicDir := filepath.Join(*outDir, "workloads", "gnmic")
 	netboxDir := filepath.Join(*outDir, "workloads", "netbox")
+	netboxSeedDir := filepath.Join(netboxDir, "seed")
 	geojsonDir := filepath.Join(*outDir, "workloads", "observability", "dashboards")
-	for _, d := range []string{cfgDir, gnmicDir, netboxDir, geojsonDir} {
+	for _, d := range []string{cfgDir, gnmicDir, netboxDir, netboxSeedDir, geojsonDir} {
 		must(os.MkdirAll(d, 0o755))
 	}
 
@@ -76,7 +77,7 @@ func main() {
 	must(WriteGNMIC(f, spec))
 	f.Close()
 
-	seedPath := filepath.Join(netboxDir, "seed.json")
+	seedPath := filepath.Join(netboxSeedDir, "seed.json")
 	fmt.Printf("==> Writing %s (%d devices, %d cables, %d tenants)\n",
 		seedPath, len(spec.Nodes), len(spec.Links), len(spec.Agencies))
 	f = mustCreate(seedPath)
