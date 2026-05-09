@@ -69,6 +69,10 @@ func WriteContainerlab(w io.Writer, spec *Spec) error {
 	// FRR cabinets share daemons, snmpd.conf, and wrapper.sh; only the
 	// per-node frr.conf is unique. Containerlab merges per-node binds with
 	// kind-level binds, so the shared mounts live here.
+	//
+	// FRR 10.6's mgmtd/zebra/bgpd require CAP_NET_ADMIN + CAP_SYS_ADMIN, which
+	// containerlab's `linux` kind doesn't grant by default. Without these the
+	// daemons fail privs_init and watchfrr exits, crashlooping the cabinet.
 	fmt.Fprintln(w, "    linux:")
 	fmt.Fprintf(w, "      image: %s\n", frrImage)
 	fmt.Fprintln(w, "      binds:")
@@ -76,6 +80,9 @@ func WriteContainerlab(w io.Writer, spec *Spec) error {
 	fmt.Fprintln(w, "        - configs/snmpd.conf:/etc/snmp/snmpd.conf")
 	fmt.Fprintln(w, "        - configs/wrapper.sh:/wrapper.sh")
 	fmt.Fprintln(w, "      cmd: /wrapper.sh")
+	fmt.Fprintln(w, "      cap-add:")
+	fmt.Fprintln(w, "        - NET_ADMIN")
+	fmt.Fprintln(w, "        - SYS_ADMIN")
 
 	fmt.Fprintln(w, "  nodes:")
 	for _, n := range spec.Nodes {

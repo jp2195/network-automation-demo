@@ -19,6 +19,9 @@ spec:
               - configs/snmpd.conf:/etc/snmp/snmpd.conf
               - configs/wrapper.sh:/wrapper.sh
             cmd: /wrapper.sh
+            cap-add:
+              - NET_ADMIN
+              - SYS_ADMIN
         nodes:
           tmc-1:
             kind: nokia_srlinux
