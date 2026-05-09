@@ -143,18 +143,23 @@ func WriteTopology(w io.Writer, spec *Spec) error {
 	}
 	fmt.Fprintln(w, "  deployment:")
 	fmt.Fprintln(w, "    filesFromConfigMap:")
+	// The clabernetes admission webhook defaults `mode: read` on any file
+	// entry that omits it, so emit it explicitly to keep ArgoCD diffs clean.
 	for _, n := range spec.Nodes {
 		fmt.Fprintf(w, "      %s:\n", n.Name)
 		fmt.Fprintf(w, "        - filePath: configs/%s\n", configFilename(n))
 		fmt.Fprintln(w, "          configMapName: topology-startup-configs")
 		fmt.Fprintf(w, "          configMapPath: %s\n", configFilename(n))
+		fmt.Fprintln(w, "          mode: read")
 		if n.Kind == "frr" {
 			fmt.Fprintln(w, "        - filePath: configs/daemons")
 			fmt.Fprintln(w, "          configMapName: topology-startup-configs")
 			fmt.Fprintln(w, "          configMapPath: daemons")
+			fmt.Fprintln(w, "          mode: read")
 			fmt.Fprintln(w, "        - filePath: configs/snmpd.conf")
 			fmt.Fprintln(w, "          configMapName: topology-startup-configs")
 			fmt.Fprintln(w, "          configMapPath: snmpd.conf")
+			fmt.Fprintln(w, "          mode: read")
 			fmt.Fprintln(w, "        - filePath: configs/wrapper.sh")
 			fmt.Fprintln(w, "          configMapName: topology-startup-configs")
 			fmt.Fprintln(w, "          configMapPath: wrapper.sh")
