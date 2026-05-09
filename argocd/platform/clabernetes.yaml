@@ -10,7 +10,7 @@ metadata:
 spec:
   project: default
   sources:
-    - repoURL: oci://ghcr.io/srl-labs/clabernetes
+    - repoURL: ghcr.io/srl-labs/clabernetes
       chart: clabernetes
       targetRevision: 0.5.0
       helm:
