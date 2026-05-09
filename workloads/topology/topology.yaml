@@ -3,6 +3,8 @@ kind: Topology
 metadata:
   name: atlanta
 spec:
+  expose:
+    exposeType: ClusterIP
   definition:
     containerlab: |-
       name: atlanta
@@ -12,6 +14,11 @@ spec:
             image: ghcr.io/nokia/srlinux:25.3.3
           linux:
             image: quay.io/frrouting/frr:10.6.1
+            binds:
+              - configs/daemons:/etc/frr/daemons
+              - configs/snmpd.conf:/etc/snmp/snmpd.conf
+              - configs/wrapper.sh:/wrapper.sh
+            cmd: /wrapper.sh
         nodes:
           tmc-1:
             kind: nokia_srlinux
@@ -41,34 +48,18 @@ spec:
             kind: linux
             binds:
               - configs/fc-n.frr:/etc/frr/frr.conf
-              - configs/daemons:/etc/frr/daemons
-              - configs/snmpd.conf:/etc/snmp/snmpd.conf
-              - configs/wrapper.sh:/wrapper.sh
-            cmd: /wrapper.sh
           fc-nw:
             kind: linux
             binds:
               - configs/fc-nw.frr:/etc/frr/frr.conf
-              - configs/daemons:/etc/frr/daemons
-              - configs/snmpd.conf:/etc/snmp/snmpd.conf
-              - configs/wrapper.sh:/wrapper.sh
-            cmd: /wrapper.sh
           fc-i20e:
             kind: linux
             binds:
               - configs/fc-i20e.frr:/etc/frr/frr.conf
-              - configs/daemons:/etc/frr/daemons
-              - configs/snmpd.conf:/etc/snmp/snmpd.conf
-              - configs/wrapper.sh:/wrapper.sh
-            cmd: /wrapper.sh
           fc-sw:
             kind: linux
             binds:
               - configs/fc-sw.frr:/etc/frr/frr.conf
-              - configs/daemons:/etc/frr/daemons
-              - configs/snmpd.conf:/etc/snmp/snmpd.conf
-              - configs/wrapper.sh:/wrapper.sh
-            cmd: /wrapper.sh
         links:
           - endpoints: ["hub-n:e1-1", "hub-e:e1-2"]
           - endpoints: ["hub-e:e1-1", "hub-i20e:e1-2"]

@@ -66,8 +66,16 @@ func WriteContainerlab(w io.Writer, spec *Spec) error {
 	fmt.Fprintln(w, "  kinds:")
 	fmt.Fprintln(w, "    nokia_srlinux:")
 	fmt.Fprintf(w, "      image: %s\n", srlImage)
+	// FRR cabinets share daemons, snmpd.conf, and wrapper.sh; only the
+	// per-node frr.conf is unique. Containerlab merges per-node binds with
+	// kind-level binds, so the shared mounts live here.
 	fmt.Fprintln(w, "    linux:")
 	fmt.Fprintf(w, "      image: %s\n", frrImage)
+	fmt.Fprintln(w, "      binds:")
+	fmt.Fprintln(w, "        - configs/daemons:/etc/frr/daemons")
+	fmt.Fprintln(w, "        - configs/snmpd.conf:/etc/snmp/snmpd.conf")
+	fmt.Fprintln(w, "        - configs/wrapper.sh:/wrapper.sh")
+	fmt.Fprintln(w, "      cmd: /wrapper.sh")
 
 	fmt.Fprintln(w, "  nodes:")
 	for _, n := range spec.Nodes {
@@ -80,11 +88,6 @@ func WriteContainerlab(w io.Writer, spec *Spec) error {
 			fmt.Fprintln(w, "      kind: linux")
 			fmt.Fprintln(w, "      binds:")
 			fmt.Fprintf(w, "        - configs/%s:/etc/frr/frr.conf\n", configFilename(n))
-			fmt.Fprintln(w, "        - configs/daemons:/etc/frr/daemons")
-			// SNMP polling target for the legacy-edge demo lane.
-			fmt.Fprintln(w, "        - configs/snmpd.conf:/etc/snmp/snmpd.conf")
-			fmt.Fprintln(w, "        - configs/wrapper.sh:/wrapper.sh")
-			fmt.Fprintln(w, "      cmd: /wrapper.sh")
 		}
 	}
 
@@ -113,6 +116,12 @@ func WriteTopology(w io.Writer, spec *Spec) error {
 	fmt.Fprintln(w, "metadata:")
 	fmt.Fprintf(w, "  name: %s\n", spec.Metadata.Name)
 	fmt.Fprintln(w, "spec:")
+	// Expose only via ClusterIP services. Default LoadBalancer makes k3d's
+	// klipper-lb fan out into per-node DaemonSet pods that port-collide
+	// (12 pods × shared host ports), leaving dozens of svclb pods Pending.
+	// gnmic + cut-fiber reach gNMI in-cluster, so ClusterIP is sufficient.
+	fmt.Fprintln(w, "  expose:")
+	fmt.Fprintln(w, "    exposeType: ClusterIP")
 	fmt.Fprintln(w, "  definition:")
 	fmt.Fprintln(w, "    containerlab: |-")
 	for _, line := range strings.Split(strings.TrimRight(clab.String(), "\n"), "\n") {
