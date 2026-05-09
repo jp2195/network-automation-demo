@@ -27,9 +27,10 @@ spec:
               memory: 64Mi
             limits:
               memory: 256Mi
+          # snmp_exporter v0.27 doesn't expose /health; use a TCP socket
+          # check on the listener port instead.
           livenessProbe:
-            httpGet:
-              path: /health
+            tcpSocket:
               port: http
             initialDelaySeconds: 10
             periodSeconds: 30
