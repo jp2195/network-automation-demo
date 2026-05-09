@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: srl-routes
+  labels:
+    release: kps
+spec:
+  route:
+    receiver: argo-events
+    groupBy: ["alertname", "interface_name", "source"]
+    groupWait: 10s
+    groupInterval: 30s
+    repeatInterval: 1h
+    routes:
+      - matchers:
+          - name: severity
+            value: critical
+        receiver: argo-events
+        continue: false
+  receivers:
+    - name: argo-events
+      webhookConfigs:
+        - url: http://eventbus-default-stan-svc.argo-events.svc.cluster.local:4222/alertmanager
+          sendResolved: true

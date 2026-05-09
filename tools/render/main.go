@@ -112,6 +112,15 @@ func main() {
 	must(WriteFRRDaemons(f))
 	f.Close()
 
+	obsDir := filepath.Join(*outDir, "workloads", "observability")
+	must(os.MkdirAll(obsDir, 0o755))
+
+	lmPath := filepath.Join(obsDir, "link-membership.yaml")
+	fmt.Printf("==> Writing %s (%d link endpoints)\n", lmPath, len(spec.Links)*2)
+	f = mustCreate(lmPath)
+	must(WriteLinkMembership(f, spec))
+	f.Close()
+
 	fmt.Println("==> Done.")
 }
 

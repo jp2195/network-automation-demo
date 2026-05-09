@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: monitoring
+
+resources:
+  - prometheusrules.yaml
+  - link-membership.yaml
+  - alertmanagerconfig.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: grafana-dashboards-network
+    files:
+      - dashboards/network-overview.json
+    options:
+      labels:
+        grafana_dashboard: "1"

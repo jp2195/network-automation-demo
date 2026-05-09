@@ -1,0 +1,33 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: srl-interface-alerts
+  labels:
+    app.kubernetes.io/name: srl-interface-alerts
+    release: kps
+spec:
+  groups:
+    - name: srl-interface
+      interval: 30s
+      rules:
+        - alert: SRLInterfaceOperDown
+          expr: srl_interfaces_interface_oper_status == 2
+          for: 30s
+          labels:
+            severity: critical
+          annotations:
+            summary: "SRL interface {{ $labels.interface_name }} on {{ $labels.source }} is DOWN"
+            description: |
+              Interface {{ $labels.interface_name }} on device {{ $labels.source }} is reporting
+              oper-status=DOWN. Site: {{ $labels.site }} ({{ $labels.city }}). Role: {{ $labels.role }}.
+
+        - alert: SRLInterfaceFlapping
+          expr: changes(srl_interfaces_interface_oper_status[5m]) > 4
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "SRL interface {{ $labels.interface_name }} on {{ $labels.source }} is flapping"
+            description: |
+              Interface {{ $labels.interface_name }} on device {{ $labels.source }} has changed
+              oper-status more than 4 times in the last 5 minutes.

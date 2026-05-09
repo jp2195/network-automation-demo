@@ -24,7 +24,9 @@ func WriteGNMIC(w io.Writer, s *Spec) error {
 		if n.Kind != "srlinux" {
 			continue
 		}
-		addr := n.Name + ":57400"
+		// Clabernetes default `naming: prefixed` exposes each topology node as a
+		// Service named `<topology>-<node>` in the topology's namespace.
+		addr := fmt.Sprintf("%s-%s.clabernetes.svc.cluster.local:57400", s.Metadata.Name, n.Name)
 		p("  %s:", addr)
 		p("    tags:")
 		p("      role: %s", n.Role)
