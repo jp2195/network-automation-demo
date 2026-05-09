@@ -16,6 +16,7 @@ kubeconfig*
 tmp/
 dist/
 bin/
+/render
 
 # Architectural reference kept locally only (not for the public repo)
 PLAN.md
