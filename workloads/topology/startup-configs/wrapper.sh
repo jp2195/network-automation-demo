@@ -8,7 +8,8 @@ if ! command -v snmpd >/dev/null 2>&1; then
 fi
 
 if command -v snmpd >/dev/null 2>&1; then
-  snmpd -c /etc/snmp/snmpd.conf -Lf /tmp/snmpd.log
+  # Background + tolerate failure so a snmpd hiccup never wedges FRR.
+  snmpd -c /etc/snmp/snmpd.conf -Lf /tmp/snmpd.log &
 fi
 
 exec /usr/lib/frr/docker-start
