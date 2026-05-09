@@ -58,16 +58,22 @@ def wait_ready():
 
 
 def provision_token():
-    """Mint a fresh API token via /api/users/tokens/provision/."""
+    """Mint a fresh API token via /api/users/tokens/provision/.
+
+    Force v1 (legacy `Token <plaintext>` header). NetBox 4.6 defaults new
+    tokens to v2 (peppered HMAC with `Bearer nbt_<key>.<plaintext>`), but
+    v2 requires API_TOKEN_PEPPERS in NetBox's settings — netbox-chart 8.2.9
+    doesn't expose that config, so v2 tokens authenticate as 403.
+    """
     code, body = http(
         "POST",
         "/api/users/tokens/provision/",
-        body={"username": USERNAME, "password": PASSWORD},
+        body={"username": USERNAME, "password": PASSWORD, "version": 1},
     )
     if code not in (200, 201) or not body.get("token"):
         sys.exit(f"failed to provision API token ({code}): {body}")
     HEADERS["Authorization"] = f"Token {body['token']}"
-    print(f"provisioned API token id={body.get('id')}", flush=True)
+    print(f"provisioned v{body.get('version')} API token id={body.get('id')}", flush=True)
 
 
 def find_id(endpoint, **filters):
