@@ -5,20 +5,17 @@ superuser:
   apiToken: 0123456789abcdef0123456789abcdef01234567
 
 # netbox-chart 8.2.9 only injects SUPERUSER_NAME and SUPERUSER_EMAIL into
-# the pod env. The netbox-docker entrypoint also expects SUPERUSER_PASSWORD
-# and SUPERUSER_API_TOKEN to actually create the user + API token on first
-# boot — without them, the seed Job hits 403 forever.
+# the pod env, so the bootstrap admin lands without the password from
+# values. Inject it so the seed Job's `tokens/provision/` call succeeds.
+# (We deliberately do NOT inject SUPERUSER_API_TOKEN: NetBox 4.x stores
+# tokens hashed and the legacy `key` column is varchar(12), which crashes
+# any startup script that tries to insert the 40-char demo token.)
 extraEnvs:
   - name: SUPERUSER_PASSWORD
     valueFrom:
       secretKeyRef:
         name: netbox-superuser
         key: password
-  - name: SUPERUSER_API_TOKEN
-    valueFrom:
-      secretKeyRef:
-        name: netbox-superuser
-        key: api_token
 
 secretKey: atlas-demo-not-secret-but-50-plus-chars-long-padding-yes
 
