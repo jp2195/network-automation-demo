@@ -10,8 +10,8 @@ metadata:
 spec:
   project: default
   sources:
-    - repoURL: oci://ghcr.io/netbox-community/netbox-chart
-      chart: netbox
+    - repoURL: ghcr.io/netbox-community
+      chart: netbox-chart
       targetRevision: 8.2.9
       helm:
         releaseName: netbox
