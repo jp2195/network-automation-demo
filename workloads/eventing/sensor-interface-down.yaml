@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: interface-down
+spec:
+  template:
+    serviceAccountName: operate-workflow-sa
+  dependencies:
+    - name: alert
+      eventSourceName: webhook
+      eventName: alert
+      filters:
+        data:
+          - path: body.alerts.0.labels.alertname
+            type: string
+            value:
+              - SRLInterfaceOperDown
+              - SRLInterfaceFlapping
+  triggers:
+    - template:
+        name: enrich-notify
+        k8s:
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: enrich-notify-
+              spec:
+                serviceAccountName: operate-workflow-sa
+                workflowTemplateRef:
+                  name: enriched-notify
+                arguments:
+                  parameters:
+                    - name: alert
+                      value: "placeholder"
+          parameters:
+            - src:
+                dependencyName: alert
+                dataKey: body
+              dest: spec.arguments.parameters.0.value

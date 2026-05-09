@@ -1,0 +1,24 @@
+crds:
+  install: true
+  keep: true
+
+controller:
+  replicas: 1
+  rbac:
+    enabled: true
+    namespaced: false
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+webhook:
+  enabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi

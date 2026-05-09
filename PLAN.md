@@ -761,141 +761,10 @@ The one-time path from empty laptop to working demo:
 - Statewide multi-district expansion (v1.2)
 - Real ITS protocol emulation on the FRR cabinets (NTCIP, RTSP, etc. — they're routing-only stubs in v1)
 
----
-
-## 15. Building this with Claude Code
-
-This file is the canonical plan. Drop it into a fresh repo and use the following kickoff prompt with Claude Code.
-
-### Repo setup
-
-```bash
-mkdir gdot-demo && cd gdot-demo
-git init
-mkdir -p docs
-# Save this PLAN.md into docs/PLAN.md
-git add docs/PLAN.md
-git commit -m "docs: import demo stack plan"
-
-# Then:
-claude  # start Claude Code in this directory
-```
-
-### Kickoff prompt for Claude Code
-
-Paste this into Claude Code as the first message:
-
-```
-I want to build the demo stack described in docs/PLAN.md. Read the entire file
-carefully — it's the complete architecture and the source of truth for this
-project. We're targeting the District-rich tier (12 nodes total: 2 TMC + 6
-corridor hubs as SR Linux, plus 4 FRR field-cabinet simulators). Working set
-~20 GB.
-
-Important constraints:
-- Single laptop (Mac M-series or Linux x86), Docker (or OrbStack on Mac)
-- All container images must be ARM64-compatible (I'm on Apple Silicon often).
-  SR Linux ghcr.io/nokia/srlinux is multi-arch — use that.
-- Free/OSS only. No commercial NOSes, no paid tools.
-- GitOps-first: ArgoCD App-of-Apps, sync waves, declarative everything.
-- My GitHub username is jp2195. Use that for any URLs/labels where applicable.
-
-Build it incrementally in this order:
-
-1. Bootstrap layer
-   - k3d/config.yaml (1 server + 2 agents, registry, host port maps for 8080/8443)
-   - Makefile with targets: up, down, status, demo-cut, demo-restore
-   - bootstrap/argocd-install.sh (helm install argocd, wait for ready, print
-     URL + admin password)
-   - bootstrap/root-app.yaml (the App-of-Apps Application pointing at
-     argocd/platform and argocd/workloads)
-   Verify: `make up` brings up the cluster, ArgoCD reachable at
-   argocd.127-0-0-1.nip.io:8080.
-
-2. Topology spec + render tool
-   - spec/atlanta.yaml — the 12-node District-rich topology with all lat/lons,
-     prefix-SIDs, link list, agency/circuit/cabinet metadata. Use the data from
-     §10 of PLAN.md as the source.
-   - tools/render/ — Go-based renderer. Reads spec, emits:
-     (a) per-node SR Linux startup configs
-     (b) per-cabinet FRR configs
-     (c) gNMIc target list with tags
-     (d) NetBox seed JSON payload
-     (e) links.geojson
-   Verify: `go run ./tools/render` produces all five outputs cleanly.
-
-3. NetBox + CNPG + seed Job
-   - argocd/platform/cnpg-operator.yaml
-   - argocd/platform/netbox.yaml
-   - workloads/netbox/cnpg-cluster.yaml, chart-values.yaml, seed-job.yaml
-   Verify: NetBox UI loads, seed Job completes, all 12 devices visible with
-   sites, cables, agency tenants, ITS service inventory custom fields.
-
-4. Clabernetes Topology + rendered configs
-   - argocd/platform/clabernetes.yaml
-   - workloads/topology/topology.yaml (Clabernetes Topology CR)
-   - workloads/topology/startup-configs/ (rendered per-node)
-   Verify: 12 pods up, IS-IS converges across the 8 SR Linux backbone, FRR
-   cabinets establish eBGP to their parent hubs.
-
-5. gNMIc + Prometheus + Loki + dashboards
-   - argocd/platform/kube-prometheus-stack.yaml, loki.yaml, alloy.yaml
-   - workloads/gnmic/ (deployment, configmap with rendered targets, service)
-   - workloads/observability/ (rules, alertmanager config, dashboards)
-   Verify: Geomap dashboard shows 12 markers in their Atlanta locations,
-   links rendered between them, all green. Loki has logs from all pods.
-
-6. Eventing + enriched workflow
-   - argocd/platform/argo-workflows.yaml, argo-events.yaml
-   - workloads/eventing/ (eventsource, sensors, WorkflowTemplates, Python
-     scripts for enrich/analyze/notify)
-   Verify: end-to-end demo loop. `make demo-cut INTERFACE=ethernet-1/1
-   NODE=tmc-1` triggers an alert, fires the workflow, posts a rich Slack
-   message with NetBox enrichment, DOM diagnosis, agency rollup, and
-   recommended action.
-
-Workflow expectations:
-- Build incrementally. After each step, verify it works before moving on.
-- Don't try to do everything at once. Stop and check in at each verification gate.
-- If you hit an architectural decision not covered in PLAN.md, ask before
-  proceeding.
-- Prefer minimal-but-correct over comprehensive. Polish later.
-- Use git commits at each meaningful checkpoint with conventional commit messages.
-
-Start with step 1 (bootstrap layer). Read PLAN.md first, then propose the
-file structure and contents you'd create. I'll review before you write
-anything.
-```
-
-### Workflow tips
-
-- **Pull this file fresh each time you change the plan.** If you update PLAN.md
-  in conversation here, re-download and replace `docs/PLAN.md` in your repo.
-- **Commit checkpoints.** Tag a commit after each verification gate
-  (`git tag v0.1-bootstrap`, etc.). Easy to roll back if a later step
-  destabilizes things.
-- **Keep `docs/decisions.md`.** Any architectural call Claude Code makes that
-  isn't in PLAN.md, have it record there. Audit trail for why things are how
-  they are.
-- **Re-prime as needed.** If a Claude Code session goes long and starts to
-  drift, paste a "re-read docs/PLAN.md and confirm we're on step N" message to
-  reground it.
-
-### What this kickoff prompt does *not* do
-
-- Doesn't make any of the open decisions in §11 — Claude Code should ask about
-  TLS, sealed-secrets vs SOPS, NetBox seed depth, DOM faking strategy, etc.
-- Doesn't pin specific chart versions — let Claude Code pick latest stable for
-  cert-manager, kube-prometheus-stack, NetBox chart, etc.
-- Doesn't presume your Slack workspace or webhook URL — Claude Code will ask
-  for those when it gets to step 6.
-
----
 
 ## 16. Build progress
 
-Tracking against the §15 kickoff prompt's six-step plan. Update on every
-verification gate; tag the matching commit so rollbacks are clean.
+Six-step build plan, with each verification gate tagged so rollbacks are clean.
 
 | Step | Description | Status | Tag |
 |---|---|---|---|
@@ -904,7 +773,7 @@ verification gate; tag the matching commit so rollbacks are clean.
 | 3 | NetBox + CNPG Postgres + Valkey + seed Job | ✅ Done | `v0.3-netbox` |
 | 4 | Clabernetes Topology + rendered configs | ✅ Done | `v0.4-topology` |
 | 5 | gNMIc + Prometheus + Loki + dashboards | ✅ Done | `v0.5-observability` |
-| 6 | Eventing + enriched workflow | ⏳ Not started | — |
+| 6 | Eventing + enriched workflow | ✅ Done | `v0.6-eventing` |
 
 ### Deviations from the original plan
 
@@ -1023,3 +892,65 @@ the as-built reality is honest.
   Loki logs + traffic timeseries panels. The richer Geomap / NodeGraph /
   per-node detail dashboards from §8 are explicitly deferred to a follow-up
   pass.
+
+- **Step 6 chart pins.** argo-workflows `1.0.13` (app v4.0.5) with server
+  in `--auth-mode=server --secure=false` (traefik handles TLS), argo-events
+  `2.4.21` (app v1.9.10) with NATS JetStream EventBus.
+
+- **All eventing CRs live in `argo-events` namespace.** EventBus,
+  EventSource, Sensors, and both WorkflowTemplates colocate so the sensor
+  SA needs only namespace-scoped RBAC. Argo Workflows controller in `argo`
+  ns is `singleNamespace: false` and watches all namespaces, so Workflows
+  in `argo-events` execute fine. Tradeoff: workflow logs end up in
+  argo-events ns (fine for the demo).
+
+- **Step scripts are stdlib-only Python in a single ConfigMap.** Each WFT
+  step uses a `script:` template (image `python:3.12-slim`) that
+  `runpy.run_path()`s the mounted script. No `pip install` needed —
+  enrichment talks to NetBox via `urllib`, notify posts to Slack via
+  `urllib`. Slack URL is a placeholder Secret; if it contains "PLACEHOLDER"
+  the notify step prints the formatted Block Kit payload to stderr and
+  exits 0.
+
+- **Workflow parameter passing uses task outputs (stdout JSON).** Each
+  Python script writes a single JSON document to stdout with no leading
+  output, so `{{tasks.enrich.outputs.result}}` carries the full enrichment
+  forward. The WFT uses Argo's `script` template (not `container`) for the
+  Python steps so stdout-as-result works automatically.
+
+- **Manual-cut Sensor → cut-fiber WFT path.** Posting JSON
+  `{"node": "tmc-1", "interface": "ethernet-1/1"}` to
+  `webhook-eventsource-svc.argo-events:12000/manual-cut` runs gnmic
+  set against the SR Linux target to disable the interface. Replaces the
+  Makefile's `make demo-cut` exec-into-pod path with an event-driven
+  equivalent; the Makefile path is kept too for low-friction demos.
+
+- **AlertmanagerConfig webhook updated.** `workloads/observability/`
+  AlertmanagerConfig now points at
+  `http://webhook-eventsource-svc.argo-events.svc.cluster.local:12000/alert`
+  (was a placeholder URL in step 5). Closes the loop alert → enrich →
+  analyze → notify.
+
+- **Slack: bot token + chat.update on resolve, not webhook.** notify.py
+  uses `slack-sdk` (`pip install`ed at WFT-step start, ~3s) and branches on
+  `enrichment.alert.status`. Firing posts a Block Kit message and stores
+  `{ts, channel, first_seen, impact}` in Valkey at `incident:<fingerprint>`
+  with a 24h TTL. Resolved looks the record up, calls `chat.update` to
+  swap the original message's header to ✅ + downtime, then posts a
+  threaded `chat.postMessage` carrying the resolution summary. The Secret
+  is `slack-bot` with `bot_token` + `channel_id` keys (was URL-keyed
+  `slack-webhook`). Placeholder credentials short-circuit to
+  stderr-printed payloads so the demo runs without real Slack.
+
+- **Valkey DB 2 doubles as the incident ledger.** NetBox uses DBs 0
+  (tasks) and 1 (cache); DB 2 is the workflow's incident store. Cross-ns
+  access via `redis://valkey.valkey.svc.cluster.local:6379/2`. Same
+  Valkey instance, separate DB index — keeps the dependency footprint at
+  one Helm chart while logically isolating ledger keys.
+
+- **NetBox journal step dropped.** PLAN §6/§7 originally had a 4th
+  `journal` step that POSTed a `dcim.device` journal entry per
+  firing/resolved transition. Removed because Slack threads + the Argo
+  Workflows run history + Loki/Prometheus already cover the audit trail
+  end-to-end, and the journal entry didn't change the operator-facing
+  story. The DAG is now 3 steps: enrich → analyze → notify.
