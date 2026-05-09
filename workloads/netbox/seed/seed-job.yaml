@@ -18,9 +18,20 @@ spec:
           env:
             - name: NETBOX_URL
               value: "http://netbox.netbox.svc.cluster.local"
-            - name: NETBOX_TOKEN
-              # demo token; mirrors superuser.apiToken in workloads/netbox/chart-values.yaml
-              value: "0123456789abcdef0123456789abcdef01234567"
+            # NetBox 4.x stores API tokens hashed (key column is varchar(12)
+            # for a preview only), so we can't pin one via env. Mint a fresh
+            # token each run via /api/users/tokens/provision/ using the
+            # superuser credentials the chart already manages.
+            - name: NETBOX_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: netbox-superuser
+                  key: username
+            - name: NETBOX_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: netbox-superuser
+                  key: password
             - name: SEED_FILE
               value: /seed/seed.json
           resources:

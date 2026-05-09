@@ -15,11 +15,14 @@ import urllib.parse
 
 
 URL = os.environ["NETBOX_URL"].rstrip("/")
-TOKEN = os.environ["NETBOX_TOKEN"]
+USERNAME = os.environ["NETBOX_USERNAME"]
+PASSWORD = os.environ["NETBOX_PASSWORD"]
 SEED = os.environ.get("SEED_FILE", "/seed/seed.json")
 
+# Populated by provision_token() once the API is reachable. NetBox 4.x
+# hashes API tokens at rest, so we can't pin a specific value via env;
+# instead we mint a fresh one with username+password each run.
 HEADERS = {
-    "Authorization": f"Token {TOKEN}",
     "Content-Type": "application/json",
     "Accept": "application/json",
 }
@@ -52,6 +55,19 @@ def wait_ready():
             print(f"waiting for netbox: {e}", flush=True)
         time.sleep(5)
     sys.exit("timed out waiting for /api/status/")
+
+
+def provision_token():
+    """Mint a fresh API token via /api/users/tokens/provision/."""
+    code, body = http(
+        "POST",
+        "/api/users/tokens/provision/",
+        body={"username": USERNAME, "password": PASSWORD},
+    )
+    if code not in (200, 201) or not body.get("token"):
+        sys.exit(f"failed to provision API token ({code}): {body}")
+    HEADERS["Authorization"] = f"Token {body['token']}"
+    print(f"provisioned API token id={body.get('id')}", flush=True)
 
 
 def find_id(endpoint, **filters):
@@ -88,6 +104,7 @@ def main():
         data = json.load(f)
 
     wait_ready()
+    provision_token()
 
     print("== sites ==", flush=True)
     site_ids = {}
