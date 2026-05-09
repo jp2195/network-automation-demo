@@ -90,6 +90,28 @@ func main() {
 	must(WriteGeoJSON(f, spec))
 	f.Close()
 
+	topoDir := filepath.Join(*outDir, "workloads", "topology")
+	must(os.MkdirAll(topoDir, 0o755))
+
+	topoPath := filepath.Join(topoDir, "topology.yaml")
+	fmt.Printf("==> Writing %s (clabernetes Topology, %d nodes, %d links)\n",
+		topoPath, len(spec.Nodes), len(spec.Links))
+	f = mustCreate(topoPath)
+	must(WriteTopology(f, spec))
+	f.Close()
+
+	kustPath := filepath.Join(topoDir, "kustomization.yaml")
+	fmt.Printf("==> Writing %s\n", kustPath)
+	f = mustCreate(kustPath)
+	must(WriteTopologyKustomization(f, spec))
+	f.Close()
+
+	daemonsPath := filepath.Join(cfgDir, "daemons")
+	fmt.Printf("==> Writing %s (FRR daemons)\n", daemonsPath)
+	f = mustCreate(daemonsPath)
+	must(WriteFRRDaemons(f))
+	f.Close()
+
 	fmt.Println("==> Done.")
 }
 

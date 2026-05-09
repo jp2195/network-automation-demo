@@ -1,0 +1,137 @@
+apiVersion: clabernetes.containerlab.dev/v1alpha1
+kind: Topology
+metadata:
+  name: atlanta
+spec:
+  definition:
+    containerlab: |-
+      name: atlanta
+      topology:
+        kinds:
+          nokia_srlinux:
+            image: ghcr.io/nokia/srlinux:25.3.3
+          linux:
+            image: quay.io/frrouting/frr:10.6.1
+        nodes:
+          tmc-1:
+            kind: nokia_srlinux
+            startup-config: configs/tmc-1.cfg
+          tmc-2:
+            kind: nokia_srlinux
+            startup-config: configs/tmc-2.cfg
+          hub-n:
+            kind: nokia_srlinux
+            startup-config: configs/hub-n.cfg
+          hub-e:
+            kind: nokia_srlinux
+            startup-config: configs/hub-e.cfg
+          hub-i20e:
+            kind: nokia_srlinux
+            startup-config: configs/hub-i20e.cfg
+          hub-nw:
+            kind: nokia_srlinux
+            startup-config: configs/hub-nw.cfg
+          hub-sw:
+            kind: nokia_srlinux
+            startup-config: configs/hub-sw.cfg
+          hub-i20w:
+            kind: nokia_srlinux
+            startup-config: configs/hub-i20w.cfg
+          fc-n:
+            kind: linux
+            binds:
+              - configs/fc-n.frr:/etc/frr/frr.conf
+              - configs/daemons:/etc/frr/daemons
+          fc-nw:
+            kind: linux
+            binds:
+              - configs/fc-nw.frr:/etc/frr/frr.conf
+              - configs/daemons:/etc/frr/daemons
+          fc-i20e:
+            kind: linux
+            binds:
+              - configs/fc-i20e.frr:/etc/frr/frr.conf
+              - configs/daemons:/etc/frr/daemons
+          fc-sw:
+            kind: linux
+            binds:
+              - configs/fc-sw.frr:/etc/frr/frr.conf
+              - configs/daemons:/etc/frr/daemons
+        links:
+          - endpoints: ["hub-n:e1/1", "hub-e:e1/2"]
+          - endpoints: ["hub-e:e1/1", "hub-i20e:e1/2"]
+          - endpoints: ["hub-i20e:e1/1", "hub-sw:e1/2"]
+          - endpoints: ["hub-sw:e1/1", "hub-i20w:e1/2"]
+          - endpoints: ["hub-i20w:e1/1", "hub-nw:e1/2"]
+          - endpoints: ["hub-nw:e1/1", "hub-n:e1/2"]
+          - endpoints: ["tmc-1:e1/1", "hub-nw:e1/3"]
+          - endpoints: ["tmc-1:e1/2", "hub-sw:e1/3"]
+          - endpoints: ["tmc-2:e1/1", "hub-n:e1/3"]
+          - endpoints: ["tmc-2:e1/2", "hub-e:e1/3"]
+          - endpoints: ["tmc-1:e1/3", "tmc-2:e1/3"]
+          - endpoints: ["hub-n:e1/4", "fc-n:eth1"]
+          - endpoints: ["hub-nw:e1/4", "fc-nw:eth1"]
+          - endpoints: ["hub-i20e:e1/4", "fc-i20e:eth1"]
+          - endpoints: ["hub-sw:e1/4", "fc-sw:eth1"]
+  deployment:
+    filesFromConfigMap:
+      tmc-1:
+        - filePath: configs/tmc-1.cfg
+          configMapName: topology-startup-configs
+          configMapPath: tmc-1.cfg
+      tmc-2:
+        - filePath: configs/tmc-2.cfg
+          configMapName: topology-startup-configs
+          configMapPath: tmc-2.cfg
+      hub-n:
+        - filePath: configs/hub-n.cfg
+          configMapName: topology-startup-configs
+          configMapPath: hub-n.cfg
+      hub-e:
+        - filePath: configs/hub-e.cfg
+          configMapName: topology-startup-configs
+          configMapPath: hub-e.cfg
+      hub-i20e:
+        - filePath: configs/hub-i20e.cfg
+          configMapName: topology-startup-configs
+          configMapPath: hub-i20e.cfg
+      hub-nw:
+        - filePath: configs/hub-nw.cfg
+          configMapName: topology-startup-configs
+          configMapPath: hub-nw.cfg
+      hub-sw:
+        - filePath: configs/hub-sw.cfg
+          configMapName: topology-startup-configs
+          configMapPath: hub-sw.cfg
+      hub-i20w:
+        - filePath: configs/hub-i20w.cfg
+          configMapName: topology-startup-configs
+          configMapPath: hub-i20w.cfg
+      fc-n:
+        - filePath: configs/fc-n.frr
+          configMapName: topology-startup-configs
+          configMapPath: fc-n.frr
+        - filePath: configs/daemons
+          configMapName: topology-startup-configs
+          configMapPath: daemons
+      fc-nw:
+        - filePath: configs/fc-nw.frr
+          configMapName: topology-startup-configs
+          configMapPath: fc-nw.frr
+        - filePath: configs/daemons
+          configMapName: topology-startup-configs
+          configMapPath: daemons
+      fc-i20e:
+        - filePath: configs/fc-i20e.frr
+          configMapName: topology-startup-configs
+          configMapPath: fc-i20e.frr
+        - filePath: configs/daemons
+          configMapName: topology-startup-configs
+          configMapPath: daemons
+      fc-sw:
+        - filePath: configs/fc-sw.frr
+          configMapName: topology-startup-configs
+          configMapPath: fc-sw.frr
+        - filePath: configs/daemons
+          configMapName: topology-startup-configs
+          configMapPath: daemons
