@@ -12,3 +12,14 @@ spec:
     - port: prom
       interval: 15s
       path: /metrics
+      # Project gnmic's `source` + `interface_name` labels onto `node` +
+      # `interface` so SR Linux gNMI series and FRR cabinet SNMP series share a
+      # label scheme — link_membership_info, dashboards, and alerts can all
+      # join on (node, interface) regardless of telemetry source.
+      metricRelabelings:
+        - sourceLabels: [source]
+          regex: "atlanta-([a-z0-9-]+)\\.clabernetes\\.svc\\.cluster\\.local:[0-9]+"
+          targetLabel: node
+          replacement: "$1"
+        - sourceLabels: [interface_name]
+          targetLabel: interface

@@ -120,8 +120,46 @@ subscriptions:
     stream-mode: sample
     sample-interval: 60s
 
+
+processors:
+  oper-state-to-int:
+    event-strings:
+      value-names:
+        - ".*oper.state.*"
+      transforms:
+        - replace:
+            apply-on: value
+            old: up
+            new: "1"
+        - replace:
+            apply-on: value
+            old: down
+            new: "2"
+  admin-state-to-int:
+    event-strings:
+      value-names:
+        - ".*admin.state.*"
+      transforms:
+        - replace:
+            apply-on: value
+            old: enable
+            new: "1"
+        - replace:
+            apply-on: value
+            old: disable
+            new: "0"
+  state-cast:
+    event-convert:
+      values:
+        - ".*oper.state.*"
+        - ".*admin.state.*"
+      type: int
+
 outputs:
   prom:
     type: prometheus
     listen: ":9804"
-    metric-prefix: srl
+    event-processors:
+      - oper-state-to-int
+      - admin-state-to-int
+      - state-cast

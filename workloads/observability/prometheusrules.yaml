@@ -11,23 +11,23 @@ spec:
       interval: 30s
       rules:
         - alert: SRLInterfaceOperDown
-          expr: srl_interfaces_interface_oper_status == 2
+          expr: srl_nokia_interfaces_interface_oper_state == 2
           for: 30s
           labels:
             severity: critical
           annotations:
-            summary: "SRL interface {{ $labels.interface_name }} on {{ $labels.source }} is DOWN"
+            summary: "SRL interface {{ $labels.interface }} on {{ $labels.node }} is DOWN"
             description: |
-              Interface {{ $labels.interface_name }} on device {{ $labels.source }} is reporting
-              oper-status=DOWN. Site: {{ $labels.site }} ({{ $labels.city }}). Role: {{ $labels.role }}.
+              Interface {{ $labels.interface }} on device {{ $labels.node }} is reporting
+              oper-state=down. Site: {{ $labels.site }} ({{ $labels.city }}). Role: {{ $labels.role }}.
 
         - alert: SRLInterfaceFlapping
-          expr: changes(srl_interfaces_interface_oper_status[5m]) > 4
+          expr: changes(srl_nokia_interfaces_interface_oper_state[5m]) > 4
           for: 1m
           labels:
             severity: warning
           annotations:
-            summary: "SRL interface {{ $labels.interface_name }} on {{ $labels.source }} is flapping"
+            summary: "SRL interface {{ $labels.interface }} on {{ $labels.node }} is flapping"
             description: |
-              Interface {{ $labels.interface_name }} on device {{ $labels.source }} has changed
-              oper-status more than 4 times in the last 5 minutes.
+              Interface {{ $labels.interface }} on device {{ $labels.node }} has changed
+              oper-state more than 4 times in the last 5 minutes.

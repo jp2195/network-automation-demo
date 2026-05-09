@@ -49,7 +49,7 @@
       "type": "stat",
       "targets": [
         {
-          "expr": "count(group by (source) (srl_interfaces_interface_oper_status))",
+          "expr": "count(group by (node) (srl_nokia_interfaces_interface_oper_state))",
           "refId": "A"
         }
       ]
@@ -72,11 +72,11 @@
       "gridPos": {"h": 12, "w": 18, "x": 6, "y": 0},
       "id": 2,
       "options": {"showHeader": true},
-      "title": "Interfaces — oper-status",
+      "title": "Interfaces — oper-state",
       "type": "table",
       "targets": [
         {
-          "expr": "srl_interfaces_interface_oper_status * on(source, interface_name) group_left(link_id, link_kind) link_membership_info{node=~\".+\"}",
+          "expr": "srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id, link_kind) link_membership_info",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -86,11 +86,11 @@
         {
           "id": "organize",
           "options": {
-            "excludeByName": {"Time": true, "__name__": true, "instance": true, "job": true, "namespace": true, "pod": true, "service": true, "endpoint": true, "container": true},
+            "excludeByName": {"Time": true, "__name__": true, "instance": true, "job": true, "namespace": true, "pod": true, "service": true, "endpoint": true, "container": true, "source": true, "interface_name": true, "subscription_name": true},
             "renameByName": {
-              "source": "device",
-              "interface_name": "interface",
-              "Value": "oper-status",
+              "node": "device",
+              "interface": "interface",
+              "Value": "oper-state",
               "site": "site",
               "city": "city",
               "role": "role",
@@ -145,8 +145,8 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "rate(srl_interfaces_interface_state_counters_out_octets[1m]) * 8",
-          "legendFormat": "{{source}} {{interface_name}}",
+          "expr": "rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * 8",
+          "legendFormat": "{{node}} {{interface}}",
           "refId": "A"
         }
       ]
