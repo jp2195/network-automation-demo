@@ -903,7 +903,7 @@ verification gate; tag the matching commit so rollbacks are clean.
 | 2 | Topology spec + Go renderer (5 outputs) | ✅ Done | `v0.2-render` |
 | 3 | NetBox + CNPG Postgres + Valkey + seed Job | ✅ Done | `v0.3-netbox` |
 | 4 | Clabernetes Topology + rendered configs | ✅ Done | `v0.4-topology` |
-| 5 | gNMIc + Prometheus + Loki + dashboards | ⏳ Not started | — |
+| 5 | gNMIc + Prometheus + Loki + dashboards | ✅ Done | `v0.5-observability` |
 | 6 | Eventing + enriched workflow | ⏳ Not started | — |
 
 ### Deviations from the original plan
@@ -988,3 +988,38 @@ the as-built reality is honest.
   configmap on subsequent syncs but the manager won't re-merge (init
   containers run once per pod), so no churn loop. Avoids us having to
   bootstrap the Config singleton ourselves.
+
+- **Step 5 chart pins.** kube-prometheus-stack `84.5.0` (Prometheus operator
+  v0.90.1), Loki `7.0.0` (app v3.6.7) in SingleBinary mode, Alloy `1.8.1`
+  (app v1.16.1). Resource budget cut hard for laptop: Prometheus 6h
+  retention + 5Gi storage, Loki 24h retention on a 5Gi PVC, single replicas
+  across the board.
+
+- **Grafana ingress on traefik + selfsigned TLS.** `grafana.127-0-0-1.nip.io`
+  via the same selfsigned-cluster-issuer added in step 3. Loki preconfigured
+  as a secondary datasource (`http://loki-gateway.monitoring.svc.cluster.local`).
+  Sidecar discovery on label `grafana_dashboard: "1"` so dashboards from
+  workloads/observability land automatically.
+
+- **gNMIc target addresses are clabernetes FQDNs.** Renderer emits
+  `<topology>-<node>.clabernetes.svc.cluster.local:57400` (matches
+  clabernetes' default `naming: prefixed`) so gNMIc in `monitoring` ns can
+  resolve them without DNS search hacks. Subscriptions and Prometheus
+  output (port 9804, prefix `srl`) live in the renderer-emitted
+  `targets.yaml`, mounted as a single config file.
+
+- **link_membership_info recording rule rendered, not hand-written.** The
+  renderer emits one `vector(1)`-keyed recording rule per (node, interface,
+  link_id, link_kind) tuple — 30 rules for 15 bidirectional links. Used by
+  Grafana panels (and later, alert templates) to enrich gNMIc metrics with
+  link identity at query time, no NetBox lookup needed.
+
+- **Alertmanager webhook target is a placeholder.** AlertmanagerConfig
+  routes critical alerts to `http://eventbus-default-stan-svc.argo-events`,
+  but argo-events doesn't exist yet — wired up in step 6.
+
+- **Default observability dashboard is intentionally minimal.** One
+  `network-overview.json` ConfigMap-backed dashboard with stat + table +
+  Loki logs + traffic timeseries panels. The richer Geomap / NodeGraph /
+  per-node detail dashboards from §8 are explicitly deferred to a follow-up
+  pass.

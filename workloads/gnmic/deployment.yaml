@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gnmic
+  labels:
+    app.kubernetes.io/name: gnmic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gnmic
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gnmic
+    spec:
+      containers:
+        - name: gnmic
+          image: ghcr.io/openconfig/gnmic:0.44.1
+          args:
+            - --config
+            - /etc/gnmic/gnmic.yaml
+            - subscribe
+          ports:
+            - name: prom
+              containerPort: 9804
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/gnmic
+      volumes:
+        - name: config
+          configMap:
+            name: gnmic-config
