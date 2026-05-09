@@ -1,4 +1,4 @@
-.PHONY: up down status demo-cut demo-restore help
+.PHONY: up down status render demo-cut demo-restore help
 
 CLUSTER_NAME ?= gdot-demo
 TOPO_NS      ?= clabernetes
@@ -8,6 +8,7 @@ help:
 	@echo "  up           Create k3d cluster + bootstrap ArgoCD + apply root Application"
 	@echo "  down         Delete the k3d cluster"
 	@echo "  status       Show node + ArgoCD application state, print URL and admin password"
+	@echo "  render       Re-render workloads/* outputs from spec/atlanta.yaml"
 	@echo "  demo-cut     Disable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-restore Re-enable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 
@@ -22,6 +23,9 @@ up:
 
 down:
 	k3d cluster delete $(CLUSTER_NAME)
+
+render:
+	go run ./tools/render -spec spec/atlanta.yaml -out .
 
 status:
 	@echo "==> Nodes"
