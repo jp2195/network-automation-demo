@@ -902,7 +902,7 @@ verification gate; tag the matching commit so rollbacks are clean.
 | 1 | Bootstrap layer (k3d, Makefile, ArgoCD install, App-of-Apps root) | ✅ Done | `v0.1-bootstrap` |
 | 2 | Topology spec + Go renderer (5 outputs) | ✅ Done | `v0.2-render` |
 | 3 | NetBox + CNPG Postgres + Valkey + seed Job | ✅ Done | `v0.3-netbox` |
-| 4 | Clabernetes Topology + rendered configs | ⏳ Not started | — |
+| 4 | Clabernetes Topology + rendered configs | ✅ Done | `v0.4-topology` |
 | 5 | gNMIc + Prometheus + Loki + dashboards | ⏳ Not started | — |
 | 6 | Eventing + enriched workflow | ⏳ Not started | — |
 
@@ -962,3 +962,29 @@ the as-built reality is honest.
   `gopkg.in/yaml.v3`) that emits the five PLAN-specified outputs by direct
   `fmt.Fprintf`. Outputs are committed to `workloads/*` so ArgoCD syncs what's
   in git — no init containers, no deploy-time render.
+
+- **Step 4 image pins.** SR Linux `ghcr.io/nokia/srlinux:25.3.3`, FRR
+  `quay.io/frrouting/frr:10.6.1`. Containerlab handles the SR Linux interface
+  rename (`ethernet-1/N` ↔ `e1-N`); the renderer translates spec interface
+  names into containerlab-flavored ones at the link-endpoint layer only,
+  leaving the SR Linux config files (which use the internal `ethernet-1/N`)
+  untouched.
+
+- **FRR cabinets run as `kind: linux`** in the containerlab YAML, with
+  `binds:` mounting the renderer-emitted `<node>.frr` and a static `daemons`
+  file (zebra+bgpd enabled, all others disabled). Pattern follows
+  containerlab's `lab-examples/frr01`.
+
+- **Topology configmap name is unhashed.** Kustomize doesn't auto-rewrite
+  references inside CRD spec fields like
+  `Topology.spec.deployment.filesFromConfigMap[].configMapName`, so the
+  renderer emits `generatorOptions.disableNameSuffixHash: true`. Trade-off:
+  config changes need a manual rollout (delete launcher pods or bump a
+  Topology annotation); for a laptop demo this is acceptable.
+
+- **Clabernetes globalConfig.enabled stays true.** The chart deploys a
+  bootstrap configmap that the manager init container merges into the global
+  Config CR singleton on first start, then deletes. ArgoCD will recreate the
+  configmap on subsequent syncs but the manager won't re-merge (init
+  containers run once per pod), so no churn loop. Avoids us having to
+  bootstrap the Config singleton ourselves.

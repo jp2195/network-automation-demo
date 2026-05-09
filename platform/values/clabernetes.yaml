@@ -1,0 +1,33 @@
+manager:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+globalConfig:
+  enabled: true
+  config:
+    deployment:
+      resourcesDefault:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+      privilegedLauncher: true
+
+ui:
+  enabled: true
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+  ingress:
+    enabled: true
+    ingressClass: traefik
+    host: clabernetes.127-0-0-1.nip.io
+    tls: []

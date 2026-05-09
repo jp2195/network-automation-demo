@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: clabernetes
+
+resources:
+  - topology.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: topology-startup-configs
+    files:
+      - startup-configs/daemons
+      - startup-configs/fc-i20e.frr
+      - startup-configs/fc-n.frr
+      - startup-configs/fc-nw.frr
+      - startup-configs/fc-sw.frr
+      - startup-configs/hub-e.cfg
+      - startup-configs/hub-i20e.cfg
+      - startup-configs/hub-i20w.cfg
+      - startup-configs/hub-n.cfg
+      - startup-configs/hub-nw.cfg
+      - startup-configs/hub-sw.cfg
+      - startup-configs/tmc-1.cfg
+      - startup-configs/tmc-2.cfg
