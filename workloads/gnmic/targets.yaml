@@ -89,54 +89,33 @@ targets:
 subscriptions:
   if-state:
     paths:
-      - /interfaces/interface/state/oper-status
-      - /interfaces/interface/state/admin-status
-      - /interfaces/interface/state/last-change
+      - /interface/oper-state
+      - /interface/admin-state
+      - /interface/last-change
     mode: stream
     stream-mode: sample
     sample-interval: 5s
   if-counters:
     paths:
-      - /interfaces/interface/state/counters/in-octets
-      - /interfaces/interface/state/counters/out-octets
-      - /interfaces/interface/state/counters/in-unicast-pkts
-      - /interfaces/interface/state/counters/out-unicast-pkts
-      - /interfaces/interface/state/counters/in-multicast-pkts
-      - /interfaces/interface/state/counters/out-multicast-pkts
-      - /interfaces/interface/state/counters/in-broadcast-pkts
-      - /interfaces/interface/state/counters/out-broadcast-pkts
-      - /interfaces/interface/state/counters/in-error-packets
-      - /interfaces/interface/state/counters/out-error-packets
-      - /interfaces/interface/state/counters/in-discards
-      - /interfaces/interface/state/counters/out-discards
-    mode: stream
-    stream-mode: sample
-    sample-interval: 10s
-  transceiver:
-    paths:
-      - /interfaces/interface/transceiver/state/input-power
-      - /interfaces/interface/transceiver/state/output-power
-      - /interfaces/interface/transceiver/state/laser-bias-current
-      - /interfaces/interface/transceiver/state/module-temperature
-      - /interfaces/interface/transceiver/state/voltage
-    mode: stream
-    stream-mode: sample
-    sample-interval: 30s
-  routing:
-    paths:
-      - /network-instance/protocols/isis/instance/interface/level/adjacencies
-      - /network-instance/protocols/bgp/neighbor
-      - /system/lldp/interface/neighbor
+      - /interface/statistics/in-octets
+      - /interface/statistics/out-octets
+      - /interface/statistics/in-unicast-packets
+      - /interface/statistics/out-unicast-packets
+      - /interface/statistics/in-multicast-packets
+      - /interface/statistics/out-multicast-packets
+      - /interface/statistics/in-broadcast-packets
+      - /interface/statistics/out-broadcast-packets
+      - /interface/statistics/in-error-packets
+      - /interface/statistics/out-error-packets
+      - /interface/statistics/in-discarded-packets
+      - /interface/statistics/out-discarded-packets
     mode: stream
     stream-mode: sample
     sample-interval: 10s
   system:
     paths:
-      - /platform/cpu/state/total
-      - /platform/memory/state/utilization
-      - /platform/fan/state/speed
-      - /platform/power-supply/state/output-current
-      - /platform/power-supply/state/output-voltage
+      - /platform/control/cpu/total
+      - /platform/control/memory
     mode: stream
     stream-mode: sample
     sample-interval: 60s

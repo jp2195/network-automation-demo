@@ -42,13 +42,16 @@ func WriteGNMIC(w io.Writer, s *Spec) error {
 	}
 	p("")
 	p("subscriptions:")
-	// Fast: state changes only — drives the InterfaceDown alert and
-	// Grafana state panels. Sample at 5s for low detection latency.
+	// Paths use SR Linux native YANG (srl_nokia-*), not OpenConfig. SRL
+	// answers gNMI in its native model by default; OpenConfig translation
+	// would need an explicit yang-models config on the box.
+	//
+	// Fast: interface state changes — drives InterfaceDown alert + state panels.
 	p("  if-state:")
 	p("    paths:")
-	p("      - /interfaces/interface/state/oper-status")
-	p("      - /interfaces/interface/state/admin-status")
-	p("      - /interfaces/interface/state/last-change")
+	p("      - /interface/oper-state")
+	p("      - /interface/admin-state")
+	p("      - /interface/last-change")
 	p("    mode: stream")
 	p("    stream-mode: sample")
 	p("    sample-interval: 5s")
@@ -56,52 +59,27 @@ func WriteGNMIC(w io.Writer, s *Spec) error {
 	// flapping/error-rate alerts. 10s aligns with Prometheus scrape.
 	p("  if-counters:")
 	p("    paths:")
-	p("      - /interfaces/interface/state/counters/in-octets")
-	p("      - /interfaces/interface/state/counters/out-octets")
-	p("      - /interfaces/interface/state/counters/in-unicast-pkts")
-	p("      - /interfaces/interface/state/counters/out-unicast-pkts")
-	p("      - /interfaces/interface/state/counters/in-multicast-pkts")
-	p("      - /interfaces/interface/state/counters/out-multicast-pkts")
-	p("      - /interfaces/interface/state/counters/in-broadcast-pkts")
-	p("      - /interfaces/interface/state/counters/out-broadcast-pkts")
-	p("      - /interfaces/interface/state/counters/in-error-packets")
-	p("      - /interfaces/interface/state/counters/out-error-packets")
-	p("      - /interfaces/interface/state/counters/in-discards")
-	p("      - /interfaces/interface/state/counters/out-discards")
+	p("      - /interface/statistics/in-octets")
+	p("      - /interface/statistics/out-octets")
+	p("      - /interface/statistics/in-unicast-packets")
+	p("      - /interface/statistics/out-unicast-packets")
+	p("      - /interface/statistics/in-multicast-packets")
+	p("      - /interface/statistics/out-multicast-packets")
+	p("      - /interface/statistics/in-broadcast-packets")
+	p("      - /interface/statistics/out-broadcast-packets")
+	p("      - /interface/statistics/in-error-packets")
+	p("      - /interface/statistics/out-error-packets")
+	p("      - /interface/statistics/in-discarded-packets")
+	p("      - /interface/statistics/out-discarded-packets")
 	p("    mode: stream")
 	p("    stream-mode: sample")
 	p("    sample-interval: 10s")
-	// Slow: optical / DOM. Real values change slowly; clabernetes SR Linux")
-	// won't emit real numbers (no real SFPs) but the path stays valid.
-	p("  transceiver:")
-	p("    paths:")
-	p("      - /interfaces/interface/transceiver/state/input-power")
-	p("      - /interfaces/interface/transceiver/state/output-power")
-	p("      - /interfaces/interface/transceiver/state/laser-bias-current")
-	p("      - /interfaces/interface/transceiver/state/module-temperature")
-	p("      - /interfaces/interface/transceiver/state/voltage")
-	p("    mode: stream")
-	p("    stream-mode: sample")
-	p("    sample-interval: 30s")
-	// Fast-ish: routing-protocol session state — IS-IS adjacencies, BGP
-	// neighbor state, LLDP. Drives the topology-health story (cable cut
-	// also breaks an IS-IS adjacency; cabinet uplink loss breaks eBGP).
-	p("  routing:")
-	p("    paths:")
-	p("      - /network-instance/protocols/isis/instance/interface/level/adjacencies")
-	p("      - /network-instance/protocols/bgp/neighbor")
-	p("      - /system/lldp/interface/neighbor")
-	p("    mode: stream")
-	p("    stream-mode: sample")
-	p("    sample-interval: 10s")
-	// Slow: platform/system health. CPU, memory, fans, power.
+	// Slow: control-plane health. CPU + memory under SR Linux's
+	// platform/control[slot=*] node.
 	p("  system:")
 	p("    paths:")
-	p("      - /platform/cpu/state/total")
-	p("      - /platform/memory/state/utilization")
-	p("      - /platform/fan/state/speed")
-	p("      - /platform/power-supply/state/output-current")
-	p("      - /platform/power-supply/state/output-voltage")
+	p("      - /platform/control/cpu/total")
+	p("      - /platform/control/memory")
 	p("    mode: stream")
 	p("    stream-mode: sample")
 	p("    sample-interval: 60s")
