@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventBus
+metadata:
+  name: default
+spec:
+  jetstream:
+    version: latest
+    replicas: 3
+    containerTemplate:
+      resources:
+        requests:
+          cpu: 20m
+          memory: 64Mi
+        limits:
+          memory: 256Mi
+    persistence:
+      storageClassName: local-path
+      accessMode: ReadWriteOnce
+      volumeSize: 1Gi

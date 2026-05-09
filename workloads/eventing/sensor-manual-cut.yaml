@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: manual-cut
+spec:
+  template:
+    serviceAccountName: operate-workflow-sa
+  dependencies:
+    - name: cut
+      eventSourceName: webhook
+      eventName: manual-cut
+  triggers:
+    - template:
+        name: cut-fiber
+        k8s:
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: cut-fiber-
+              spec:
+                serviceAccountName: operate-workflow-sa
+                workflowTemplateRef:
+                  name: cut-fiber
+                arguments:
+                  parameters:
+                    - name: node
+                      value: ""
+                    - name: interface
+                      value: ""
+                    - name: action
+                      value: disable
+          parameters:
+            - src:
+                dependencyName: cut
+                dataKey: body.node
+              dest: spec.arguments.parameters.0.value
+            - src:
+                dependencyName: cut
+                dataKey: body.interface
+              dest: spec.arguments.parameters.1.value
+            - src:
+                dependencyName: cut
+                dataKey: body.action
+                value: disable
+              dest: spec.arguments.parameters.2.value

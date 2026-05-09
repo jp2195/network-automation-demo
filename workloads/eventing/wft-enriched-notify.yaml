@@ -1,0 +1,138 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: enriched-notify
+spec:
+  serviceAccountName: operate-workflow-sa
+  entrypoint: main
+  arguments:
+    parameters:
+      - name: alert
+  volumes:
+    - name: scripts
+      configMap:
+        name: workflow-scripts
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: alert
+      dag:
+        tasks:
+          - name: enrich
+            template: enrich
+            arguments:
+              parameters:
+                - name: alert
+                  value: "{{inputs.parameters.alert}}"
+          - name: analyze
+            template: analyze
+            dependencies: [enrich]
+            arguments:
+              parameters:
+                - name: enrichment
+                  value: "{{tasks.enrich.outputs.result}}"
+          - name: notify
+            template: notify
+            dependencies: [analyze]
+            arguments:
+              parameters:
+                - name: enrichment
+                  value: "{{tasks.enrich.outputs.result}}"
+                - name: impact
+                  value: "{{tasks.analyze.outputs.result}}"
+
+    - name: enrich
+      inputs:
+        parameters:
+          - name: alert
+      script:
+        image: python:3.12-slim
+        command: [python3]
+        source: |
+          import os, json, runpy
+          os.environ["ALERT_JSON"] = """{{inputs.parameters.alert}}"""
+          runpy.run_path("/scripts/enrich.py", run_name="__main__")
+        env:
+          - name: NETBOX_URL
+            value: http://netbox.netbox.svc.cluster.local
+          - name: NETBOX_TOKEN
+            value: "0123456789abcdef0123456789abcdef01234567"
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            memory: 128Mi
+
+    - name: analyze
+      inputs:
+        parameters:
+          - name: enrichment
+      script:
+        image: python:3.12-slim
+        command: [python3]
+        source: |
+          import os, runpy
+          os.environ["ENRICHMENT_JSON"] = """{{inputs.parameters.enrichment}}"""
+          runpy.run_path("/scripts/analyze_impact.py", run_name="__main__")
+        env:
+          - name: NETBOX_URL
+            value: http://netbox.netbox.svc.cluster.local
+          - name: NETBOX_TOKEN
+            value: "0123456789abcdef0123456789abcdef01234567"
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            memory: 128Mi
+
+    - name: notify
+      inputs:
+        parameters:
+          - name: enrichment
+          - name: impact
+      script:
+        image: python:3.12-slim
+        command: [python3]
+        source: |
+          import os, subprocess, sys, runpy
+          with open(os.devnull, "w") as devnull:
+              subprocess.check_call(
+                  [sys.executable, "-m", "pip", "install", "--quiet",
+                   "--no-cache-dir", "slack-sdk", "redis"],
+                  stdout=devnull,
+              )
+          os.environ["ENRICHMENT_JSON"] = """{{inputs.parameters.enrichment}}"""
+          os.environ["IMPACT_JSON"] = """{{inputs.parameters.impact}}"""
+          runpy.run_path("/scripts/notify.py", run_name="__main__")
+        env:
+          - name: SLACK_BOT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: slack-bot
+                key: bot_token
+          - name: SLACK_CHANNEL_ID
+            valueFrom:
+              secretKeyRef:
+                name: slack-bot
+                key: channel_id
+          - name: VALKEY_URL
+            value: redis://valkey.valkey.svc.cluster.local:6379/2
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
+        resources:
+          requests:
+            cpu: 50m
+            memory: 96Mi
+          limits:
+            memory: 192Mi
+

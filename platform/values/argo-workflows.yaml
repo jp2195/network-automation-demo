@@ -1,0 +1,54 @@
+crds:
+  install: true
+  keep: true
+
+singleNamespace: false
+
+workflow:
+  serviceAccount:
+    create: true
+    name: argo-workflow
+  rbac:
+    create: true
+
+controller:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+  metricsConfig:
+    enabled: true
+  serviceMonitor:
+    enabled: true
+
+server:
+  enabled: true
+  replicas: 1
+  authModes:
+    - server
+  extraArgs:
+    - --auth-mode=server
+    - --secure=false
+  resources:
+    requests:
+      cpu: 30m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
+    hosts:
+      - workflows.127-0-0-1.nip.io
+    paths:
+      - /
+    pathType: Prefix
+    tls:
+      - secretName: argo-workflows-tls
+        hosts:
+          - workflows.127-0-0-1.nip.io

@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: argo-events
+
+resources:
+  - rbac.yaml
+  - eventbus.yaml
+  - eventsource-webhook.yaml
+  - sensor-interface-down.yaml
+  - sensor-manual-cut.yaml
+  - wft-enriched-notify.yaml
+  - wft-cut-fiber.yaml
+  - slack-bot-secret.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: workflow-scripts
+    files:
+      - scripts/enrich.py
+      - scripts/analyze_impact.py
+      - scripts/notify.py
