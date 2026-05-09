@@ -1922,7 +1922,7 @@
     {
       "device": "fc-n",
       "name": "eth1",
-      "type": "virtual",
+      "type": "1000base-t",
       "description": "to hub-n/ethernet-1/4 [FOC-CAB-N]"
     },
     {
@@ -1934,7 +1934,7 @@
     {
       "device": "fc-nw",
       "name": "eth1",
-      "type": "virtual",
+      "type": "1000base-t",
       "description": "to hub-nw/ethernet-1/4 [FOC-CAB-NW]"
     },
     {
@@ -1946,7 +1946,7 @@
     {
       "device": "fc-i20e",
       "name": "eth1",
-      "type": "virtual",
+      "type": "1000base-t",
       "description": "to hub-i20e/ethernet-1/4 [FOC-CAB-I20E]"
     },
     {
@@ -1958,7 +1958,7 @@
     {
       "device": "fc-sw",
       "name": "eth1",
-      "type": "virtual",
+      "type": "1000base-t",
       "description": "to hub-sw/ethernet-1/4 [FOC-CAB-SW]"
     }
   ],

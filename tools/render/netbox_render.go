@@ -311,7 +311,9 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 		for _, ifc := range s.InterfacesOf(n.Name) {
 			ifaceType := "10gbase-x-sfpp"
 			if n.Kind == "frr" {
-				ifaceType = "virtual"
+				// Cabinet drops are GigE copper; "1000base-t" keeps the type
+				// physical so NetBox 4.x accepts cable terminations on it.
+				ifaceType = "1000base-t"
 			}
 			desc := "to " + ifc.PeerNode + "/" + ifc.PeerIntf + " [" + ifc.Cable.Label + "]"
 			out.Interfaces = append(out.Interfaces, nbInterface{
