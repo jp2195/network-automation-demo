@@ -108,14 +108,12 @@ The 3-step DAG:
 
 Without real Slack credentials the workflow's notify step prints the
 Block Kit payload to stderr instead of calling the API — visible via
-`kubectl logs` on the workflow step pod. To enable real posting:
+`kubectl logs` on the workflow step pod.
 
-1. Create a Slack app, install to your workspace with `chat:write` scope.
-2. Copy the bot token (`xoxb-…`) and the target channel ID.
-3. Replace the placeholder values in
-   [`workloads/eventing/slack-bot-secret.yaml`](./workloads/eventing/slack-bot-secret.yaml)
-   (`bot_token`, `channel_id`).
-4. Commit + push. ArgoCD picks it up.
+**To enable real posting without committing your bot token to git**, see
+[`SECRETS.md`](./SECRETS.md) for two override patterns (hand-applied
+`secrets.local/slack-bot.yaml`, or sealed-secrets for git-stored
+encrypted secrets).
 
 ## Layout
 
@@ -136,6 +134,7 @@ workloads/
   eventing/                  EventSource + Sensors + WorkflowTemplates +
                                Python step scripts (enrich/analyze/notify)
 Makefile                   make up | down | status | render | demo-cut | demo-restore
+SECRETS.md                 how to use real credentials without committing them
 ```
 
 ## Sync waves

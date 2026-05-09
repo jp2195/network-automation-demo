@@ -11,7 +11,6 @@ resources:
   - sensor-manual-cut.yaml
   - wft-enriched-notify.yaml
   - wft-cut-fiber.yaml
-  - slack-bot-secret.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
