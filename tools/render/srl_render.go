@@ -64,25 +64,25 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 		isisLevel = "L2"
 	}
 
-	p("set / network-instance default protocols isis instance gdot admin-state enable")
-	p("set / network-instance default protocols isis instance gdot level-capability %s", isisLevel)
-	p("set / network-instance default protocols isis instance gdot net [ \"%s\" ]", netID)
-	p("set / network-instance default protocols isis instance gdot ipv4-unicast admin-state enable")
-	p("set / network-instance default protocols isis instance gdot interface lo0.0 admin-state enable")
-	p("set / network-instance default protocols isis instance gdot interface lo0.0 passive true")
-	p("set / network-instance default protocols isis instance gdot interface lo0.0 ipv4-unicast admin-state enable")
+	p("set / network-instance default protocols isis instance atlas admin-state enable")
+	p("set / network-instance default protocols isis instance atlas level-capability %s", isisLevel)
+	p("set / network-instance default protocols isis instance atlas net [ \"%s\" ]", netID)
+	p("set / network-instance default protocols isis instance atlas ipv4-unicast admin-state enable")
+	p("set / network-instance default protocols isis instance atlas interface lo0.0 admin-state enable")
+	p("set / network-instance default protocols isis instance atlas interface lo0.0 passive true")
+	p("set / network-instance default protocols isis instance atlas interface lo0.0 ipv4-unicast admin-state enable")
 	for _, ifc := range ifaces {
 		if ifc.LinkKind != "backbone" {
 			continue
 		}
-		p("set / network-instance default protocols isis instance gdot interface %s.0 admin-state enable", ifc.Name)
-		p("set / network-instance default protocols isis instance gdot interface %s.0 ipv4-unicast admin-state enable", ifc.Name)
-		p("set / network-instance default protocols isis instance gdot interface %s.0 circuit-type point-to-point", ifc.Name)
+		p("set / network-instance default protocols isis instance atlas interface %s.0 admin-state enable", ifc.Name)
+		p("set / network-instance default protocols isis instance atlas interface %s.0 ipv4-unicast admin-state enable", ifc.Name)
+		p("set / network-instance default protocols isis instance atlas interface %s.0 circuit-type point-to-point", ifc.Name)
 	}
 	p("")
 
-	p("set / network-instance default protocols isis instance gdot segment-routing mpls admin-state enable")
-	p("set / network-instance default protocols isis instance gdot segment-routing mpls global-block label-min 16000 label-max 23999")
+	p("set / network-instance default protocols isis instance atlas segment-routing mpls admin-state enable")
+	p("set / network-instance default protocols isis instance atlas segment-routing mpls global-block label-min 16000 label-max 23999")
 	p("")
 
 	sidIndex := n.ISISSID - 16000
@@ -91,7 +91,7 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	p("set / routing-policy policy prefix-sid statement 10 match prefix-set %s", setName)
 	p("set / routing-policy policy prefix-sid statement 10 action policy-result accept")
 	p("set / routing-policy policy prefix-sid statement 10 action set isis prefix-sid-index %d", sidIndex)
-	p("set / network-instance default protocols isis instance gdot ipv4-unicast prefix-sid-map advertise-map prefix-sid")
+	p("set / network-instance default protocols isis instance atlas ipv4-unicast prefix-sid-map advertise-map prefix-sid")
 	p("")
 
 	isTMC := n.Role == "tmc"

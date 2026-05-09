@@ -1,6 +1,6 @@
 .PHONY: up down status render demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet help
 
-CLUSTER_NAME ?= gdot-demo
+CLUSTER_NAME ?= atlas-demo
 TOPO_NS      ?= clabernetes
 
 help:
