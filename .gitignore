@@ -1,0 +1,25 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local kube/helm state dumps
+kubeconfig*
+*.kubeconfig
+
+# Build artifacts
+tmp/
+dist/
+bin/
+
+# Architectural reference kept locally only (not for the public repo)
+PLAN.md
+
+# Local secret overrides — see SECRETS.md
+secrets.local/
+*.secret.yaml
