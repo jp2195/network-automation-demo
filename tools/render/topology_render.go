@@ -134,7 +134,7 @@ func WriteTopology(w io.Writer, spec *Spec) error {
 			fmt.Fprintln(w, "        - filePath: configs/wrapper.sh")
 			fmt.Fprintln(w, "          configMapName: topology-startup-configs")
 			fmt.Fprintln(w, "          configMapPath: wrapper.sh")
-			fmt.Fprintln(w, "          mode: \"0755\"")
+			fmt.Fprintln(w, "          mode: execute")
 		}
 	}
 	return nil
