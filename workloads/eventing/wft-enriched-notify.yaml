@@ -114,16 +114,21 @@ spec:
           os.environ["IMPACT_JSON"] = """{{inputs.parameters.impact}}"""
           runpy.run_path("/scripts/notify.py", run_name="__main__")
         env:
+          # Slack creds are optional — if the `slack-bot` Secret doesn't
+          # exist (the default), notify.py short-circuits to stderr-printed
+          # Block Kit payloads. To enable real Slack posting, see SECRETS.md.
           - name: SLACK_BOT_TOKEN
             valueFrom:
               secretKeyRef:
                 name: slack-bot
                 key: bot_token
+                optional: true
           - name: SLACK_CHANNEL_ID
             valueFrom:
               secretKeyRef:
                 name: slack-bot
                 key: channel_id
+                optional: true
           - name: VALKEY_URL
             value: redis://valkey.valkey.svc.cluster.local:6379/2
         volumeMounts:

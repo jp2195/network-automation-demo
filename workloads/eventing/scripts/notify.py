@@ -14,8 +14,10 @@ Behavior:
     (✅ header + downtime), then chat.postMessage a thread reply with the
     resolution summary.
 
-Placeholder creds (token or channel containing "PLACEHOLDER") short-circuit
-to stderr-printed payloads — the demo runs without real Slack credentials.
+If SLACK_BOT_TOKEN or SLACK_CHANNEL_ID is empty (the Slack `slack-bot`
+Secret hasn't been created), the script short-circuits to stderr-printed
+payloads — the demo runs without real Slack credentials. See SECRETS.md
+for how to opt into real Slack posting.
 """
 
 import json
@@ -24,8 +26,8 @@ import sys
 from datetime import datetime, timezone
 
 
-def _is_placeholder(token, channel):
-    return "PLACEHOLDER" in (token or "") or "PLACEHOLDER" in (channel or "")
+def _slack_unconfigured(token, channel):
+    return not token or not channel
 
 
 def _parse_iso(ts):
@@ -130,9 +132,9 @@ def main():
     channel = os.environ.get("SLACK_CHANNEL_ID", "")
     valkey_url = os.environ["VALKEY_URL"]
 
-    placeholder = _is_placeholder(token, channel)
+    unconfigured = _slack_unconfigured(token, channel)
 
-    if not placeholder:
+    if not unconfigured:
         from slack_sdk import WebClient
         from slack_sdk.errors import SlackApiError
         slack = WebClient(token=token)
@@ -149,11 +151,11 @@ def main():
             "impact": impact,
         }
 
-        if placeholder:
-            print("=== firing (placeholder) ===", file=sys.stderr)
+        if unconfigured:
+            print("=== firing (slack unconfigured) ===", file=sys.stderr)
             print(json.dumps({"channel": channel, "blocks": blocks}, indent=2),
                   file=sys.stderr)
-            record["ts"] = "placeholder.000000"
+            record["ts"] = "unconfigured.000000"
         else:
             resp = slack.chat_postMessage(
                 channel=channel,
@@ -163,7 +165,7 @@ def main():
             record["ts"] = resp["ts"]
 
         ledger_db.set(ledger_key, json.dumps(record), ex=86400)
-        json.dump({"posted": not placeholder, "status": "firing",
+        json.dump({"posted": not unconfigured, "status": "firing",
                    "ts": record["ts"], "fingerprint": fingerprint}, sys.stdout)
         return
 
@@ -186,8 +188,8 @@ def main():
     blocks = _resolved_blocks(enrichment, ledger_record, downtime_str)
     summary = _thread_summary(downtime_str, ledger_record)
 
-    if placeholder:
-        print("=== resolved update (placeholder) ===", file=sys.stderr)
+    if unconfigured:
+        print("=== resolved update (slack unconfigured) ===", file=sys.stderr)
         print(json.dumps({"channel": ledger_record["channel"],
                           "ts": ledger_record["ts"],
                           "blocks": blocks,
@@ -214,7 +216,7 @@ def main():
             )
 
     ledger_db.delete(ledger_key)
-    json.dump({"posted": not placeholder, "status": "resolved",
+    json.dump({"posted": not unconfigured, "status": "resolved",
                "downtime_seconds": int(downtime_secs),
                "fingerprint": fingerprint}, sys.stdout)
 
