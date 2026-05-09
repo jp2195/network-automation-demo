@@ -20,5 +20,5 @@ spec:
   receivers:
     - name: argo-events
       webhookConfigs:
-        - url: http://eventbus-default-stan-svc.argo-events.svc.cluster.local:4222/alertmanager
+        - url: http://webhook-eventsource-svc.argo-events.svc.cluster.local:12000/alert
           sendResolved: true

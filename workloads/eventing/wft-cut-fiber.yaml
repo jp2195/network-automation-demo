@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: cut-fiber
+spec:
+  serviceAccountName: operate-workflow-sa
+  entrypoint: main
+  arguments:
+    parameters:
+      - name: node
+      - name: interface
+      - name: action
+        value: disable
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: node
+          - name: interface
+          - name: action
+      container:
+        image: ghcr.io/openconfig/gnmic:0.44.1
+        command: [gnmic]
+        args:
+          - -a
+          - "atlanta-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
+          - -u
+          - admin
+          - -p
+          - "NokiaSrl1!"
+          - --skip-verify
+          - --encoding
+          - json_ietf
+          - set
+          - --update-path
+          - "/interface[name={{inputs.parameters.interface}}]/admin-state"
+          - --update-value
+          - "{{inputs.parameters.action}}"
+        resources:
+          requests:
+            cpu: 30m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
