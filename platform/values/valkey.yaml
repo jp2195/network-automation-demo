@@ -1,0 +1,23 @@
+fullnameOverride: valkey
+
+replica:
+  enabled: false
+
+auth:
+  enabled: false
+
+dataStorage:
+  enabled: false
+
+service:
+  type: ClusterIP
+  port: 6379
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 128Mi
+
+networkPolicy: {}
