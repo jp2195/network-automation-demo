@@ -9,82 +9,82 @@ encoding: json_ietf
 targets:
   atlanta-tmc-1.clabernetes.svc.cluster.local:57400:
     tags:
-      role: tmc
-      site: forest-park
-      city: "Forest Park"
-      lat: "33.6195"
-      lon: "-84.3705"
-      district: "7"
-      sid: "16001"
+      - role=tmc
+      - site=forest-park
+      - city=Forest Park
+      - lat=33.6195
+      - lon=-84.3705
+      - district=7
+      - sid=16001
   atlanta-tmc-2.clabernetes.svc.cluster.local:57400:
     tags:
-      role: tmc
-      site: buckhead
-      city: "Buckhead"
-      lat: "33.8484"
-      lon: "-84.3781"
-      district: "7"
-      sid: "16002"
+      - role=tmc
+      - site=buckhead
+      - city=Buckhead
+      - lat=33.8484
+      - lon=-84.3781
+      - district=7
+      - sid=16002
   atlanta-hub-n.clabernetes.svc.cluster.local:57400:
     tags:
-      role: corridor-hub
-      site: sandy-springs
-      city: "Sandy Springs"
-      corridor: "GA-400"
-      lat: "33.9304"
-      lon: "-84.3733"
-      district: "7"
-      sid: "16101"
+      - role=corridor-hub
+      - site=sandy-springs
+      - city=Sandy Springs
+      - corridor=GA-400
+      - lat=33.9304
+      - lon=-84.3733
+      - district=7
+      - sid=16101
   atlanta-hub-e.clabernetes.svc.cluster.local:57400:
     tags:
-      role: corridor-hub
-      site: decatur
-      city: "Decatur"
-      corridor: "I-285 East"
-      lat: "33.7748"
-      lon: "-84.2963"
-      district: "7"
-      sid: "16102"
+      - role=corridor-hub
+      - site=decatur
+      - city=Decatur
+      - corridor=I-285 East
+      - lat=33.7748
+      - lon=-84.2963
+      - district=7
+      - sid=16102
   atlanta-hub-i20e.clabernetes.svc.cluster.local:57400:
     tags:
-      role: corridor-hub
-      site: lithonia
-      city: "Lithonia"
-      corridor: "I-20 East"
-      lat: "33.7126"
-      lon: "-84.1110"
-      district: "7"
-      sid: "16103"
+      - role=corridor-hub
+      - site=lithonia
+      - city=Lithonia
+      - corridor=I-20 East
+      - lat=33.7126
+      - lon=-84.1110
+      - district=7
+      - sid=16103
   atlanta-hub-nw.clabernetes.svc.cluster.local:57400:
     tags:
-      role: corridor-hub
-      site: marietta
-      city: "Marietta"
-      corridor: "I-75 NW"
-      lat: "33.9526"
-      lon: "-84.5499"
-      district: "7"
-      sid: "16104"
+      - role=corridor-hub
+      - site=marietta
+      - city=Marietta
+      - corridor=I-75 NW
+      - lat=33.9526
+      - lon=-84.5499
+      - district=7
+      - sid=16104
   atlanta-hub-sw.clabernetes.svc.cluster.local:57400:
     tags:
-      role: corridor-hub
-      site: east-point
-      city: "East Point"
-      corridor: "I-85 SW"
-      lat: "33.6795"
-      lon: "-84.4394"
-      district: "7"
-      sid: "16105"
+      - role=corridor-hub
+      - site=east-point
+      - city=East Point
+      - corridor=I-85 SW
+      - lat=33.6795
+      - lon=-84.4394
+      - district=7
+      - sid=16105
   atlanta-hub-i20w.clabernetes.svc.cluster.local:57400:
     tags:
-      role: corridor-hub
-      site: lithia-springs
-      city: "Lithia Springs"
-      corridor: "I-20 West"
-      lat: "33.7793"
-      lon: "-84.6427"
-      district: "7"
-      sid: "16106"
+      - role=corridor-hub
+      - site=lithia-springs
+      - city=Lithia Springs
+      - corridor=I-20 West
+      - lat=33.7793
+      - lon=-84.6427
+      - district=7
+      - sid=16106
 
 subscriptions:
   if-state:

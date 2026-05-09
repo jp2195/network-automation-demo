@@ -132,7 +132,7 @@ spec:
         - filePath: configs/wrapper.sh
           configMapName: topology-startup-configs
           configMapPath: wrapper.sh
-          mode: 0o755
+          mode: "0755"
       fc-nw:
         - filePath: configs/fc-nw.frr
           configMapName: topology-startup-configs
@@ -146,7 +146,7 @@ spec:
         - filePath: configs/wrapper.sh
           configMapName: topology-startup-configs
           configMapPath: wrapper.sh
-          mode: 0o755
+          mode: "0755"
       fc-i20e:
         - filePath: configs/fc-i20e.frr
           configMapName: topology-startup-configs
@@ -160,7 +160,7 @@ spec:
         - filePath: configs/wrapper.sh
           configMapName: topology-startup-configs
           configMapPath: wrapper.sh
-          mode: 0o755
+          mode: "0755"
       fc-sw:
         - filePath: configs/fc-sw.frr
           configMapName: topology-startup-configs
@@ -174,4 +174,4 @@ spec:
         - filePath: configs/wrapper.sh
           configMapName: topology-startup-configs
           configMapPath: wrapper.sh
-          mode: 0o755
+          mode: "0755"
