@@ -88,15 +88,20 @@ def find_id(endpoint, **filters):
 
 
 def upsert(endpoint, lookup, payload, label):
+    """Create or partial-update. Re-runs converge state when fields change."""
     existing = find_id(endpoint, **lookup)
     if existing is not None:
-        print(f"  exists: {label} (id={existing})", flush=True)
-        return existing
+        code, body = http("PATCH", f"{endpoint}{existing}/", body=payload)
+        if code in (200, 201):
+            print(f"  updated: {label} (id={existing})", flush=True)
+            return existing
+        print(f"  FAILED ({code}) PATCH {label}: {body}", flush=True)
+        sys.exit(1)
     code, body = http("POST", endpoint, body=payload)
     if code in (200, 201):
         print(f"  created: {label} (id={body['id']})", flush=True)
         return body["id"]
-    print(f"  FAILED ({code}) {label}: {body}", flush=True)
+    print(f"  FAILED ({code}) POST {label}: {body}", flush=True)
     sys.exit(1)
 
 
