@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gnmic
+  labels:
+    app.kubernetes.io/name: gnmic
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gnmic
+  endpoints:
+    - port: prom
+      interval: 15s
+      path: /metrics

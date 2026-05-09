@@ -1,0 +1,167 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "title": "SR Linux backbone nodes",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "count(group by (source) (srl_interfaces_interface_oper_status))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [
+            {"options": {"1": {"color": "green", "text": "UP"}, "2": {"color": "red", "text": "DOWN"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{"color": "green", "value": null}]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {"h": 12, "w": 18, "x": 6, "y": 0},
+      "id": 2,
+      "options": {"showHeader": true},
+      "title": "Interfaces — oper-status",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "srl_interfaces_interface_oper_status * on(source, interface_name) group_left(link_id, link_kind) link_membership_info{node=~\".+\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {"Time": true, "__name__": true, "instance": true, "job": true, "namespace": true, "pod": true, "service": true, "endpoint": true, "container": true},
+            "renameByName": {
+              "source": "device",
+              "interface_name": "interface",
+              "Value": "oper-status",
+              "site": "site",
+              "city": "city",
+              "role": "role",
+              "link_id": "link",
+              "link_kind": "kind"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "loki", "uid": "loki"},
+      "gridPos": {"h": 8, "w": 6, "x": 0, "y": 4},
+      "id": 3,
+      "options": {
+        "showLabels": false,
+        "showCommonLabels": false,
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
+      "title": "Topology launcher logs",
+      "type": "logs",
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "loki"},
+          "expr": "{namespace=\"clabernetes\"} |~ \"(?i)(error|warn|fail|down)\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "spanNulls": true
+          },
+          "unit": "Bps"
+        }
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 12},
+      "id": 4,
+      "options": {"legend": {"displayMode": "table", "placement": "right"}},
+      "title": "Backbone link traffic (out-octets)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(srl_interfaces_interface_state_counters_out_octets[1m]) * 8",
+          "legendFormat": "{{source}} {{interface_name}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["network", "atlas-dot", "demo"],
+  "templating": {"list": []},
+  "time": {"from": "now-15m", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Network Overview",
+  "uid": "network-overview",
+  "version": 1,
+  "weekStart": ""
+}
