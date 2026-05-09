@@ -101,7 +101,7 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 		p("set / routing-policy policy export-cabinet-routes statement 10 match protocol isis")
 		p("set / routing-policy policy export-cabinet-routes statement 10 action policy-result accept")
 		p("set / network-instance default protocols bgp group cabinets afi-safi ipv4-unicast admin-state enable")
-		p("set / network-instance default protocols bgp group cabinets export-policy export-cabinet-routes")
+		p("set / network-instance default protocols bgp group cabinets export-policy [export-cabinet-routes]")
 		p("")
 		for _, ifc := range ifaces {
 			if ifc.LinkKind != "cabinet" {
