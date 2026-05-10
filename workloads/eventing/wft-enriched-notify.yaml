@@ -63,7 +63,13 @@ spec:
           - name: NETBOX_URL
             value: http://netbox.netbox.svc.cluster.local
           - name: NETBOX_TOKEN
-            value: "0123456789abcdef0123456789abcdef01234567"
+            valueFrom:
+              secretKeyRef:
+                # Mirrored by the netbox-seed Job after a fresh `tokens/provision/`
+                # call. NetBox 4.x hashes API tokens at rest, so the value can't
+                # be pinned at config-time — the Secret is the source of truth.
+                name: netbox-api
+                key: token
         volumeMounts:
           - name: scripts
             mountPath: /scripts
@@ -90,7 +96,13 @@ spec:
           - name: NETBOX_URL
             value: http://netbox.netbox.svc.cluster.local
           - name: NETBOX_TOKEN
-            value: "0123456789abcdef0123456789abcdef01234567"
+            valueFrom:
+              secretKeyRef:
+                # Mirrored by the netbox-seed Job after a fresh `tokens/provision/`
+                # call. NetBox 4.x hashes API tokens at rest, so the value can't
+                # be pinned at config-time — the Secret is the source of truth.
+                name: netbox-api
+                key: token
         volumeMounts:
           - name: scripts
             mountPath: /scripts
