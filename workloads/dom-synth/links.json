@@ -1,158 +1,664 @@
-[
-  {
-    "node": "hub-n",
-    "interface": "ethernet-1/1",
-    "link_id": "ring-n-e",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-e",
-    "interface": "ethernet-1/2",
-    "link_id": "ring-n-e",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-e",
-    "interface": "ethernet-1/1",
-    "link_id": "ring-e-i20e",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-i20e",
-    "interface": "ethernet-1/2",
-    "link_id": "ring-e-i20e",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-i20e",
-    "interface": "ethernet-1/1",
-    "link_id": "ring-i20e-sw",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-sw",
-    "interface": "ethernet-1/2",
-    "link_id": "ring-i20e-sw",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-sw",
-    "interface": "ethernet-1/1",
-    "link_id": "ring-sw-i20w",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-i20w",
-    "interface": "ethernet-1/2",
-    "link_id": "ring-sw-i20w",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-i20w",
-    "interface": "ethernet-1/1",
-    "link_id": "ring-i20w-nw",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-nw",
-    "interface": "ethernet-1/2",
-    "link_id": "ring-i20w-nw",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-nw",
-    "interface": "ethernet-1/1",
-    "link_id": "ring-nw-n",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-n",
-    "interface": "ethernet-1/2",
-    "link_id": "ring-nw-n",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "tmc-1",
-    "interface": "ethernet-1/1",
-    "link_id": "tmc1-hubnw",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-nw",
-    "interface": "ethernet-1/3",
-    "link_id": "tmc1-hubnw",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "tmc-1",
-    "interface": "ethernet-1/2",
-    "link_id": "tmc1-hubsw",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-sw",
-    "interface": "ethernet-1/3",
-    "link_id": "tmc1-hubsw",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "tmc-2",
-    "interface": "ethernet-1/1",
-    "link_id": "tmc2-hubn",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-n",
-    "interface": "ethernet-1/3",
-    "link_id": "tmc2-hubn",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "tmc-2",
-    "interface": "ethernet-1/2",
-    "link_id": "tmc2-hube",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-e",
-    "interface": "ethernet-1/3",
-    "link_id": "tmc2-hube",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "tmc-1",
-    "interface": "ethernet-1/3",
-    "link_id": "tmc1-tmc2",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "tmc-2",
-    "interface": "ethernet-1/3",
-    "link_id": "tmc1-tmc2",
-    "link_kind": "backbone"
-  },
-  {
-    "node": "hub-n",
-    "interface": "ethernet-1/4",
-    "link_id": "hubn-fcn",
-    "link_kind": "cabinet"
-  },
-  {
-    "node": "hub-nw",
-    "interface": "ethernet-1/4",
-    "link_id": "hubnw-fcnw",
-    "link_kind": "cabinet"
-  },
-  {
-    "node": "hub-i20e",
-    "interface": "ethernet-1/4",
-    "link_id": "hubi20e-fci20e",
-    "link_kind": "cabinet"
-  },
-  {
-    "node": "hub-sw",
-    "interface": "ethernet-1/4",
-    "link_id": "hubsw-fcsw",
-    "link_kind": "cabinet"
-  }
-]
+{
+  "ports": [
+    {
+      "node": "hub-n",
+      "interface": "ethernet-1/1",
+      "link_id": "ring-n-e",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-e",
+      "interface": "ethernet-1/2",
+      "link_id": "ring-n-e",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-e",
+      "interface": "ethernet-1/1",
+      "link_id": "ring-e-i20e",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-i20e",
+      "interface": "ethernet-1/2",
+      "link_id": "ring-e-i20e",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-i20e",
+      "interface": "ethernet-1/1",
+      "link_id": "ring-i20e-sw",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-sw",
+      "interface": "ethernet-1/2",
+      "link_id": "ring-i20e-sw",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-sw",
+      "interface": "ethernet-1/1",
+      "link_id": "ring-sw-i20w",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-i20w",
+      "interface": "ethernet-1/2",
+      "link_id": "ring-sw-i20w",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-i20w",
+      "interface": "ethernet-1/1",
+      "link_id": "ring-i20w-nw",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-nw",
+      "interface": "ethernet-1/2",
+      "link_id": "ring-i20w-nw",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-nw",
+      "interface": "ethernet-1/1",
+      "link_id": "ring-nw-n",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-n",
+      "interface": "ethernet-1/2",
+      "link_id": "ring-nw-n",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "tmc-1",
+      "interface": "ethernet-1/1",
+      "link_id": "tmc1-hubnw",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-nw",
+      "interface": "ethernet-1/3",
+      "link_id": "tmc1-hubnw",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "tmc-1",
+      "interface": "ethernet-1/2",
+      "link_id": "tmc1-hubsw",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-sw",
+      "interface": "ethernet-1/3",
+      "link_id": "tmc1-hubsw",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "tmc-2",
+      "interface": "ethernet-1/1",
+      "link_id": "tmc2-hubn",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-n",
+      "interface": "ethernet-1/3",
+      "link_id": "tmc2-hubn",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "tmc-2",
+      "interface": "ethernet-1/2",
+      "link_id": "tmc2-hube",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-e",
+      "interface": "ethernet-1/3",
+      "link_id": "tmc2-hube",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "tmc-1",
+      "interface": "ethernet-1/3",
+      "link_id": "tmc1-tmc2",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "tmc-2",
+      "interface": "ethernet-1/3",
+      "link_id": "tmc1-tmc2",
+      "link_kind": "backbone"
+    },
+    {
+      "node": "hub-n",
+      "interface": "ethernet-1/4",
+      "link_id": "hubn-fcn",
+      "link_kind": "cabinet"
+    },
+    {
+      "node": "hub-nw",
+      "interface": "ethernet-1/4",
+      "link_id": "hubnw-fcnw",
+      "link_kind": "cabinet"
+    },
+    {
+      "node": "hub-i20e",
+      "interface": "ethernet-1/4",
+      "link_id": "hubi20e-fci20e",
+      "link_kind": "cabinet"
+    },
+    {
+      "node": "hub-sw",
+      "interface": "ethernet-1/4",
+      "link_id": "hubsw-fcsw",
+      "link_kind": "cabinet"
+    }
+  ],
+  "nodes": [
+    {
+      "node": "tmc-1",
+      "kind": "srlinux",
+      "role": "tmc",
+      "site": "forest-park",
+      "chassis": "7220 IXR-D3",
+      "fan_ids": [
+        "fan1",
+        "fan2",
+        "fan3",
+        "fan4"
+      ],
+      "psu_ids": [
+        "psu1",
+        "psu2"
+      ],
+      "temp_ids": [
+        "intake",
+        "exhaust",
+        "linecard",
+        "cpu"
+      ]
+    },
+    {
+      "node": "tmc-2",
+      "kind": "srlinux",
+      "role": "tmc",
+      "site": "buckhead",
+      "chassis": "7220 IXR-D3",
+      "fan_ids": [
+        "fan1",
+        "fan2",
+        "fan3",
+        "fan4"
+      ],
+      "psu_ids": [
+        "psu1",
+        "psu2"
+      ],
+      "temp_ids": [
+        "intake",
+        "exhaust",
+        "linecard",
+        "cpu"
+      ]
+    },
+    {
+      "node": "hub-n",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "site": "sandy-springs",
+      "chassis": "7220 IXR-D3",
+      "fan_ids": [
+        "fan1",
+        "fan2",
+        "fan3",
+        "fan4"
+      ],
+      "psu_ids": [
+        "psu1",
+        "psu2"
+      ],
+      "temp_ids": [
+        "intake",
+        "exhaust",
+        "linecard",
+        "cpu"
+      ]
+    },
+    {
+      "node": "hub-e",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "site": "decatur",
+      "chassis": "7220 IXR-D3",
+      "fan_ids": [
+        "fan1",
+        "fan2",
+        "fan3",
+        "fan4"
+      ],
+      "psu_ids": [
+        "psu1",
+        "psu2"
+      ],
+      "temp_ids": [
+        "intake",
+        "exhaust",
+        "linecard",
+        "cpu"
+      ]
+    },
+    {
+      "node": "hub-i20e",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "site": "lithonia",
+      "chassis": "7220 IXR-D3",
+      "fan_ids": [
+        "fan1",
+        "fan2",
+        "fan3",
+        "fan4"
+      ],
+      "psu_ids": [
+        "psu1",
+        "psu2"
+      ],
+      "temp_ids": [
+        "intake",
+        "exhaust",
+        "linecard",
+        "cpu"
+      ]
+    },
+    {
+      "node": "hub-nw",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "site": "marietta",
+      "chassis": "7220 IXR-D3",
+      "fan_ids": [
+        "fan1",
+        "fan2",
+        "fan3",
+        "fan4"
+      ],
+      "psu_ids": [
+        "psu1",
+        "psu2"
+      ],
+      "temp_ids": [
+        "intake",
+        "exhaust",
+        "linecard",
+        "cpu"
+      ]
+    },
+    {
+      "node": "hub-sw",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "site": "east-point",
+      "chassis": "7220 IXR-D3",
+      "fan_ids": [
+        "fan1",
+        "fan2",
+        "fan3",
+        "fan4"
+      ],
+      "psu_ids": [
+        "psu1",
+        "psu2"
+      ],
+      "temp_ids": [
+        "intake",
+        "exhaust",
+        "linecard",
+        "cpu"
+      ]
+    },
+    {
+      "node": "hub-i20w",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "site": "lithia-springs",
+      "chassis": "7220 IXR-D3",
+      "fan_ids": [
+        "fan1",
+        "fan2",
+        "fan3",
+        "fan4"
+      ],
+      "psu_ids": [
+        "psu1",
+        "psu2"
+      ],
+      "temp_ids": [
+        "intake",
+        "exhaust",
+        "linecard",
+        "cpu"
+      ]
+    },
+    {
+      "node": "fc-n",
+      "kind": "frr",
+      "role": "field-cabinet",
+      "site": "alpharetta",
+      "chassis": "ATSP-FC-1U",
+      "fan_ids": [
+        "fan1"
+      ],
+      "psu_ids": [
+        "psu1"
+      ],
+      "temp_ids": [
+        "intake",
+        "cpu"
+      ]
+    },
+    {
+      "node": "fc-nw",
+      "kind": "frr",
+      "role": "field-cabinet",
+      "site": "kennesaw",
+      "chassis": "ATSP-FC-1U",
+      "fan_ids": [
+        "fan1"
+      ],
+      "psu_ids": [
+        "psu1"
+      ],
+      "temp_ids": [
+        "intake",
+        "cpu"
+      ]
+    },
+    {
+      "node": "fc-i20e",
+      "kind": "frr",
+      "role": "field-cabinet",
+      "site": "conyers",
+      "chassis": "ATSP-FC-1U",
+      "fan_ids": [
+        "fan1"
+      ],
+      "psu_ids": [
+        "psu1"
+      ],
+      "temp_ids": [
+        "intake",
+        "cpu"
+      ]
+    },
+    {
+      "node": "fc-sw",
+      "kind": "frr",
+      "role": "field-cabinet",
+      "site": "newnan",
+      "chassis": "ATSP-FC-1U",
+      "fan_ids": [
+        "fan1"
+      ],
+      "psu_ids": [
+        "psu1"
+      ],
+      "temp_ids": [
+        "intake",
+        "cpu"
+      ]
+    }
+  ],
+  "isis_adjacencies": [
+    {
+      "node": "hub-n",
+      "interface": "ethernet-1/1",
+      "neighbor": "hub-e",
+      "system_id": "0000.0000.16102",
+      "link_id": "ring-n-e",
+      "level": "L2"
+    },
+    {
+      "node": "hub-e",
+      "interface": "ethernet-1/2",
+      "neighbor": "hub-n",
+      "system_id": "0000.0000.16101",
+      "link_id": "ring-n-e",
+      "level": "L2"
+    },
+    {
+      "node": "hub-e",
+      "interface": "ethernet-1/1",
+      "neighbor": "hub-i20e",
+      "system_id": "0000.0000.16103",
+      "link_id": "ring-e-i20e",
+      "level": "L2"
+    },
+    {
+      "node": "hub-i20e",
+      "interface": "ethernet-1/2",
+      "neighbor": "hub-e",
+      "system_id": "0000.0000.16102",
+      "link_id": "ring-e-i20e",
+      "level": "L2"
+    },
+    {
+      "node": "hub-i20e",
+      "interface": "ethernet-1/1",
+      "neighbor": "hub-sw",
+      "system_id": "0000.0000.16105",
+      "link_id": "ring-i20e-sw",
+      "level": "L2"
+    },
+    {
+      "node": "hub-sw",
+      "interface": "ethernet-1/2",
+      "neighbor": "hub-i20e",
+      "system_id": "0000.0000.16103",
+      "link_id": "ring-i20e-sw",
+      "level": "L2"
+    },
+    {
+      "node": "hub-sw",
+      "interface": "ethernet-1/1",
+      "neighbor": "hub-i20w",
+      "system_id": "0000.0000.16106",
+      "link_id": "ring-sw-i20w",
+      "level": "L2"
+    },
+    {
+      "node": "hub-i20w",
+      "interface": "ethernet-1/2",
+      "neighbor": "hub-sw",
+      "system_id": "0000.0000.16105",
+      "link_id": "ring-sw-i20w",
+      "level": "L2"
+    },
+    {
+      "node": "hub-i20w",
+      "interface": "ethernet-1/1",
+      "neighbor": "hub-nw",
+      "system_id": "0000.0000.16104",
+      "link_id": "ring-i20w-nw",
+      "level": "L2"
+    },
+    {
+      "node": "hub-nw",
+      "interface": "ethernet-1/2",
+      "neighbor": "hub-i20w",
+      "system_id": "0000.0000.16106",
+      "link_id": "ring-i20w-nw",
+      "level": "L2"
+    },
+    {
+      "node": "hub-nw",
+      "interface": "ethernet-1/1",
+      "neighbor": "hub-n",
+      "system_id": "0000.0000.16101",
+      "link_id": "ring-nw-n",
+      "level": "L2"
+    },
+    {
+      "node": "hub-n",
+      "interface": "ethernet-1/2",
+      "neighbor": "hub-nw",
+      "system_id": "0000.0000.16104",
+      "link_id": "ring-nw-n",
+      "level": "L2"
+    },
+    {
+      "node": "tmc-1",
+      "interface": "ethernet-1/1",
+      "neighbor": "hub-nw",
+      "system_id": "0000.0000.16104",
+      "link_id": "tmc1-hubnw",
+      "level": "L2"
+    },
+    {
+      "node": "hub-nw",
+      "interface": "ethernet-1/3",
+      "neighbor": "tmc-1",
+      "system_id": "0000.0000.16001",
+      "link_id": "tmc1-hubnw",
+      "level": "L2"
+    },
+    {
+      "node": "tmc-1",
+      "interface": "ethernet-1/2",
+      "neighbor": "hub-sw",
+      "system_id": "0000.0000.16105",
+      "link_id": "tmc1-hubsw",
+      "level": "L2"
+    },
+    {
+      "node": "hub-sw",
+      "interface": "ethernet-1/3",
+      "neighbor": "tmc-1",
+      "system_id": "0000.0000.16001",
+      "link_id": "tmc1-hubsw",
+      "level": "L2"
+    },
+    {
+      "node": "tmc-2",
+      "interface": "ethernet-1/1",
+      "neighbor": "hub-n",
+      "system_id": "0000.0000.16101",
+      "link_id": "tmc2-hubn",
+      "level": "L2"
+    },
+    {
+      "node": "hub-n",
+      "interface": "ethernet-1/3",
+      "neighbor": "tmc-2",
+      "system_id": "0000.0000.16002",
+      "link_id": "tmc2-hubn",
+      "level": "L2"
+    },
+    {
+      "node": "tmc-2",
+      "interface": "ethernet-1/2",
+      "neighbor": "hub-e",
+      "system_id": "0000.0000.16102",
+      "link_id": "tmc2-hube",
+      "level": "L2"
+    },
+    {
+      "node": "hub-e",
+      "interface": "ethernet-1/3",
+      "neighbor": "tmc-2",
+      "system_id": "0000.0000.16002",
+      "link_id": "tmc2-hube",
+      "level": "L2"
+    },
+    {
+      "node": "tmc-1",
+      "interface": "ethernet-1/3",
+      "neighbor": "tmc-2",
+      "system_id": "0000.0000.16002",
+      "link_id": "tmc1-tmc2",
+      "level": "L2"
+    },
+    {
+      "node": "tmc-2",
+      "interface": "ethernet-1/3",
+      "neighbor": "tmc-1",
+      "system_id": "0000.0000.16001",
+      "link_id": "tmc1-tmc2",
+      "level": "L2"
+    }
+  ],
+  "bgp_peers": [
+    {
+      "node": "hub-n",
+      "neighbor_node": "fc-n",
+      "peer_address": "10.2.1.2",
+      "peer_as": 65021,
+      "peer_group": "cabinets"
+    },
+    {
+      "node": "fc-n",
+      "neighbor_node": "hub-n",
+      "peer_address": "10.2.1.1",
+      "peer_as": 65000,
+      "peer_group": "uplink"
+    },
+    {
+      "node": "hub-nw",
+      "neighbor_node": "fc-nw",
+      "peer_address": "10.2.2.2",
+      "peer_as": 65022,
+      "peer_group": "cabinets"
+    },
+    {
+      "node": "fc-nw",
+      "neighbor_node": "hub-nw",
+      "peer_address": "10.2.2.1",
+      "peer_as": 65000,
+      "peer_group": "uplink"
+    },
+    {
+      "node": "hub-i20e",
+      "neighbor_node": "fc-i20e",
+      "peer_address": "10.2.3.2",
+      "peer_as": 65023,
+      "peer_group": "cabinets"
+    },
+    {
+      "node": "fc-i20e",
+      "neighbor_node": "hub-i20e",
+      "peer_address": "10.2.3.1",
+      "peer_as": 65000,
+      "peer_group": "uplink"
+    },
+    {
+      "node": "hub-sw",
+      "neighbor_node": "fc-sw",
+      "peer_address": "10.2.4.2",
+      "peer_as": 65024,
+      "peer_group": "cabinets"
+    },
+    {
+      "node": "fc-sw",
+      "neighbor_node": "hub-sw",
+      "peer_address": "10.2.4.1",
+      "peer_as": 65000,
+      "peer_group": "uplink"
+    },
+    {
+      "node": "tmc-1",
+      "neighbor_node": "tmc-2",
+      "peer_address": "10.0.0.2",
+      "peer_as": 65000,
+      "peer_group": "tmc-ibgp"
+    },
+    {
+      "node": "tmc-2",
+      "neighbor_node": "tmc-1",
+      "peer_address": "10.0.0.1",
+      "peer_as": 65000,
+      "peer_group": "tmc-ibgp"
+    }
+  ]
+}
