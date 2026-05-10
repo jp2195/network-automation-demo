@@ -1,0 +1,381 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "title": "Overview",
+      "type": "link",
+      "url": "/d/network-overview/network-overview",
+      "icon": "external link"
+    },
+    {
+      "title": "Link detail",
+      "type": "link",
+      "url": "/d/link-detail/link-detail",
+      "icon": "external link"
+    },
+    {
+      "title": "Alert console",
+      "type": "link",
+      "url": "/d/alert-console/alert-console",
+      "icon": "external link"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                },
+                "2": {
+                  "color": "red",
+                  "text": "DOWN"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 1.5
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 24,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "view": {
+          "id": "coords",
+          "lat": 33.78,
+          "lon": -84.39,
+          "zoom": 9.7
+        },
+        "controls": {
+          "showZoom": true,
+          "showAttribution": true,
+          "showScale": true,
+          "showDebug": false,
+          "showMeasure": true,
+          "mouseWheelZoom": true
+        },
+        "tooltip": {
+          "mode": "details"
+        },
+        "basemap": {
+          "type": "default",
+          "name": "Layer 0",
+          "config": {}
+        },
+        "layers": [
+          {
+            "type": "route",
+            "name": "Backbone fiber rings",
+            "location": {
+              "mode": "coords",
+              "latitude": "lat",
+              "longitude": "lon"
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "L.*"
+            },
+            "config": {
+              "style": {
+                "color": {
+                  "field": "Value"
+                },
+                "lineWidth": 4,
+                "opacity": 0.9
+              },
+              "arrow": 0
+            },
+            "tooltip": true
+          },
+          {
+            "type": "markers",
+            "name": "Cabinets (FRR / SNMP)",
+            "location": {
+              "mode": "coords",
+              "latitude": "lat",
+              "longitude": "lon"
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "A"
+            },
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "field": "Value"
+                },
+                "size": {
+                  "fixed": 10
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/triangle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 11,
+                  "offsetX": 0,
+                  "offsetY": 14,
+                  "textAlign": "center",
+                  "textBaseline": "top"
+                },
+                "text": {
+                  "field": "node"
+                },
+                "opacity": 0.95
+              }
+            },
+            "tooltip": true
+          },
+          {
+            "type": "markers",
+            "name": "Backbone hubs (SR Linux / gNMI)",
+            "location": {
+              "mode": "coords",
+              "latitude": "lat",
+              "longitude": "lon"
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "B"
+            },
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "field": "Value"
+                },
+                "size": {
+                  "fixed": 16
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 13,
+                  "offsetX": 0,
+                  "offsetY": -18,
+                  "textAlign": "center",
+                  "textBaseline": "bottom"
+                },
+                "text": {
+                  "field": "node"
+                },
+                "opacity": 0.95
+              }
+            },
+            "tooltip": true
+          }
+        ]
+      },
+      "title": "Atlanta metro \u2014 Atlas DOT Region 7",
+      "type": "geomap",
+      "targets": [
+        {
+          "expr": "max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"frr\"} * on(node) group_right(lat, lon, site, city, role, kind) (2 - up{job=\"snmp-frr-cabinets\"}))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "expr": "max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"srlinux\"} * on(node) group_right(lat, lon, site, city, role, kind) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left link_membership_info))",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubi20e-fci20e\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"hubi20e-fci20e\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L01",
+          "legendFormat": "hubi20e-fci20e"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubn-fcn\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"hubn-fcn\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L02",
+          "legendFormat": "hubn-fcn"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubnw-fcnw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"hubnw-fcnw\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L03",
+          "legendFormat": "hubnw-fcnw"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubsw-fcsw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"hubsw-fcsw\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L04",
+          "legendFormat": "hubsw-fcsw"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-e-i20e\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-e-i20e\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L05",
+          "legendFormat": "ring-e-i20e"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-i20e-sw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-i20e-sw\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L06",
+          "legendFormat": "ring-i20e-sw"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-i20w-nw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-i20w-nw\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L07",
+          "legendFormat": "ring-i20w-nw"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-n-e\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-n-e\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L08",
+          "legendFormat": "ring-n-e"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-nw-n\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-nw-n\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L09",
+          "legendFormat": "ring-nw-n"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-sw-i20w\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-sw-i20w\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L10",
+          "legendFormat": "ring-sw-i20w"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc1-hubnw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"tmc1-hubnw\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L11",
+          "legendFormat": "tmc1-hubnw"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc1-hubsw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"tmc1-hubsw\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L12",
+          "legendFormat": "tmc1-hubsw"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc1-tmc2\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"tmc1-tmc2\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L13",
+          "legendFormat": "tmc1-tmc2"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc2-hube\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"tmc2-hube\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L14",
+          "legendFormat": "tmc2-hube"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc2-hubn\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"tmc2-hubn\"})",
+          "format": "table",
+          "instant": true,
+          "refId": "L15",
+          "legendFormat": "tmc2-hubn"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "targetField": "lat",
+                "destinationType": "number"
+              },
+              {
+                "targetField": "lon",
+                "destinationType": "number"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "network",
+    "atlas-dot",
+    "demo",
+    "geomap"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "title": "Atlanta metro \u2014 Geomap",
+  "uid": "geomap",
+  "version": 1
+}
