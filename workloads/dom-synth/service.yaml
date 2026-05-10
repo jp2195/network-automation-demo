@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dom-synth
+  labels:
+    app.kubernetes.io/name: dom-synth
+spec:
+  selector:
+    app.kubernetes.io/name: dom-synth
+  ports:
+    - name: prom
+      port: 8000
+      targetPort: prom
+      protocol: TCP

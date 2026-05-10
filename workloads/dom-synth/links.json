@@ -1,0 +1,158 @@
+[
+  {
+    "node": "hub-n",
+    "interface": "ethernet-1/1",
+    "link_id": "ring-n-e",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-e",
+    "interface": "ethernet-1/2",
+    "link_id": "ring-n-e",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-e",
+    "interface": "ethernet-1/1",
+    "link_id": "ring-e-i20e",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-i20e",
+    "interface": "ethernet-1/2",
+    "link_id": "ring-e-i20e",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-i20e",
+    "interface": "ethernet-1/1",
+    "link_id": "ring-i20e-sw",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-sw",
+    "interface": "ethernet-1/2",
+    "link_id": "ring-i20e-sw",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-sw",
+    "interface": "ethernet-1/1",
+    "link_id": "ring-sw-i20w",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-i20w",
+    "interface": "ethernet-1/2",
+    "link_id": "ring-sw-i20w",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-i20w",
+    "interface": "ethernet-1/1",
+    "link_id": "ring-i20w-nw",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-nw",
+    "interface": "ethernet-1/2",
+    "link_id": "ring-i20w-nw",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-nw",
+    "interface": "ethernet-1/1",
+    "link_id": "ring-nw-n",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-n",
+    "interface": "ethernet-1/2",
+    "link_id": "ring-nw-n",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "tmc-1",
+    "interface": "ethernet-1/1",
+    "link_id": "tmc1-hubnw",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-nw",
+    "interface": "ethernet-1/3",
+    "link_id": "tmc1-hubnw",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "tmc-1",
+    "interface": "ethernet-1/2",
+    "link_id": "tmc1-hubsw",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-sw",
+    "interface": "ethernet-1/3",
+    "link_id": "tmc1-hubsw",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "tmc-2",
+    "interface": "ethernet-1/1",
+    "link_id": "tmc2-hubn",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-n",
+    "interface": "ethernet-1/3",
+    "link_id": "tmc2-hubn",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "tmc-2",
+    "interface": "ethernet-1/2",
+    "link_id": "tmc2-hube",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-e",
+    "interface": "ethernet-1/3",
+    "link_id": "tmc2-hube",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "tmc-1",
+    "interface": "ethernet-1/3",
+    "link_id": "tmc1-tmc2",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "tmc-2",
+    "interface": "ethernet-1/3",
+    "link_id": "tmc1-tmc2",
+    "link_kind": "backbone"
+  },
+  {
+    "node": "hub-n",
+    "interface": "ethernet-1/4",
+    "link_id": "hubn-fcn",
+    "link_kind": "cabinet"
+  },
+  {
+    "node": "hub-nw",
+    "interface": "ethernet-1/4",
+    "link_id": "hubnw-fcnw",
+    "link_kind": "cabinet"
+  },
+  {
+    "node": "hub-i20e",
+    "interface": "ethernet-1/4",
+    "link_id": "hubi20e-fci20e",
+    "link_kind": "cabinet"
+  },
+  {
+    "node": "hub-sw",
+    "interface": "ethernet-1/4",
+    "link_id": "hubsw-fcsw",
+    "link_kind": "cabinet"
+  }
+]

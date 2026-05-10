@@ -133,6 +133,14 @@ func main() {
 	must(WriteLinkMembership(f, spec))
 	f.Close()
 
+	domDir := filepath.Join(*outDir, "workloads", "dom-synth")
+	must(os.MkdirAll(domDir, 0o755))
+	domLinksPath := filepath.Join(domDir, "links.json")
+	fmt.Printf("==> Writing %s (DOM synth interface list)\n", domLinksPath)
+	f = mustCreate(domLinksPath)
+	must(WriteDOMLinks(f, spec))
+	f.Close()
+
 	fmt.Println("==> Done.")
 }
 
