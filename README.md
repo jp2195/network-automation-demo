@@ -200,9 +200,20 @@ Edit `spec/atlanta.yaml` and run `make render`. The renderer rewrites:
   shared `daemons` for FRR, shared `snmpd.conf` + `wrapper.sh` for the
   legacy-edge lane)
 - `workloads/topology/topology.yaml` + `kustomization.yaml`
-- `workloads/gnmic/targets.yaml` (with the 5 tiered subscription groups)
+- `workloads/gnmic/targets.yaml`
 - `workloads/netbox/seed/seed.json`
 - `workloads/observability/dashboards/links.geojson`
-- `workloads/observability/link-membership.yaml`
+- `workloads/observability/link-membership.yaml` (link / device / endpoint
+  recording rules)
+- `workloads/dom-synth/links.json` (synthetic transceiver exporter feed)
 
 Commit the diff. ArgoCD syncs.
+
+## More docs
+
+- [`docs/architecture.md`](docs/architecture.md) — layered architecture,
+  why each piece is here, the gNMI / SNMP / DOM split, eventing flow.
+- [`docs/runbook-demo.md`](docs/runbook-demo.md) — pre-demo checklist,
+  the live demo script (≈10 min), optional Slack hook-up.
+- [`docs/runbook-troubleshoot.md`](docs/runbook-troubleshoot.md) —
+  symptom → diagnosis lookup table, subtle gotchas, hard reset.
