@@ -49,19 +49,24 @@ _require_cut_vars:
 	@[ -n "$(NODE)" ]      || { echo "NODE is required (e.g. NODE=tmc-1)"; exit 1; }
 	@[ -n "$(INTERFACE)" ] || { echo "INTERFACE is required (e.g. INTERFACE=ethernet-1/1)"; exit 1; }
 
+## Clabernetes runs each lab node as a nested docker container inside the
+## launcher pod, so all sr_cli / vtysh invocations have to docker exec into
+## that inner container — kubectl exec lands in the launcher's docker daemon,
+## not the SR Linux / FRR process.
+
 demo-cut: _require_cut_vars
 	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
 	  echo "==> Disabling $(INTERFACE) on $(NODE) ($$POD)"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- \
-	    sr_cli "enter candidate; set interface $(INTERFACE) admin-state disable; commit now"
+	  kubectl -n $(TOPO_NS) exec $$POD -- docker exec $(NODE) bash -c \
+	    "echo -e 'enter candidate\nset / interface $(INTERFACE) admin-state disable\ncommit now' | sr_cli"
 
 demo-restore: _require_cut_vars
 	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
 	  echo "==> Enabling $(INTERFACE) on $(NODE) ($$POD)"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- \
-	    sr_cli "enter candidate; set interface $(INTERFACE) admin-state enable; commit now"
+	  kubectl -n $(TOPO_NS) exec $$POD -- docker exec $(NODE) bash -c \
+	    "echo -e 'enter candidate\nset / interface $(INTERFACE) admin-state enable\ncommit now' | sr_cli"
 
 # --- FRR cabinet failure injection (legacy-edge / SNMP-driven demo lane) ---
 
@@ -69,12 +74,12 @@ demo-cut-cabinet: _require_cut_vars
 	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
 	  echo "==> Shutting down $(INTERFACE) on $(NODE) ($$POD) via vtysh"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- \
+	  kubectl -n $(TOPO_NS) exec $$POD -- docker exec $(NODE) \
 	    vtysh -c "configure terminal" -c "interface $(INTERFACE)" -c "shutdown" -c "end" -c "write memory"
 
 demo-restore-cabinet: _require_cut_vars
 	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
 	  echo "==> Bringing up $(INTERFACE) on $(NODE) ($$POD) via vtysh"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- \
+	  kubectl -n $(TOPO_NS) exec $$POD -- docker exec $(NODE) \
 	    vtysh -c "configure terminal" -c "interface $(INTERFACE)" -c "no shutdown" -c "end" -c "write memory"
