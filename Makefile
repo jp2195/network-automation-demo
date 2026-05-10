@@ -1,5 +1,6 @@
 .PHONY: up down status render demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet \
-        scenario scenario-list scenario-hurricane scenario-backhoe scenario-cabinet scenario-flap help
+        scenario scenario-list scenario-hurricane scenario-backhoe scenario-cabinet scenario-flap \
+        maintenance-start maintenance-end maintenance-list help
 
 CLUSTER_NAME ?= atlas-demo
 TOPO_NS      ?= clabernetes
@@ -19,6 +20,9 @@ help:
 	@echo "  scenario-backhoe     One random backbone strand cut for ~2 min"
 	@echo "  scenario-cabinet     Field cabinet uplink failure, ~1.5 min"
 	@echo "  scenario-flap        Trip SRLInterfaceFlapping via rapid up/down, ~3 min"
+	@echo "  maintenance-start    Open a maintenance window for NODE= for HOURS= (default 2). Silences alerts."
+	@echo "  maintenance-end      Close the maintenance window for NODE= early."
+	@echo "  maintenance-list     Show currently active atlas-maintenance silences."
 
 up:
 	@echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"
@@ -106,3 +110,14 @@ scenario-cabinet:
 
 scenario-flap:
 	@bin/scenarios.sh flapping
+
+# --- Maintenance windows -------------------------------------------------
+
+maintenance-start:
+	@bin/maintenance.sh start "$(NODE)" "$(or $(HOURS),2)" "$(or $(COMMENT),scheduled maintenance)"
+
+maintenance-end:
+	@bin/maintenance.sh end "$(NODE)"
+
+maintenance-list:
+	@bin/maintenance.sh list
