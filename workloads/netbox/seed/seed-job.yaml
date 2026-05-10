@@ -3,37 +3,10 @@ kind: ServiceAccount
 metadata:
   name: netbox-seed
 ---
-# The seed-job mirrors the provisioned NetBox API token into a Secret in
-# the argo-events namespace so the enriched-notify WorkflowTemplate can
-# read it via secretKeyRef. Only secrets/<name=netbox-api> can be touched.
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: netbox-seed-token-publisher
-  namespace: argo-events
-rules:
-  - apiGroups: [""]
-    resources: ["secrets"]
-    resourceNames: ["netbox-api"]
-    verbs: ["get", "patch"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["create"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: netbox-seed-token-publisher
-  namespace: argo-events
-subjects:
-  - kind: ServiceAccount
-    name: netbox-seed
-    namespace: netbox
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: netbox-seed-token-publisher
----
+# The Role + RoleBinding that lets this SA write argo-events/netbox-api
+# live in workloads/eventing/rbac.yaml — kustomize's namespace: directive
+# in this kustomization would force them into the netbox namespace, but
+# Roles are namespace-scoped to where the Secret actually lives.
 apiVersion: batch/v1
 kind: Job
 metadata:
