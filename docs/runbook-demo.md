@@ -131,6 +131,25 @@ make demo-restore NODE=hub-i20e INTERFACE=ethernet-1/2
 > updated with a ✅ + downtime computed from `alert.startsAt → endsAt`,
 > plus a threaded resolution summary. The Valkey ledger key gets DEL'd.
 
+### Pre-canned outage scenarios
+
+For deeper / hands-free walkthroughs, the canned scenarios run a script
+of cuts + sleeps + restores. Each auto-restores on completion or on
+Ctrl-C.
+
+```bash
+make scenario-list             # show what's available
+make scenario-hurricane        # 2 ring segments fail in series, ~2.5 min
+make scenario-backhoe          # one random backbone strand cut for ~2 min
+make scenario-cabinet          # field cabinet uplink failure, ~1.5 min
+make scenario-flap             # trip SRLInterfaceFlapping via rapid up/down
+```
+
+`hurricane` is the headline — drop two ring segments thirty seconds
+apart so the audience sees the analyze step flag fc-i20e as stranded
+*because* the second cut isolated it, then watch the recovery roll back
+in reverse.
+
 ### Act 4 (optional, advanced) — the legacy edge (≈3 min)
 
 Same demo, but cut a cabinet's interface via FRR.
