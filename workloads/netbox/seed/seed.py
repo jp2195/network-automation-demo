@@ -78,6 +78,53 @@ def provision_token():
         sys.exit(f"failed to provision API token ({code}): {body}")
     HEADERS["Authorization"] = f"Token {body['token']}"
     print(f"provisioned v{body.get('version')} API token id={body.get('id')}", flush=True)
+    publish_token_secret(body["token"])
+
+
+def publish_token_secret(token):
+    """Mirror the freshly provisioned token into a Secret that workflow
+    runners (argo-events) can mount via secretKeyRef. The seed-job's SA must
+    have create/update on Secrets in TOKEN_SECRET_NAMESPACE.
+    """
+    namespace = os.environ.get("TOKEN_SECRET_NAMESPACE", "argo-events")
+    name = os.environ.get("TOKEN_SECRET_NAME", "netbox-api")
+    sa_token_path = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+    ca_path = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+    if not os.path.exists(sa_token_path):
+        print("no in-cluster SA token; skipping Secret mirroring", flush=True)
+        return
+    import base64, ssl
+    with open(sa_token_path) as f:
+        sa_token = f.read().strip()
+    api = "https://kubernetes.default.svc"
+    secret_path = f"/api/v1/namespaces/{namespace}/secrets/{name}"
+    payload = {
+        "apiVersion": "v1",
+        "kind": "Secret",
+        "metadata": {"name": name, "namespace": namespace},
+        "type": "Opaque",
+        "data": {"token": base64.b64encode(token.encode()).decode()},
+    }
+    ctx = ssl.create_default_context(cafile=ca_path)
+    headers = {
+        "Authorization": f"Bearer {sa_token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    body_bytes = json.dumps(payload).encode()
+    # PATCH (server-side apply) replaces or creates idempotently.
+    req = urllib.request.Request(
+        api + secret_path + "?fieldManager=netbox-seed&force=true",
+        method="PATCH",
+        headers={**headers, "Content-Type": "application/apply-patch+yaml"},
+        data=body_bytes,
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10, context=ctx) as r:
+            r.read()
+        print(f"published token to Secret {namespace}/{name}", flush=True)
+    except urllib.error.HTTPError as e:
+        sys.exit(f"failed to publish token Secret ({e.code}): {e.read().decode()}")
 
 
 def find_id(endpoint, **filters):
