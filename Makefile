@@ -1,4 +1,5 @@
-.PHONY: up down status render demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet help
+.PHONY: up down status render demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet \
+        scenario scenario-list scenario-hurricane scenario-backhoe scenario-cabinet scenario-flap help
 
 CLUSTER_NAME ?= atlas-demo
 TOPO_NS      ?= clabernetes
@@ -13,6 +14,11 @@ help:
 	@echo "  demo-restore         Re-enable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-cut-cabinet     Disable an interface on an FRR cabinet via vtysh (NODE=, INTERFACE= required)"
 	@echo "  demo-restore-cabinet Re-enable an interface on an FRR cabinet via vtysh (NODE=, INTERFACE= required)"
+	@echo "  scenario-list        List the canned demo outage scenarios"
+	@echo "  scenario-hurricane   Two ring segments fail in series, ~2.5 min"
+	@echo "  scenario-backhoe     One random backbone strand cut for ~2 min"
+	@echo "  scenario-cabinet     Field cabinet uplink failure, ~1.5 min"
+	@echo "  scenario-flap        Trip SRLInterfaceFlapping via rapid up/down, ~3 min"
 
 up:
 	@echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"
@@ -83,3 +89,20 @@ demo-restore-cabinet: _require_cut_vars
 	  echo "==> Bringing up $(INTERFACE) on $(NODE) ($$POD) via vtysh"; \
 	  kubectl -n $(TOPO_NS) exec $$POD -- docker exec $(NODE) \
 	    vtysh -c "configure terminal" -c "interface $(INTERFACE)" -c "no shutdown" -c "end" -c "write memory"
+
+# --- Pre-canned demo scenarios -------------------------------------------
+
+scenario-list:
+	@bin/scenarios.sh list
+
+scenario-hurricane:
+	@bin/scenarios.sh hurricane
+
+scenario-backhoe:
+	@bin/scenarios.sh backhoe
+
+scenario-cabinet:
+	@bin/scenarios.sh cabinet-loss
+
+scenario-flap:
+	@bin/scenarios.sh flapping
