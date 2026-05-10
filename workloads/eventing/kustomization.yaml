@@ -11,6 +11,7 @@ resources:
   - sensor-manual-cut.yaml
   - wft-enriched-notify.yaml
   - wft-cut-fiber.yaml
+  - wft-maintenance.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
