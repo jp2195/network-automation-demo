@@ -10,8 +10,15 @@ spec:
     - name: srl-interface
       interval: 30s
       rules:
+        # Only alert on interfaces that are administratively enabled — every
+        # IXR-D3 ships with 56 ethernet ports and the unused ones report
+        # oper-state=down by default. Joining against admin_state=1 keeps the
+        # alert firing only for links the operator actually expects up.
         - alert: SRLInterfaceOperDown
-          expr: srl_nokia_interfaces_interface_oper_state == 2
+          expr: |
+            srl_nokia_interfaces_interface_oper_state == 2
+              and on(node, interface)
+            srl_nokia_interfaces_interface_admin_state == 1
           for: 30s
           labels:
             severity: critical
@@ -22,7 +29,10 @@ spec:
               oper-state=down. Site: {{ $labels.site }} ({{ $labels.city }}). Role: {{ $labels.role }}.
 
         - alert: SRLInterfaceFlapping
-          expr: changes(srl_nokia_interfaces_interface_oper_state[5m]) > 4
+          expr: |
+            changes(srl_nokia_interfaces_interface_oper_state[5m]) > 4
+              and on(node, interface)
+            srl_nokia_interfaces_interface_admin_state == 1
           for: 1m
           labels:
             severity: warning
