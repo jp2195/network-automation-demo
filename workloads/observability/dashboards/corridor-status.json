@@ -1,0 +1,163 @@
+{
+  "annotations": {"list": [{"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {"title": "Overview", "type": "link", "url": "/d/network-overview/network-overview", "icon": "external link"},
+    {"title": "Geomap", "type": "link", "url": "/d/geomap/atlanta-metro-geomap", "icon": "external link"},
+    {"title": "Device detail", "type": "link", "url": "/d/device-detail/device-detail", "icon": "external link"},
+    {"title": "Link detail", "type": "link", "url": "/d/link-detail/link-detail", "icon": "external link"},
+    {"title": "Alert console", "type": "link", "url": "/d/alert-console/alert-console", "icon": "external link"}
+  ],
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [
+            {"options": {"1": {"color": "green", "text": "🟢 IN SERVICE"}, "2": {"color": "red", "text": "🔴 DEGRADED"}}, "type": "value"}
+          ],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}, {"color": "red", "value": 1.5}]}
+        }
+      },
+      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "title": "Corridor service status (live)",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "max by (corridor) ((srl_nokia_interfaces_interface_oper_state) * on(node, interface) group_left(corridor) link_membership_info{corridor!=\"\"})",
+          "legendFormat": "{{corridor}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 99.0}, {"color": "green", "value": 99.9}]}, "unit": "percent", "max": 100, "min": 95, "decimals": 3}
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 6},
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""},
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "title": "24-hour availability by corridor",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "100 * avg by (corridor) (avg_over_time(((srl_nokia_interfaces_interface_oper_state == 1) * on(node, interface) group_left(corridor) link_membership_info{corridor!=\"\"})[24h:1m]))",
+          "legendFormat": "{{corridor}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}, "custom": {"align": "auto"}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "State"}, "properties": [
+            {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}},
+            {"id": "mappings", "value": [{"type": "value", "options": {"1": {"color": "green", "text": "UP"}, "2": {"color": "red", "text": "DOWN"}}}]},
+            {"id": "custom.width", "value": 90}
+          ]},
+          {"matcher": {"id": "byName", "options": "Link"}, "properties": [
+            {"id": "links", "value": [{"title": "Drill into ${__value.text}", "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"}]},
+            {"id": "custom.width", "value": 200}
+          ]},
+          {"matcher": {"id": "byName", "options": "Corridor"}, "properties": [{"id": "custom.width", "value": 130}]},
+          {"matcher": {"id": "byName", "options": "SLA hrs"}, "properties": [{"id": "custom.width", "value": 80}, {"id": "unit", "value": "h"}]}
+        ]
+      },
+      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 14},
+      "id": 3,
+      "options": {"showHeader": true, "sortBy": [{"displayName": "Corridor", "desc": false}, {"displayName": "State", "desc": true}], "footer": {"show": false}, "cellHeight": "md"},
+      "title": "Cables — full inventory",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id, link_kind, corridor, cable_label, provider, restoration_sla_hours) link_membership_info{corridor!=\"\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {"id": "organize", "options": {
+          "excludeByName": {"Time": true, "__name__": true, "container": true, "endpoint": true, "instance": true, "interface_name": true, "job": true, "namespace": true, "pod": true, "service": true, "source": true, "subscription_name": true, "prometheus": true, "city": true, "site": true, "role": true, "node": true, "interface": true, "link_kind": true},
+          "indexByName": {"corridor": 0, "link_id": 1, "cable_label": 2, "provider": 3, "restoration_sla_hours": 4, "Value": 5},
+          "renameByName": {"corridor": "Corridor", "link_id": "Link", "cable_label": "Cable", "provider": "Provider", "restoration_sla_hours": "SLA hrs", "Value": "State"}
+        }}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 25, "spanNulls": true},
+          "unit": "bps"
+        }
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 28},
+      "id": 4,
+      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"]}},
+      "title": "Aggregate egress per corridor",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (corridor) (rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(corridor) link_membership_info{corridor!=\"\"}) * 8",
+          "legendFormat": "{{corridor}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}, {"color": "red", "value": 1.5}]}, "min": 0.5, "max": 2.5, "mappings": [{"options": {"1": {"color": "green", "text": "UP"}, "2": {"color": "red", "text": "DOWN"}}, "type": "value"}]},
+        "overrides": []
+      },
+      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 36},
+      "id": 5,
+      "options": {"calculate": false, "cellGap": 2, "color": {"mode": "thresholds"}, "rowsFrame": {"layout": "auto"}, "showValue": "never", "tooltip": {"show": true, "yHistogram": false}, "yAxis": {"axisPlacement": "left"}},
+      "title": "Per-corridor link state heatmap (last 30m)",
+      "type": "status-history",
+      "targets": [
+        {
+          "expr": "max by (corridor) ((srl_nokia_interfaces_interface_oper_state) * on(node, interface) group_left(corridor) link_membership_info{corridor!=\"\"})",
+          "legendFormat": "{{corridor}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["network", "atlas-dot", "demo", "corridor", "agency"],
+  "templating": {"list": []},
+  "time": {"from": "now-30m", "to": "now"},
+  "title": "Corridor service status",
+  "uid": "corridor-status",
+  "version": 1
+}

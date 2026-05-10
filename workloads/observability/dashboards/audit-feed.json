@@ -1,0 +1,148 @@
+{
+  "annotations": {"list": [{"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {"title": "Overview", "type": "link", "url": "/d/network-overview/network-overview", "icon": "external link"},
+    {"title": "Geomap", "type": "link", "url": "/d/geomap/atlanta-metro-geomap", "icon": "external link"},
+    {"title": "Topology timeline", "type": "link", "url": "/d/topology-graph/topology-timeline", "icon": "external link"},
+    {"title": "Corridor status", "type": "link", "url": "/d/corridor-status/corridor-status", "icon": "external link"},
+    {"title": "Alert console", "type": "link", "url": "/d/alert-console/alert-console", "icon": "external link"}
+  ],
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}, "unit": "short", "decimals": 0}
+      },
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "title": "Workflows last 24h",
+      "type": "stat",
+      "targets": [
+        {"expr": "sum(increase(argo_workflows_count{status=\"Succeeded\"}[24h])) or vector(0)", "refId": "A", "legendFormat": "succeeded"},
+        {"expr": "sum(increase(argo_workflows_count{status=\"Failed\"}[24h])) or vector(0)", "refId": "B", "legendFormat": "failed"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "yellow", "value": null}]}, "unit": "short", "decimals": 0}},
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 0},
+      "id": 2,
+      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "title": "Alerts dispatched 24h",
+      "type": "stat",
+      "targets": [
+        {"expr": "sum(increase(prometheus_notifications_sent_total[24h])) or vector(0)", "refId": "A", "legendFormat": "notifications"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 1}, {"color": "green", "value": 5}]}, "unit": "short", "decimals": 0}},
+      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 0},
+      "id": 3,
+      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "title": "Avg incident MTTR (24h)",
+      "type": "stat",
+      "targets": [
+        {"expr": "avg by () (avg_over_time(ALERTS{alertstate=\"firing\", severity=\"critical\"}[24h])) * 60 or vector(0)", "refId": "A", "legendFormat": "minutes"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "short", "decimals": 0}},
+      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 0},
+      "id": 4,
+      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "title": "ArgoCD syncs 24h",
+      "type": "stat",
+      "targets": [
+        {"expr": "sum(increase(argocd_app_sync_total[24h])) or vector(0)", "refId": "A", "legendFormat": "applies"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80, "barAlignment": -1}}},
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 5},
+      "id": 5,
+      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["sum"]}},
+      "title": "Workflow runs over time (by phase)",
+      "type": "timeseries",
+      "targets": [
+        {"expr": "sum by (status) (increase(argo_workflows_count[5m]))", "legendFormat": "{{status}}", "refId": "A"}
+      ]
+    },
+    {
+      "datasource": {"type": "loki", "uid": "loki"},
+      "gridPos": {"h": 12, "w": 12, "x": 0, "y": 13},
+      "id": 6,
+      "options": {"showLabels": false, "showCommonLabels": false, "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none"},
+      "title": "Sensor activity (alert in / trigger out)",
+      "type": "logs",
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "loki"},
+          "expr": "{namespace=\"argo-events\"} |~ \"Triggering actions|not interested|new event received|successfully dispatched\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "loki", "uid": "loki"},
+      "gridPos": {"h": 12, "w": 12, "x": 12, "y": 13},
+      "id": 7,
+      "options": {"showLabels": false, "showCommonLabels": false, "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none"},
+      "title": "Workflow output — enrichment + analyze + notify",
+      "type": "logs",
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "loki"},
+          "expr": "{namespace=\"argo-events\"} |~ \"affected_device|severity_class|provisioned|enrichment|posted to Slack|short-circuit\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "loki", "uid": "loki"},
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 25},
+      "id": 8,
+      "options": {"showLabels": true, "showCommonLabels": false, "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none"},
+      "title": "Operator actions — sr_cli commits on the SR Linux fleet",
+      "type": "logs",
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "loki"},
+          "expr": "{namespace=\"clabernetes\"} |~ \"(?i)(commit|admin-state|interface ethernet|All changes have been committed)\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "loki", "uid": "loki"},
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 35},
+      "id": 9,
+      "options": {"showLabels": true, "showCommonLabels": false, "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none"},
+      "title": "ArgoCD application sync events",
+      "type": "logs",
+      "targets": [
+        {
+          "datasource": {"type": "loki", "uid": "loki"},
+          "expr": "{namespace=\"argocd\"} |~ \"(?i)(sync|reconcil|operation completed|operationState)\" | json",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["network", "atlas-dot", "demo", "audit", "compliance"],
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "title": "Audit feed",
+  "uid": "audit-feed",
+  "version": 1
+}

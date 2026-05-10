@@ -39,6 +39,24 @@
       "type": "link",
       "url": "/d/link-detail/link-detail",
       "icon": "external link"
+    },
+    {
+      "title": "Corridor status",
+      "type": "link",
+      "url": "/d/corridor-status/corridor-status",
+      "icon": "external link"
+    },
+    {
+      "title": "Topology timeline",
+      "type": "link",
+      "url": "/d/topology-graph/topology-timeline",
+      "icon": "external link"
+    },
+    {
+      "title": "Audit feed",
+      "type": "link",
+      "url": "/d/audit-feed/audit-feed",
+      "icon": "external link"
     }
   ],
   "panels": [

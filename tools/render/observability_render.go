@@ -40,6 +40,16 @@ func WriteLinkMembership(w io.Writer, s *Spec) error {
 			p("            interface: %q", ep.Intf)
 			p("            link_id: %q", l.ID)
 			p("            link_kind: %q", l.Kind)
+			p("            cable_label: %q", l.Cable.Label)
+			if l.Cable.Corridor != "" {
+				p("            corridor: %q", l.Cable.Corridor)
+			}
+			if l.Cable.Provider != "" {
+				p("            provider: %q", l.Cable.Provider)
+			}
+			if l.Cable.RestorationSLAHours != 0 {
+				p("            restoration_sla_hours: %q", fmt.Sprintf("%d", l.Cable.RestorationSLAHours))
+			}
 		}
 	}
 	for _, n := range s.Nodes {
