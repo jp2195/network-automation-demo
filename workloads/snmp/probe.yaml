@@ -14,15 +14,16 @@ spec:
     path: /snmp
   targets:
     staticConfig:
-      # Alpine's net-snmp 5.9.4 refuses to bind privileged ports inside the
-      # FRR launcher's DinD; snmpd listens on udp:1161 instead (see
-      # tools/render/snmp_render.go's agentaddress). Demo-only departure
-      # from the SNMP convention.
+      # Targets the standard SNMP port (161/udp). The FRR cabinet container
+      # has CAP_NET_ADMIN + CAP_SYS_ADMIN granted via the topology kind
+      # config, so snmpd-as-root binds 161 fine; clabernetes auto-publishes
+      # 161 on the per-node Service. (Earlier versions used 1161 to dodge a
+      # privileged-port issue that turned out to be unrelated.)
       static:
-        - atlanta-fc-n.clabernetes.svc.cluster.local:1161
-        - atlanta-fc-nw.clabernetes.svc.cluster.local:1161
-        - atlanta-fc-i20e.clabernetes.svc.cluster.local:1161
-        - atlanta-fc-sw.clabernetes.svc.cluster.local:1161
+        - atlanta-fc-n.clabernetes.svc.cluster.local:161
+        - atlanta-fc-nw.clabernetes.svc.cluster.local:161
+        - atlanta-fc-i20e.clabernetes.svc.cluster.local:161
+        - atlanta-fc-sw.clabernetes.svc.cluster.local:161
       labels:
         telemetry_source: snmp
         node_role: field-cabinet
