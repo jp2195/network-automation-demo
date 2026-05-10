@@ -20,6 +20,10 @@ configMapGenerator:
       - dashboards/link-detail.json
       - dashboards/corridor-status.json
       - dashboards/topology-graph.json
+      - dashboards/routing-protocols.json
+      - dashboards/hardware-health.json
+      - dashboards/capacity-planning.json
+      - dashboards/route-flaps.json
       - dashboards/audit-feed.json
       - dashboards/alert-console.json
     options:

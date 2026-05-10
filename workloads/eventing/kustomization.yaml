@@ -12,6 +12,7 @@ resources:
   - wft-enriched-notify.yaml
   - wft-cut-fiber.yaml
   - wft-maintenance.yaml
+  - wft-incident-collector.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
@@ -22,3 +23,4 @@ configMapGenerator:
       - scripts/enrich.py
       - scripts/analyze_impact.py
       - scripts/notify.py
+      - scripts/incident_bundle.py

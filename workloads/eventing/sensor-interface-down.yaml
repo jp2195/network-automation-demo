@@ -40,3 +40,31 @@ spec:
                 dependencyName: alert
                 dataKey: body
               dest: spec.arguments.parameters.0.value
+
+    # Incident-collector runs in parallel with enrich-notify on the
+    # same alert. While enrich-notify is computing impact + paging, this
+    # one is collecting forensic state from the affected device and its
+    # ring neighbors so an on-call engineer doesn't have to.
+    - template:
+        name: incident-collector
+        k8s:
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: incident-collect-
+              spec:
+                serviceAccountName: operate-workflow-sa
+                workflowTemplateRef:
+                  name: incident-collector
+                arguments:
+                  parameters:
+                    - name: alert
+                      value: "placeholder"
+          parameters:
+            - src:
+                dependencyName: alert
+                dataKey: body
+              dest: spec.arguments.parameters.0.value

@@ -1,0 +1,151 @@
+{
+  "annotations": {"list": [{"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {"title": "Overview", "type": "link", "url": "/d/network-overview/network-overview", "icon": "external link"},
+    {"title": "Geomap", "type": "link", "url": "/d/geomap/atlanta-metro-geomap", "icon": "external link"},
+    {"title": "Routing protocols", "type": "link", "url": "/d/routing-protocols/routing-protocols", "icon": "external link"},
+    {"title": "Capacity planning", "type": "link", "url": "/d/capacity-planning/capacity-planning", "icon": "external link"},
+    {"title": "Device detail", "type": "link", "url": "/d/device-detail/device-detail", "icon": "external link"}
+  ],
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 50}, {"color": "red", "value": 65}]},
+          "unit": "celsius", "decimals": 1
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 0},
+      "id": 1,
+      "options": {
+        "minVizHeight": 60, "minVizWidth": 80, "orientation": "horizontal",
+        "reduceOptions": {"calcs": ["max"], "fields": "/.*/", "values": false},
+        "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto"
+      },
+      "title": "Chassis temperatures (peak per device)",
+      "type": "gauge",
+      "targets": [
+        {"expr": "max by (node) (chassis_temperature_celsius)", "legendFormat": "{{node}}", "refId": "A"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 20, "spanNulls": true},
+          "unit": "celsius"
+        }
+      },
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 0},
+      "id": 2,
+      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"]}},
+      "title": "Per-sensor temperature trend",
+      "type": "timeseries",
+      "targets": [
+        {"expr": "chassis_temperature_celsius", "legendFormat": "{{node}}/{{sensor}}", "refId": "A"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "yellow", "value": null}, {"color": "green", "value": 7000}, {"color": "yellow", "value": 9000}, {"color": "red", "value": 9500}]}, "unit": "rpm", "decimals": 0}
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 10},
+      "id": 3,
+      "options": {"showThresholdMarkers": true, "minVizHeight": 60, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "sizing": "auto"},
+      "title": "Fan speeds — current",
+      "type": "gauge",
+      "targets": [
+        {"expr": "fan_speed_rpm", "legendFormat": "{{node}}/{{fan}}", "refId": "A"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 200}, {"color": "green", "value": 205}, {"color": "yellow", "value": 215}, {"color": "red", "value": 220}]}, "unit": "volt", "decimals": 1}
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 10},
+      "id": 4,
+      "options": {"showThresholdMarkers": true, "minVizHeight": 60, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "sizing": "auto"},
+      "title": "PSU input voltage",
+      "type": "gauge",
+      "targets": [
+        {"expr": "psu_input_voltage_volts", "legendFormat": "{{node}}/{{psu}}", "refId": "A"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 50}, {"color": "red", "value": 80}]}, "unit": "percent", "min": 0, "max": 100}
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 18},
+      "id": 5,
+      "options": {"minVizHeight": 60, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showThresholdMarkers": true},
+      "title": "CPU utilization (real, from gNMIc)",
+      "type": "gauge",
+      "targets": [
+        {"expr": "max by (source) (srl_nokia_platform_platform_srl_nokia_platform_control_control_srl_nokia_platform_cpu_cpu_total_average_1)", "legendFormat": "{{source}}", "refId": "A"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 70}, {"color": "red", "value": 85}]}, "unit": "percent", "min": 0, "max": 100}
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 18},
+      "id": 6,
+      "options": {"minVizHeight": 60, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "showThresholdMarkers": true},
+      "title": "Memory utilization (real, from gNMIc)",
+      "type": "gauge",
+      "targets": [
+        {"expr": "max by (source) (srl_nokia_platform_platform_srl_nokia_platform_control_control_srl_nokia_platform_memory_memory_utilization)", "legendFormat": "{{source}}", "refId": "A"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}, "custom": {"align": "auto"}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "PSU State"}, "properties": [
+            {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}},
+            {"id": "mappings", "value": [{"type": "value", "options": {"1": {"color": "green", "text": "ONLINE"}, "0": {"color": "red", "text": "OFFLINE"}}}]}
+          ]},
+          {"matcher": {"id": "byName", "options": "Node"}, "properties": [
+            {"id": "links", "value": [{"title": "Open device", "url": "/d/device-detail/device-detail?var-node=${__value.text}"}]}
+          ]}
+        ]
+      },
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 26},
+      "id": 7,
+      "options": {"showHeader": true, "sortBy": [{"displayName": "Node", "desc": false}], "footer": {"show": false}},
+      "title": "PSU inventory",
+      "type": "table",
+      "targets": [
+        {"expr": "psu_state", "format": "table", "instant": true, "refId": "A"}
+      ],
+      "transformations": [
+        {"id": "organize", "options": {
+          "excludeByName": {"Time": true, "__name__": true, "container": true, "endpoint": true, "instance": true, "job": true, "namespace": true, "pod": true, "service": true, "prometheus": true},
+          "indexByName": {"node": 0, "psu": 1, "chassis": 2, "Value": 3},
+          "renameByName": {"node": "Node", "psu": "PSU", "chassis": "Chassis", "Value": "PSU State"}
+        }}
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["network", "atlas-dot", "demo", "hardware"],
+  "templating": {"list": []},
+  "time": {"from": "now-30m", "to": "now"},
+  "title": "Hardware health",
+  "uid": "hardware-health",
+  "version": 1
+}

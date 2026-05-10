@@ -1,0 +1,214 @@
+{
+  "annotations": {"list": [{"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {"title": "Overview", "type": "link", "url": "/d/network-overview/network-overview", "icon": "external link"},
+    {"title": "Geomap", "type": "link", "url": "/d/geomap/atlanta-metro-geomap", "icon": "external link"},
+    {"title": "Device detail", "type": "link", "url": "/d/device-detail/device-detail", "icon": "external link"},
+    {"title": "Topology timeline", "type": "link", "url": "/d/topology-graph/topology-timeline", "icon": "external link"},
+    {"title": "Hardware health", "type": "link", "url": "/d/hardware-health/hardware-health", "icon": "external link"}
+  ],
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 22}]},
+          "unit": "short", "decimals": 0
+        }
+      },
+      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
+      "id": 1,
+      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "title": "IS-IS adjacencies UP",
+      "type": "stat",
+      "targets": [
+        {"expr": "count(isis_adjacency_info * on(node, interface) (srl_nokia_interfaces_interface_oper_state == 1))", "refId": "A", "legendFormat": "/22 expected"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 1}, {"color": "green", "value": 4}]}, "unit": "short", "decimals": 0}},
+      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 0},
+      "id": 2,
+      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "title": "Cabinet eBGP — Established",
+      "type": "stat",
+      "targets": [
+        {"expr": "count(bgp_peer_info{peer_group=\"cabinets\"} * on(neighbor_node) group_left() (up{job=\"snmp-frr-cabinets\"} == 1))", "refId": "A", "legendFormat": "/4 expected"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}, "unit": "short", "decimals": 0}},
+      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 0},
+      "id": 3,
+      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "title": "TMC iBGP mesh",
+      "type": "stat",
+      "targets": [
+        {"expr": "count(bgp_peer_info{peer_group=\"tmc-ibgp\"})", "refId": "A", "legendFormat": "sessions"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}, "unit": "short", "decimals": 0}},
+      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 0},
+      "id": 4,
+      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "title": "Total prefixes received",
+      "type": "stat",
+      "targets": [
+        {"expr": "sum(bgp_peer_prefixes_received)", "refId": "A", "legendFormat": "prefixes"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}, {"color": "red", "value": 1.5}]}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "State"}, "properties": [
+            {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}},
+            {"id": "mappings", "value": [{"type": "value", "options": {"1": {"color": "green", "text": "✓ UP"}, "0": {"color": "red", "text": "✗ DOWN"}}}]},
+            {"id": "custom.width", "value": 90}
+          ]},
+          {"matcher": {"id": "byName", "options": "Uptime (s)"}, "properties": [{"id": "unit", "value": "s"}, {"id": "custom.width", "value": 110}]},
+          {"matcher": {"id": "byName", "options": "Node"}, "properties": [
+            {"id": "links", "value": [{"title": "Open device", "url": "/d/device-detail/device-detail?var-node=${__value.text}"}]}
+          ]},
+          {"matcher": {"id": "byName", "options": "Link"}, "properties": [
+            {"id": "links", "value": [{"title": "Open link", "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"}]}
+          ]}
+        ]
+      },
+      "gridPos": {"h": 13, "w": 12, "x": 0, "y": 5},
+      "id": 5,
+      "options": {"showHeader": true, "sortBy": [{"displayName": "State", "desc": false}, {"displayName": "Node", "desc": false}], "footer": {"show": false}, "cellHeight": "md"},
+      "title": "IS-IS adjacencies",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "(isis_adjacency_info * on(node, interface) group_left() (srl_nokia_interfaces_interface_oper_state == bool 1))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "expr": "isis_adjacency_uptime_seconds",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        }
+      ],
+      "transformations": [
+        {"id": "joinByField", "options": {"byField": "neighbor", "mode": "outer"}},
+        {"id": "organize", "options": {
+          "excludeByName": {"Time 1": true, "Time 2": true, "__name__ 1": true, "__name__ 2": true, "system_id 1": true, "system_id 2": true, "level 1": true, "level 2": true, "interface 2": true, "node 2": true, "link_id 2": true},
+          "indexByName": {"node 1": 0, "interface 1": 1, "neighbor": 2, "link_id 1": 3, "Value #A": 4, "Value #B": 5},
+          "renameByName": {"node 1": "Node", "interface 1": "Interface", "neighbor": "Neighbor", "link_id 1": "Link", "Value #A": "State", "Value #B": "Uptime (s)"}
+        }}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "thresholds"}},
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "State"}, "properties": [
+            {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}},
+            {"id": "mappings", "value": [{"type": "value", "options": {"1": {"color": "green", "text": "🟢 Established"}, "0": {"color": "red", "text": "🔴 Idle"}}}]},
+            {"id": "custom.width", "value": 130}
+          ]},
+          {"matcher": {"id": "byName", "options": "Group"}, "properties": [
+            {"id": "custom.cellOptions", "value": {"type": "color-text"}},
+            {"id": "custom.width", "value": 110}
+          ]}
+        ]
+      },
+      "gridPos": {"h": 13, "w": 12, "x": 12, "y": 5},
+      "id": 6,
+      "options": {"showHeader": true, "sortBy": [{"displayName": "Group", "desc": false}, {"displayName": "Node", "desc": false}], "footer": {"show": false}, "cellHeight": "md"},
+      "title": "BGP peers",
+      "type": "table",
+      "targets": [
+        {
+          "expr": "bgp_peer_info",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {"id": "organize", "options": {
+          "excludeByName": {"Time": true, "__name__": true, "Value": true, "container": true, "endpoint": true, "instance": true, "job": true, "namespace": true, "pod": true, "service": true, "prometheus": true},
+          "indexByName": {"node": 0, "neighbor_node": 1, "peer_address": 2, "peer_as": 3, "peer_group": 4},
+          "renameByName": {"node": "Node", "neighbor_node": "Peer", "peer_address": "Address", "peer_as": "AS", "peer_group": "Group"}
+        }},
+        {"id": "merge"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 25, "spanNulls": true, "showPoints": "always", "pointSize": 5}, "min": 0.5, "max": 1.5, "mappings": [{"options": {"1": {"color": "green", "text": "UP"}, "0": {"color": "red", "text": "DOWN"}}, "type": "value"}]}
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 18},
+      "id": 7,
+      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull"]}},
+      "title": "IS-IS adjacency state — 30 minutes",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "isis_adjacency_info * on(node, interface) (srl_nokia_interfaces_interface_oper_state == bool 1)",
+          "legendFormat": "{{node}} → {{neighbor}} ({{interface}})",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80, "barAlignment": -1}, "unit": "short", "decimals": 0}
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 26},
+      "id": 8,
+      "options": {"legend": {"displayMode": "table", "placement": "right"}},
+      "title": "BGP prefixes received by group",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "sum by (peer_group) (bgp_peer_prefixes_received)",
+          "legendFormat": "{{peer_group}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "lineWidth": 2}, "unit": "s"}},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 26},
+      "id": 9,
+      "options": {"legend": {"displayMode": "list"}},
+      "title": "Adjacency uptime distribution",
+      "type": "timeseries",
+      "targets": [
+        {"expr": "min(isis_adjacency_uptime_seconds)", "legendFormat": "min", "refId": "A"},
+        {"expr": "max(isis_adjacency_uptime_seconds)", "legendFormat": "max", "refId": "B"},
+        {"expr": "avg(isis_adjacency_uptime_seconds)", "legendFormat": "avg", "refId": "C"}
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["network", "atlas-dot", "demo", "routing", "control-plane"],
+  "templating": {"list": []},
+  "time": {"from": "now-30m", "to": "now"},
+  "title": "Routing protocols",
+  "uid": "routing-protocols",
+  "version": 1
+}
