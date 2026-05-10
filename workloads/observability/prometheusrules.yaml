@@ -10,15 +10,17 @@ spec:
     - name: srl-interface
       interval: 30s
       rules:
-        # Only alert on interfaces that are administratively enabled — every
-        # IXR-D3 ships with 56 ethernet ports and the unused ones report
-        # oper-state=down by default. Joining against admin_state=1 keeps the
-        # alert firing only for links the operator actually expects up.
+        # Only alert on interfaces that are part of the rendered topology
+        # (configured links, captured by link_membership_info). An IXR-D3
+        # exposes 56 ethernet ports; the unused ones report oper-state=down
+        # by default but no link_membership_info exists for them, so they're
+        # filtered out. Joining on link_membership_info also lifts link_id /
+        # link_kind into the alert labels for downstream enrichment.
         - alert: SRLInterfaceOperDown
           expr: |
             srl_nokia_interfaces_interface_oper_state == 2
-              and on(node, interface)
-            srl_nokia_interfaces_interface_admin_state == 1
+              * on(node, interface) group_left(link_id, link_kind)
+            link_membership_info
           for: 30s
           labels:
             severity: critical
@@ -26,13 +28,14 @@ spec:
             summary: "SRL interface {{ $labels.interface }} on {{ $labels.node }} is DOWN"
             description: |
               Interface {{ $labels.interface }} on device {{ $labels.node }} is reporting
-              oper-state=down. Site: {{ $labels.site }} ({{ $labels.city }}). Role: {{ $labels.role }}.
+              oper-state=down. Link: {{ $labels.link_id }} ({{ $labels.link_kind }}). Site:
+              {{ $labels.site }} ({{ $labels.city }}). Role: {{ $labels.role }}.
 
         - alert: SRLInterfaceFlapping
           expr: |
             changes(srl_nokia_interfaces_interface_oper_state[5m]) > 4
-              and on(node, interface)
-            srl_nokia_interfaces_interface_admin_state == 1
+              * on(node, interface) group_left(link_id, link_kind)
+            link_membership_info
           for: 1m
           labels:
             severity: warning
@@ -40,4 +43,4 @@ spec:
             summary: "SRL interface {{ $labels.interface }} on {{ $labels.node }} is flapping"
             description: |
               Interface {{ $labels.interface }} on device {{ $labels.node }} has changed
-              oper-state more than 4 times in the last 5 minutes.
+              oper-state more than 4 times in the last 5 minutes. Link: {{ $labels.link_id }}.
