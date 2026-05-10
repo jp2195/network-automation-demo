@@ -563,6 +563,106 @@
           "refId": "A"
         }
       ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "spanNulls": true
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      },
+      "title": "Transceiver case temperature",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "dom_temperature_celsius{link_id=\"$link_id\"}",
+          "legendFormat": "{{node}} {{interface}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "spanNulls": true
+          },
+          "unit": "dB",
+          "min": -10,
+          "max": 4
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 28
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "title": "Optical power (Rx/Tx)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "dom_rx_power_dbm{link_id=\"$link_id\"}",
+          "legendFormat": "{{node}} {{interface}} RX",
+          "refId": "A"
+        },
+        {
+          "expr": "dom_tx_power_dbm{link_id=\"$link_id\"}",
+          "legendFormat": "{{node}} {{interface}} TX",
+          "refId": "B"
+        }
+      ]
     }
   ],
   "refresh": "10s",

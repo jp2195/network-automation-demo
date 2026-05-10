@@ -1,30 +1,106 @@
 {
-  "annotations": {"list": [{"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
   "links": [
-    {"title": "Overview", "type": "link", "url": "/d/network-overview/network-overview", "icon": "external link"},
-    {"title": "Geomap", "type": "link", "url": "/d/geomap/atlanta-metro-geomap", "icon": "external link"},
-    {"title": "Alert console", "type": "link", "url": "/d/alert-console/alert-console", "icon": "external link"}
+    {
+      "title": "Overview",
+      "type": "link",
+      "url": "/d/network-overview/network-overview",
+      "icon": "external link"
+    },
+    {
+      "title": "Geomap",
+      "type": "link",
+      "url": "/d/geomap/atlanta-metro-geomap",
+      "icon": "external link"
+    },
+    {
+      "title": "Alert console",
+      "type": "link",
+      "url": "/d/alert-console/alert-console",
+      "icon": "external link"
+    }
   ],
   "panels": [
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [
-            {"options": {"1": {"color": "green", "text": "ALL UP"}, "2": {"color": "red", "text": "DEGRADED"}}, "type": "value"}
+            {
+              "options": {
+                "1": {
+                  "color": "green",
+                  "text": "ALL UP"
+                },
+                "2": {
+                  "color": "red",
+                  "text": "DEGRADED"
+                }
+              },
+              "type": "value"
+            }
           ],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}, {"color": "red", "value": 1.5}]}
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 1.5
+              }
+            ]
+          }
         }
       },
-      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
-      "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value"},
-      "title": "$node — overall state",
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value"
+      },
+      "title": "$node \u2014 overall state",
       "type": "stat",
       "targets": [
         {
@@ -34,82 +110,347 @@
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}, "unit": "short"}},
-      "gridPos": {"h": 5, "w": 4, "x": 6, "y": 0},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 6,
+        "y": 0
+      },
       "id": 2,
-      "options": {"colorMode": "value", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
       "title": "Role",
       "type": "stat",
       "targets": [
-        {"expr": "device_geo_info{node=\"$node\"}", "format": "table", "instant": true, "refId": "A"}
+        {
+          "expr": "device_geo_info{node=\"$node\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
       ],
       "transformations": [
-        {"id": "filterFieldsByName", "options": {"include": {"names": ["role"]}}}
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "role"
+              ]
+            }
+          }
+        }
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}}},
-      "gridPos": {"h": 5, "w": 4, "x": 10, "y": 0},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 10,
+        "y": 0
+      },
       "id": 3,
-      "options": {"colorMode": "value", "graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
       "title": "Site",
       "type": "stat",
       "targets": [
-        {"expr": "device_geo_info{node=\"$node\"}", "format": "table", "instant": true, "refId": "A"}
+        {
+          "expr": "device_geo_info{node=\"$node\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
       ],
       "transformations": [
-        {"id": "filterFieldsByName", "options": {"include": {"names": ["city"]}}}
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "city"
+              ]
+            }
+          }
+        }
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "bps"}},
-      "gridPos": {"h": 5, "w": 5, "x": 14, "y": 0},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bps"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 0
+      },
       "id": 4,
-      "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "center", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
       "title": "Total egress",
       "type": "stat",
       "targets": [
-        {"expr": "sum(rate(srl_nokia_interfaces_interface_statistics_out_octets{node=\"$node\"}[1m]) * on(node, interface) group_left link_membership_info) * 8", "refId": "A", "legendFormat": "bps"}
+        {
+          "expr": "sum(rate(srl_nokia_interfaces_interface_statistics_out_octets{node=\"$node\"}[1m]) * on(node, interface) group_left link_membership_info) * 8",
+          "refId": "A",
+          "legendFormat": "bps"
+        }
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "unit": "short", "decimals": 0}},
-      "gridPos": {"h": 5, "w": 5, "x": 19, "y": 0},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 0
+      },
       "id": 5,
-      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
       "title": "Active alerts on this device",
       "type": "stat",
       "targets": [
-        {"expr": "count(ALERTS{alertstate=\"firing\", node=\"$node\"}) or vector(0)", "refId": "A", "legendFormat": "firing"}
+        {
+          "expr": "count(ALERTS{alertstate=\"firing\", node=\"$node\"}) or vector(0)",
+          "refId": "A",
+          "legendFormat": "firing"
+        }
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}, {"color": "red", "value": 1.5}]}},
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 1.5
+              }
+            ]
+          }
+        },
         "overrides": [
-          {"matcher": {"id": "byName", "options": "Oper"}, "properties": [
-            {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}},
-            {"id": "mappings", "value": [{"type": "value", "options": {"1": {"color": "green", "text": "UP"}, "2": {"color": "red", "text": "DOWN"}}}]}
-          ]},
-          {"matcher": {"id": "byName", "options": "Link"}, "properties": [
-            {"id": "links", "value": [
-              {"title": "Drill into ${__value.text}", "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"}
-            ]},
-            {"id": "custom.width", "value": 200}
-          ]},
-          {"matcher": {"id": "byName", "options": "Kind"}, "properties": [
-            {"id": "custom.width", "value": 100}
-          ]}
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Oper"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "basic"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "1": {
+                        "color": "green",
+                        "text": "UP"
+                      },
+                      "2": {
+                        "color": "red",
+                        "text": "DOWN"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Link"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Drill into ${__value.text}",
+                    "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Kind"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          }
         ]
       },
-      "gridPos": {"h": 10, "w": 14, "x": 0, "y": 5},
+      "gridPos": {
+        "h": 10,
+        "w": 14,
+        "x": 0,
+        "y": 5
+      },
       "id": 6,
-      "options": {"showHeader": true, "footer": {"show": false}, "cellHeight": "md"},
+      "options": {
+        "showHeader": true,
+        "footer": {
+          "show": false
+        },
+        "cellHeight": "md"
+      },
       "title": "Configured links on $node",
       "type": "table",
       "targets": [
@@ -121,26 +462,98 @@
         }
       ],
       "transformations": [
-        {"id": "organize", "options": {
-          "excludeByName": {"Time": true, "__name__": true, "container": true, "endpoint": true, "instance": true, "interface_name": true, "job": true, "namespace": true, "pod": true, "service": true, "source": true, "subscription_name": true, "prometheus": true, "city": true, "site": true, "role": true, "node": true},
-          "indexByName": {"interface": 0, "link_id": 1, "link_kind": 2, "Value": 3},
-          "renameByName": {"interface": "Interface", "link_id": "Link", "link_kind": "Kind", "Value": "Oper"}
-        }}
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "container": true,
+              "endpoint": true,
+              "instance": true,
+              "interface_name": true,
+              "job": true,
+              "namespace": true,
+              "pod": true,
+              "service": true,
+              "source": true,
+              "subscription_name": true,
+              "prometheus": true,
+              "city": true,
+              "site": true,
+              "role": true,
+              "node": true
+            },
+            "indexByName": {
+              "interface": 0,
+              "link_id": 1,
+              "link_kind": 2,
+              "Value": 3
+            },
+            "renameByName": {
+              "interface": "Interface",
+              "link_id": "Link",
+              "link_kind": "Kind",
+              "Value": "Oper"
+            }
+          }
+        }
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 25, "spanNulls": true, "pointSize": 5, "showPoints": "always"},
-          "min": 0.5, "max": 2.5,
-          "mappings": [{"options": {"1": {"color": "green", "text": "UP"}, "2": {"color": "red", "text": "DOWN"}}, "type": "value"}]
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "spanNulls": true,
+            "pointSize": 5,
+            "showPoints": "always"
+          },
+          "min": 0.5,
+          "max": 2.5,
+          "mappings": [
+            {
+              "options": {
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                },
+                "2": {
+                  "color": "red",
+                  "text": "DOWN"
+                }
+              },
+              "type": "value"
+            }
+          ]
         }
       },
-      "gridPos": {"h": 10, "w": 10, "x": 14, "y": 5},
+      "gridPos": {
+        "h": 10,
+        "w": 10,
+        "x": 14,
+        "y": 5
+      },
       "id": 7,
-      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull"]}},
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
       "title": "Per-interface oper-state history",
       "type": "timeseries",
       "targets": [
@@ -152,17 +565,42 @@
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 25, "spanNulls": true},
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "spanNulls": true
+          },
           "unit": "bps"
         }
       },
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 15},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
       "id": 8,
-      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"]}},
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      },
       "title": "Bidirectional traffic by interface",
       "type": "timeseries",
       "targets": [
@@ -179,17 +617,37 @@
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {"drawStyle": "line", "lineWidth": 1, "fillOpacity": 15, "spanNulls": true},
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 15,
+            "spanNulls": true
+          },
           "unit": "pps"
         }
       },
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 15},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
       "id": 9,
-      "options": {"legend": {"displayMode": "table", "placement": "right"}},
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
       "title": "Errors and discards by interface",
       "type": "timeseries",
       "targets": [
@@ -206,17 +664,135 @@
       ]
     },
     {
-      "datasource": {"type": "loki", "uid": "loki"},
-      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 23},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
       "id": 10,
-      "options": {"showLabels": false, "showCommonLabels": false, "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none"},
+      "options": {
+        "showLabels": false,
+        "showCommonLabels": false,
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
       "title": "Pod logs for $node (Loki)",
       "type": "logs",
       "targets": [
         {
-          "datasource": {"type": "loki", "uid": "loki"},
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
           "expr": "{namespace=\"clabernetes\"} |~ \"$node\"",
           "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "spanNulls": true
+          },
+          "unit": "celsius"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 33
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ]
+        }
+      },
+      "title": "Transceiver case temperature",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "dom_temperature_celsius{node=\"$node\"}",
+          "legendFormat": "{{node}} {{interface}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 25,
+            "spanNulls": true
+          },
+          "unit": "dB",
+          "min": -10,
+          "max": 4
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "title": "Optical power (Rx/Tx)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "dom_rx_power_dbm{node=\"$node\"}",
+          "legendFormat": "{{node}} {{interface}} RX",
+          "refId": "A"
+        },
+        {
+          "expr": "dom_tx_power_dbm{node=\"$node\"}",
+          "legendFormat": "{{node}} {{interface}} TX",
+          "refId": "B"
         }
       ]
     }
@@ -224,14 +800,25 @@
   "refresh": "10s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["network", "atlas-dot", "demo", "device"],
+  "tags": [
+    "network",
+    "atlas-dot",
+    "demo",
+    "device"
+  ],
   "templating": {
     "list": [
       {
         "name": "node",
         "type": "query",
-        "datasource": {"type": "prometheus", "uid": "prometheus"},
-        "query": {"query": "label_values(device_geo_info, node)", "refId": "PrometheusVariableQueryEditor-VariableQuery"},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": {
+          "query": "label_values(device_geo_info, node)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
         "definition": "label_values(device_geo_info, node)",
         "label": "Device",
         "current": {},
@@ -242,7 +829,10 @@
       }
     ]
   },
-  "time": {"from": "now-30m", "to": "now"},
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
   "title": "Device detail",
   "uid": "device-detail",
   "version": 1
