@@ -15,6 +15,9 @@ configMapGenerator:
   - name: grafana-dashboards-network
     files:
       - dashboards/network-overview.json
+      - dashboards/geomap.json
+      - dashboards/link-detail.json
+      - dashboards/alert-console.json
     options:
       labels:
         grafana_dashboard: "1"

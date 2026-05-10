@@ -220,3 +220,603 @@ spec:
             interface: "eth1"
             link_id: "hubsw-fcsw"
             link_kind: "cabinet"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "tmc-1"
+            kind: "srlinux"
+            role: "tmc"
+            site: "forest-park"
+            city: "Forest Park"
+            lat: "33.6195"
+            lon: "-84.3705"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "tmc-2"
+            kind: "srlinux"
+            role: "tmc"
+            site: "buckhead"
+            city: "Buckhead"
+            lat: "33.8484"
+            lon: "-84.3781"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "hub-n"
+            kind: "srlinux"
+            role: "corridor-hub"
+            site: "sandy-springs"
+            city: "Sandy Springs"
+            lat: "33.9304"
+            lon: "-84.3733"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "hub-e"
+            kind: "srlinux"
+            role: "corridor-hub"
+            site: "decatur"
+            city: "Decatur"
+            lat: "33.7748"
+            lon: "-84.2963"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "hub-i20e"
+            kind: "srlinux"
+            role: "corridor-hub"
+            site: "lithonia"
+            city: "Lithonia"
+            lat: "33.7126"
+            lon: "-84.1110"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "hub-nw"
+            kind: "srlinux"
+            role: "corridor-hub"
+            site: "marietta"
+            city: "Marietta"
+            lat: "33.9526"
+            lon: "-84.5499"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "hub-sw"
+            kind: "srlinux"
+            role: "corridor-hub"
+            site: "east-point"
+            city: "East Point"
+            lat: "33.6795"
+            lon: "-84.4394"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "hub-i20w"
+            kind: "srlinux"
+            role: "corridor-hub"
+            site: "lithia-springs"
+            city: "Lithia Springs"
+            lat: "33.7793"
+            lon: "-84.6427"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "fc-n"
+            kind: "frr"
+            role: "field-cabinet"
+            site: "alpharetta"
+            city: "Alpharetta"
+            lat: "34.0754"
+            lon: "-84.2941"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "fc-nw"
+            kind: "frr"
+            role: "field-cabinet"
+            site: "kennesaw"
+            city: "Kennesaw"
+            lat: "34.0234"
+            lon: "-84.6155"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "fc-i20e"
+            kind: "frr"
+            role: "field-cabinet"
+            site: "conyers"
+            city: "Conyers"
+            lat: "33.6679"
+            lon: "-84.0177"
+        - record: device_geo_info
+          expr: vector(1)
+          labels:
+            node: "fc-sw"
+            kind: "frr"
+            role: "field-cabinet"
+            site: "newnan"
+            city: "Newnan"
+            lat: "33.3807"
+            lon: "-84.7997"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "ring-n-e"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-NE"
+            node_a: "hub-n"
+            node_b: "hub-e"
+            lat_a: "33.9304"
+            lon_a: "-84.3733"
+            lat_b: "33.7748"
+            lon_b: "-84.2963"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-n-e"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-NE"
+            seq: "1"
+            node: "hub-n"
+            lat: "33.9304"
+            lon: "-84.3733"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-n-e"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-NE"
+            seq: "2"
+            node: "hub-e"
+            lat: "33.7748"
+            lon: "-84.2963"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "ring-e-i20e"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-EI20E"
+            node_a: "hub-e"
+            node_b: "hub-i20e"
+            lat_a: "33.7748"
+            lon_a: "-84.2963"
+            lat_b: "33.7126"
+            lon_b: "-84.1110"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-e-i20e"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-EI20E"
+            seq: "1"
+            node: "hub-e"
+            lat: "33.7748"
+            lon: "-84.2963"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-e-i20e"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-EI20E"
+            seq: "2"
+            node: "hub-i20e"
+            lat: "33.7126"
+            lon: "-84.1110"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "ring-i20e-sw"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-I20ESW"
+            node_a: "hub-i20e"
+            node_b: "hub-sw"
+            lat_a: "33.7126"
+            lon_a: "-84.1110"
+            lat_b: "33.6795"
+            lon_b: "-84.4394"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-i20e-sw"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-I20ESW"
+            seq: "1"
+            node: "hub-i20e"
+            lat: "33.7126"
+            lon: "-84.1110"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-i20e-sw"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-I20ESW"
+            seq: "2"
+            node: "hub-sw"
+            lat: "33.6795"
+            lon: "-84.4394"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "ring-sw-i20w"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-SWI20W"
+            node_a: "hub-sw"
+            node_b: "hub-i20w"
+            lat_a: "33.6795"
+            lon_a: "-84.4394"
+            lat_b: "33.7793"
+            lon_b: "-84.6427"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-sw-i20w"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-SWI20W"
+            seq: "1"
+            node: "hub-sw"
+            lat: "33.6795"
+            lon: "-84.4394"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-sw-i20w"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-SWI20W"
+            seq: "2"
+            node: "hub-i20w"
+            lat: "33.7793"
+            lon: "-84.6427"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "ring-i20w-nw"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-I20WNW"
+            node_a: "hub-i20w"
+            node_b: "hub-nw"
+            lat_a: "33.7793"
+            lon_a: "-84.6427"
+            lat_b: "33.9526"
+            lon_b: "-84.5499"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-i20w-nw"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-I20WNW"
+            seq: "1"
+            node: "hub-i20w"
+            lat: "33.7793"
+            lon: "-84.6427"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-i20w-nw"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-I20WNW"
+            seq: "2"
+            node: "hub-nw"
+            lat: "33.9526"
+            lon: "-84.5499"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "ring-nw-n"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-NWN"
+            node_a: "hub-nw"
+            node_b: "hub-n"
+            lat_a: "33.9526"
+            lon_a: "-84.5499"
+            lat_b: "33.9304"
+            lon_b: "-84.3733"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-nw-n"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-NWN"
+            seq: "1"
+            node: "hub-nw"
+            lat: "33.9526"
+            lon: "-84.5499"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "ring-nw-n"
+            link_kind: "backbone"
+            cable_label: "FOC-RING-NWN"
+            seq: "2"
+            node: "hub-n"
+            lat: "33.9304"
+            lon: "-84.3733"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "tmc1-hubnw"
+            link_kind: "backbone"
+            cable_label: "FOC-NW-01"
+            node_a: "tmc-1"
+            node_b: "hub-nw"
+            lat_a: "33.6195"
+            lon_a: "-84.3705"
+            lat_b: "33.9526"
+            lon_b: "-84.5499"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "tmc1-hubnw"
+            link_kind: "backbone"
+            cable_label: "FOC-NW-01"
+            seq: "1"
+            node: "tmc-1"
+            lat: "33.6195"
+            lon: "-84.3705"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "tmc1-hubnw"
+            link_kind: "backbone"
+            cable_label: "FOC-NW-01"
+            seq: "2"
+            node: "hub-nw"
+            lat: "33.9526"
+            lon: "-84.5499"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "tmc1-hubsw"
+            link_kind: "backbone"
+            cable_label: "FOC-SW-01"
+            node_a: "tmc-1"
+            node_b: "hub-sw"
+            lat_a: "33.6195"
+            lon_a: "-84.3705"
+            lat_b: "33.6795"
+            lon_b: "-84.4394"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "tmc1-hubsw"
+            link_kind: "backbone"
+            cable_label: "FOC-SW-01"
+            seq: "1"
+            node: "tmc-1"
+            lat: "33.6195"
+            lon: "-84.3705"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "tmc1-hubsw"
+            link_kind: "backbone"
+            cable_label: "FOC-SW-01"
+            seq: "2"
+            node: "hub-sw"
+            lat: "33.6795"
+            lon: "-84.4394"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "tmc2-hubn"
+            link_kind: "backbone"
+            cable_label: "FOC-N-01"
+            node_a: "tmc-2"
+            node_b: "hub-n"
+            lat_a: "33.8484"
+            lon_a: "-84.3781"
+            lat_b: "33.9304"
+            lon_b: "-84.3733"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "tmc2-hubn"
+            link_kind: "backbone"
+            cable_label: "FOC-N-01"
+            seq: "1"
+            node: "tmc-2"
+            lat: "33.8484"
+            lon: "-84.3781"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "tmc2-hubn"
+            link_kind: "backbone"
+            cable_label: "FOC-N-01"
+            seq: "2"
+            node: "hub-n"
+            lat: "33.9304"
+            lon: "-84.3733"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "tmc2-hube"
+            link_kind: "backbone"
+            cable_label: "FOC-E-01"
+            node_a: "tmc-2"
+            node_b: "hub-e"
+            lat_a: "33.8484"
+            lon_a: "-84.3781"
+            lat_b: "33.7748"
+            lon_b: "-84.2963"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "tmc2-hube"
+            link_kind: "backbone"
+            cable_label: "FOC-E-01"
+            seq: "1"
+            node: "tmc-2"
+            lat: "33.8484"
+            lon: "-84.3781"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "tmc2-hube"
+            link_kind: "backbone"
+            cable_label: "FOC-E-01"
+            seq: "2"
+            node: "hub-e"
+            lat: "33.7748"
+            lon: "-84.2963"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "tmc1-tmc2"
+            link_kind: "backbone"
+            cable_label: "FOC-TMC-XC"
+            node_a: "tmc-1"
+            node_b: "tmc-2"
+            lat_a: "33.6195"
+            lon_a: "-84.3705"
+            lat_b: "33.8484"
+            lon_b: "-84.3781"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "tmc1-tmc2"
+            link_kind: "backbone"
+            cable_label: "FOC-TMC-XC"
+            seq: "1"
+            node: "tmc-1"
+            lat: "33.6195"
+            lon: "-84.3705"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "tmc1-tmc2"
+            link_kind: "backbone"
+            cable_label: "FOC-TMC-XC"
+            seq: "2"
+            node: "tmc-2"
+            lat: "33.8484"
+            lon: "-84.3781"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "hubn-fcn"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-N"
+            node_a: "hub-n"
+            node_b: "fc-n"
+            lat_a: "33.9304"
+            lon_a: "-84.3733"
+            lat_b: "34.0754"
+            lon_b: "-84.2941"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "hubn-fcn"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-N"
+            seq: "1"
+            node: "hub-n"
+            lat: "33.9304"
+            lon: "-84.3733"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "hubn-fcn"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-N"
+            seq: "2"
+            node: "fc-n"
+            lat: "34.0754"
+            lon: "-84.2941"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "hubnw-fcnw"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-NW"
+            node_a: "hub-nw"
+            node_b: "fc-nw"
+            lat_a: "33.9526"
+            lon_a: "-84.5499"
+            lat_b: "34.0234"
+            lon_b: "-84.6155"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "hubnw-fcnw"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-NW"
+            seq: "1"
+            node: "hub-nw"
+            lat: "33.9526"
+            lon: "-84.5499"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "hubnw-fcnw"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-NW"
+            seq: "2"
+            node: "fc-nw"
+            lat: "34.0234"
+            lon: "-84.6155"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "hubi20e-fci20e"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-I20E"
+            node_a: "hub-i20e"
+            node_b: "fc-i20e"
+            lat_a: "33.7126"
+            lon_a: "-84.1110"
+            lat_b: "33.6679"
+            lon_b: "-84.0177"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "hubi20e-fci20e"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-I20E"
+            seq: "1"
+            node: "hub-i20e"
+            lat: "33.7126"
+            lon: "-84.1110"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "hubi20e-fci20e"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-I20E"
+            seq: "2"
+            node: "fc-i20e"
+            lat: "33.6679"
+            lon: "-84.0177"
+        - record: link_geo_segment
+          expr: vector(1)
+          labels:
+            link_id: "hubsw-fcsw"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-SW"
+            node_a: "hub-sw"
+            node_b: "fc-sw"
+            lat_a: "33.6795"
+            lon_a: "-84.4394"
+            lat_b: "33.3807"
+            lon_b: "-84.7997"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "hubsw-fcsw"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-SW"
+            seq: "1"
+            node: "hub-sw"
+            lat: "33.6795"
+            lon: "-84.4394"
+        - record: link_endpoint_geo
+          expr: vector(1)
+          labels:
+            link_id: "hubsw-fcsw"
+            link_kind: "cabinet"
+            cable_label: "FOC-CAB-SW"
+            seq: "2"
+            node: "fc-sw"
+            lat: "33.3807"
+            lon: "-84.7997"
