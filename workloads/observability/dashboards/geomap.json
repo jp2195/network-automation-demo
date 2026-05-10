@@ -24,6 +24,12 @@
       "icon": "external link"
     },
     {
+      "title": "Device detail",
+      "type": "link",
+      "url": "/d/device-detail/device-detail",
+      "icon": "external link"
+    },
+    {
       "title": "Link detail",
       "type": "link",
       "url": "/d/link-detail/link-detail",
