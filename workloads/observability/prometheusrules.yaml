@@ -18,7 +18,7 @@ spec:
         # link_kind into the alert labels for downstream enrichment.
         - alert: SRLInterfaceOperDown
           expr: |
-            srl_nokia_interfaces_interface_oper_state == 2
+            (srl_nokia_interfaces_interface_oper_state == 2)
               * on(node, interface) group_left(link_id, link_kind)
             link_membership_info
           for: 30s
@@ -33,7 +33,7 @@ spec:
 
         - alert: SRLInterfaceFlapping
           expr: |
-            changes(srl_nokia_interfaces_interface_oper_state[5m]) > 4
+            (changes(srl_nokia_interfaces_interface_oper_state[5m]) > 4)
               * on(node, interface) group_left(link_id, link_kind)
             link_membership_info
           for: 1m
