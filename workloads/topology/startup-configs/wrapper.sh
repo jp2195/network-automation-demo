@@ -8,8 +8,12 @@ if ! command -v snmpd >/dev/null 2>&1; then
 fi
 
 if command -v snmpd >/dev/null 2>&1; then
+  # Don't pass -c: net-snmp's default search already includes
+  # /etc/snmp/snmpd.conf, and adding it via -c reads the same file twice,
+  # which generates two agentaddress transports and binds udp:1161 twice
+  # — second bind hits EADDRINUSE and snmpd exits before serving traffic.
   # Background + tolerate failure so a snmpd hiccup never wedges FRR.
-  snmpd -c /etc/snmp/snmpd.conf -Lf /tmp/snmpd.log &
+  snmpd -Lf /tmp/snmpd.log &
 fi
 
 exec /usr/lib/frr/docker-start
