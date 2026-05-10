@@ -1,0 +1,166 @@
+{
+  "annotations": {"list": [{"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {"title": "Overview", "type": "link", "url": "/d/network-overview/network-overview", "icon": "external link"},
+    {"title": "Geomap", "type": "link", "url": "/d/geomap/atlanta-metro-geomap", "icon": "external link"},
+    {"title": "Device detail", "type": "link", "url": "/d/device-detail/device-detail", "icon": "external link"},
+    {"title": "Link detail", "type": "link", "url": "/d/link-detail/link-detail", "icon": "external link"},
+    {"title": "Corridor status", "type": "link", "url": "/d/corridor-status/corridor-status", "icon": "external link"}
+  ],
+  "panels": [
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [{"options": {"1": {"color": "green", "text": "UP"}, "2": {"color": "red", "text": "DOWN"}}, "type": "value"}],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}, {"color": "red", "value": 1.5}]},
+          "min": 0.5, "max": 2.5
+        }
+      },
+      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "options": {
+        "alignValue": "left",
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": false},
+        "mergeValues": true,
+        "rowHeight": 0.85,
+        "showValue": "never",
+        "tooltip": {"mode": "single"}
+      },
+      "title": "Backbone link state — 1 hour",
+      "type": "state-timeline",
+      "targets": [
+        {
+          "expr": "srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_kind=\"backbone\"}",
+          "legendFormat": "{{link_id}} ({{node}}/{{interface}})",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [{"options": {"1": {"color": "green", "text": "UP"}, "2": {"color": "red", "text": "DOWN"}}, "type": "value"}],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}, {"color": "red", "value": 1.5}]},
+          "min": 0.5, "max": 2.5
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+      "id": 2,
+      "options": {
+        "alignValue": "left",
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": false},
+        "mergeValues": true,
+        "rowHeight": 0.85,
+        "showValue": "never"
+      },
+      "title": "Cabinet uplinks (SR Linux side)",
+      "type": "state-timeline",
+      "targets": [
+        {
+          "expr": "srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_kind=\"cabinet\"}",
+          "legendFormat": "{{link_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [{"options": {"1": {"color": "green", "text": "RESPONDING"}, "0": {"color": "red", "text": "UNREACHABLE"}}, "type": "value"}],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 0.5}]},
+          "min": -0.5, "max": 1.5
+        }
+      },
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+      "id": 3,
+      "options": {
+        "alignValue": "left",
+        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": false},
+        "mergeValues": true,
+        "rowHeight": 0.85,
+        "showValue": "never"
+      },
+      "title": "Cabinet SNMP reachability (FRR side)",
+      "type": "state-timeline",
+      "targets": [
+        {"expr": "up{job=\"snmp-frr-cabinets\"}", "legendFormat": "{{node}}", "refId": "A"}
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 4}]},
+          "unit": "short", "decimals": 0
+        }
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 22},
+      "id": 4,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": {"unit": "short", "decimals": 0},
+        "color": {"exponent": 0.5, "fill": "dark-orange", "mode": "scheme", "scale": "exponential", "scheme": "Reds", "steps": 32},
+        "exemplars": {"color": "rgba(255,0,255,0.7)"},
+        "filterValues": {"le": 1e-9},
+        "legend": {"show": false},
+        "rowsFrame": {"layout": "auto"},
+        "tooltip": {"show": true, "yHistogram": false},
+        "yAxis": {"axisPlacement": "left", "reverse": false}
+      },
+      "title": "Flap heatmap — interface oper-state changes (5-min windows)",
+      "type": "heatmap",
+      "targets": [
+        {
+          "expr": "sum by (link_id) (changes(srl_nokia_interfaces_interface_oper_state[5m]) * on(node, interface) group_left(link_id) link_membership_info)",
+          "legendFormat": "{{link_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 50}, {"color": "red", "value": 80}]},
+          "unit": "percent", "min": 0, "max": 100
+        }
+      },
+      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 30},
+      "id": 5,
+      "options": {
+        "minVizHeight": 75, "minVizWidth": 75, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto"
+      },
+      "title": "Backbone link utilization (% of 10G — synthetic)",
+      "type": "gauge",
+      "targets": [
+        {
+          "expr": "100 * (sum by (link_id) (rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_kind=\"backbone\"}) * 8 / 1e10)",
+          "legendFormat": "{{link_id}}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["network", "atlas-dot", "demo", "topology"],
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "title": "Topology timeline",
+  "uid": "topology-graph",
+  "version": 1
+}

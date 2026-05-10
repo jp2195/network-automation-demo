@@ -18,6 +18,9 @@ configMapGenerator:
       - dashboards/geomap.json
       - dashboards/device-detail.json
       - dashboards/link-detail.json
+      - dashboards/corridor-status.json
+      - dashboards/topology-graph.json
+      - dashboards/audit-feed.json
       - dashboards/alert-console.json
     options:
       labels:

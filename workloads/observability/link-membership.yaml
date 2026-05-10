@@ -17,6 +17,10 @@ spec:
             interface: "ethernet-1/1"
             link_id: "ring-n-e"
             link_kind: "backbone"
+            cable_label: "FOC-RING-NE"
+            corridor: "I-285"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -24,6 +28,10 @@ spec:
             interface: "ethernet-1/2"
             link_id: "ring-n-e"
             link_kind: "backbone"
+            cable_label: "FOC-RING-NE"
+            corridor: "I-285"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -31,6 +39,10 @@ spec:
             interface: "ethernet-1/1"
             link_id: "ring-e-i20e"
             link_kind: "backbone"
+            cable_label: "FOC-RING-EI20E"
+            corridor: "I-285"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -38,6 +50,10 @@ spec:
             interface: "ethernet-1/2"
             link_id: "ring-e-i20e"
             link_kind: "backbone"
+            cable_label: "FOC-RING-EI20E"
+            corridor: "I-285"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -45,6 +61,10 @@ spec:
             interface: "ethernet-1/1"
             link_id: "ring-i20e-sw"
             link_kind: "backbone"
+            cable_label: "FOC-RING-I20ESW"
+            corridor: "I-285"
+            provider: "cascade-telecom"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -52,6 +72,10 @@ spec:
             interface: "ethernet-1/2"
             link_id: "ring-i20e-sw"
             link_kind: "backbone"
+            cable_label: "FOC-RING-I20ESW"
+            corridor: "I-285"
+            provider: "cascade-telecom"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -59,6 +83,10 @@ spec:
             interface: "ethernet-1/1"
             link_id: "ring-sw-i20w"
             link_kind: "backbone"
+            cable_label: "FOC-RING-SWI20W"
+            corridor: "I-285"
+            provider: "cascade-telecom"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -66,6 +94,10 @@ spec:
             interface: "ethernet-1/2"
             link_id: "ring-sw-i20w"
             link_kind: "backbone"
+            cable_label: "FOC-RING-SWI20W"
+            corridor: "I-285"
+            provider: "cascade-telecom"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -73,6 +105,10 @@ spec:
             interface: "ethernet-1/1"
             link_id: "ring-i20w-nw"
             link_kind: "backbone"
+            cable_label: "FOC-RING-I20WNW"
+            corridor: "I-285"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -80,6 +116,10 @@ spec:
             interface: "ethernet-1/2"
             link_id: "ring-i20w-nw"
             link_kind: "backbone"
+            cable_label: "FOC-RING-I20WNW"
+            corridor: "I-285"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -87,6 +127,10 @@ spec:
             interface: "ethernet-1/1"
             link_id: "ring-nw-n"
             link_kind: "backbone"
+            cable_label: "FOC-RING-NWN"
+            corridor: "I-285"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -94,6 +138,10 @@ spec:
             interface: "ethernet-1/2"
             link_id: "ring-nw-n"
             link_kind: "backbone"
+            cable_label: "FOC-RING-NWN"
+            corridor: "I-285"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -101,6 +149,10 @@ spec:
             interface: "ethernet-1/1"
             link_id: "tmc1-hubnw"
             link_kind: "backbone"
+            cable_label: "FOC-NW-01"
+            corridor: "I-75 NW"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -108,6 +160,10 @@ spec:
             interface: "ethernet-1/3"
             link_id: "tmc1-hubnw"
             link_kind: "backbone"
+            cable_label: "FOC-NW-01"
+            corridor: "I-75 NW"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -115,6 +171,10 @@ spec:
             interface: "ethernet-1/2"
             link_id: "tmc1-hubsw"
             link_kind: "backbone"
+            cable_label: "FOC-SW-01"
+            corridor: "I-85 SW"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -122,6 +182,10 @@ spec:
             interface: "ethernet-1/3"
             link_id: "tmc1-hubsw"
             link_kind: "backbone"
+            cable_label: "FOC-SW-01"
+            corridor: "I-85 SW"
+            provider: "apex-fiber"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -129,6 +193,10 @@ spec:
             interface: "ethernet-1/1"
             link_id: "tmc2-hubn"
             link_kind: "backbone"
+            cable_label: "FOC-N-01"
+            corridor: "GA-400"
+            provider: "cascade-telecom"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -136,6 +204,10 @@ spec:
             interface: "ethernet-1/3"
             link_id: "tmc2-hubn"
             link_kind: "backbone"
+            cable_label: "FOC-N-01"
+            corridor: "GA-400"
+            provider: "cascade-telecom"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -143,6 +215,10 @@ spec:
             interface: "ethernet-1/2"
             link_id: "tmc2-hube"
             link_kind: "backbone"
+            cable_label: "FOC-E-01"
+            corridor: "I-285 East"
+            provider: "cascade-telecom"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -150,6 +226,10 @@ spec:
             interface: "ethernet-1/3"
             link_id: "tmc2-hube"
             link_kind: "backbone"
+            cable_label: "FOC-E-01"
+            corridor: "I-285 East"
+            provider: "cascade-telecom"
+            restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -157,6 +237,10 @@ spec:
             interface: "ethernet-1/3"
             link_id: "tmc1-tmc2"
             link_kind: "backbone"
+            cable_label: "FOC-TMC-XC"
+            corridor: "TMC Interconnect"
+            provider: "adot-owned"
+            restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -164,6 +248,10 @@ spec:
             interface: "ethernet-1/3"
             link_id: "tmc1-tmc2"
             link_kind: "backbone"
+            cable_label: "FOC-TMC-XC"
+            corridor: "TMC Interconnect"
+            provider: "adot-owned"
+            restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -171,6 +259,10 @@ spec:
             interface: "ethernet-1/4"
             link_id: "hubn-fcn"
             link_kind: "cabinet"
+            cable_label: "FOC-CAB-N"
+            corridor: "GA-400"
+            provider: "adot-owned"
+            restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -178,6 +270,10 @@ spec:
             interface: "eth1"
             link_id: "hubn-fcn"
             link_kind: "cabinet"
+            cable_label: "FOC-CAB-N"
+            corridor: "GA-400"
+            provider: "adot-owned"
+            restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -185,6 +281,10 @@ spec:
             interface: "ethernet-1/4"
             link_id: "hubnw-fcnw"
             link_kind: "cabinet"
+            cable_label: "FOC-CAB-NW"
+            corridor: "I-75 NW"
+            provider: "adot-owned"
+            restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -192,6 +292,10 @@ spec:
             interface: "eth1"
             link_id: "hubnw-fcnw"
             link_kind: "cabinet"
+            cable_label: "FOC-CAB-NW"
+            corridor: "I-75 NW"
+            provider: "adot-owned"
+            restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -199,6 +303,10 @@ spec:
             interface: "ethernet-1/4"
             link_id: "hubi20e-fci20e"
             link_kind: "cabinet"
+            cable_label: "FOC-CAB-I20E"
+            corridor: "I-20 East"
+            provider: "adot-owned"
+            restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -206,6 +314,10 @@ spec:
             interface: "eth1"
             link_id: "hubi20e-fci20e"
             link_kind: "cabinet"
+            cable_label: "FOC-CAB-I20E"
+            corridor: "I-20 East"
+            provider: "adot-owned"
+            restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -213,6 +325,10 @@ spec:
             interface: "ethernet-1/4"
             link_id: "hubsw-fcsw"
             link_kind: "cabinet"
+            cable_label: "FOC-CAB-SW"
+            corridor: "I-85 SW"
+            provider: "adot-owned"
+            restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
           labels:
@@ -220,6 +336,10 @@ spec:
             interface: "eth1"
             link_id: "hubsw-fcsw"
             link_kind: "cabinet"
+            cable_label: "FOC-CAB-SW"
+            corridor: "I-85 SW"
+            provider: "adot-owned"
+            restoration_sla_hours: "8"
         - record: device_geo_info
           expr: vector(1)
           labels:
