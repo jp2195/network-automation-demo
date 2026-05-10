@@ -1,0 +1,176 @@
+# Demo runbook
+
+A repeatable script for running the live demo end-to-end. Assumes the
+reader has already followed the README to bring `atlas-demo` up.
+
+## Pre-demo checklist
+
+Run all of these before you stand in front of an audience.
+
+```bash
+# 1. cluster + apps healthy
+kubectl -n argocd get applications --no-headers | awk '$2!="Synced" || $3!="Healthy"'
+# expected: empty output, all 19 apps Synced/Healthy
+
+# 2. all 12 lab pods ready
+kubectl -n clabernetes get pods | awk '/atlanta/ && !/1\/1.*Running/'
+# expected: empty output
+
+# 3. IS-IS converged (each SR Linux node has 3 adjacencies)
+for n in tmc-1 tmc-2 hub-n hub-e hub-i20e hub-nw hub-sw hub-i20w; do
+  P=$(kubectl -n clabernetes get pods -l clabernetes/topologyOwner=atlanta,clabernetes/topologyNode=$n -o jsonpath='{.items[0].metadata.name}')
+  CNT=$(kubectl -n clabernetes exec "$P" -- docker exec $n bash -c "echo 'show network-instance default protocols isis adjacency' | sr_cli" 2>/dev/null | grep -c "| up ")
+  printf "%-12s %s adjacencies\n" "$n" "$CNT"
+done
+# expected: tmc-1=3 tmc-2=3 hub-* = 3 each
+
+# 4. gnmic emits oper_state metrics
+kubectl -n monitoring port-forward svc/gnmic 9804:9804 >/dev/null 2>&1 &
+sleep 2
+curl -s http://127.0.0.1:9804/metrics | grep -c "^srl_nokia_interfaces_interface_oper_state{"
+# expected: ~272 series (8 nodes × 34 ports, varies)
+
+# 5. snmp probes return 200
+for n in fc-n fc-nw fc-i20e fc-sw; do
+  echo -n "$n: "
+  kubectl -n monitoring exec deploy/snmp-exporter -- wget -qO- "http://localhost:9116/snmp?target=atlanta-$n.clabernetes.svc.cluster.local:161&module=if_mib&auth=public_v2" >/dev/null 2>&1 && echo OK || echo FAIL
+done
+
+# 6. argo-events sensor connected
+kubectl -n argo-events logs -l sensor-name=interface-down --tail=5 | grep -i "started subscribing"
+# expected: a "started subscribing" line per restart
+
+# 7. dom-synth pumping
+kubectl -n monitoring port-forward svc/dom-synth 8000:8000 >/dev/null 2>&1 &
+sleep 2
+curl -s http://127.0.0.1:8000/metrics | grep -c "^dom_temperature_celsius"
+# expected: 26
+```
+
+## URLs to have open in tabs
+
+| Tab | URL |
+|---|---|
+| Grafana — Network overview | https://grafana.127-0-0-1.nip.io/d/network-overview |
+| Grafana — Atlanta metro Geomap | https://grafana.127-0-0-1.nip.io/d/geomap |
+| Grafana — Device detail | https://grafana.127-0-0-1.nip.io/d/device-detail |
+| Grafana — Link detail | https://grafana.127-0-0-1.nip.io/d/link-detail |
+| Grafana — Alert console | https://grafana.127-0-0-1.nip.io/d/alert-console |
+| ArgoCD | https://localhost:8443 (port-forward 8080:443 from argocd-server) |
+| NetBox | https://netbox.127-0-0-1.nip.io |
+| Argo Workflows UI | https://workflows.127-0-0-1.nip.io |
+| clabernetes UI | https://clabernetes.127-0-0-1.nip.io |
+
+## The demo (≈10 minutes)
+
+### Act 1 — set the stage (≈2 min)
+
+Open **Geomap** first.
+
+> Atlas DOT runs a metro fiber network across Atlanta — eight SR Linux
+> backbone routers, a closed FOC ring, four legacy field cabinets at the
+> edge running FRR. All twelve sites here are real Atlanta neighborhoods.
+
+Click into **Network overview**.
+
+> Top bar: 8 nodes UP, 11 backbone links lit, 4 cabinets reachable, 0
+> critical alerts. Aggregate egress is the math homework.
+>
+> The configured-links table is interesting because clicking a row drills
+> in — a Link cell goes to the link-detail dashboard, a Device cell goes
+> to device-detail.
+
+Click into **Device detail** for one of the corridor hubs.
+
+> This is per-device. All its interfaces, oper-state stepper, traffic in
+> and out (in is negated so it mirrors), errors and discards, and at the
+> bottom — transceiver case temperature and Rx/Tx optical power per
+> port.
+
+### Act 2 — cut the fiber (≈3 min)
+
+> Watch the Geomap. I'm going to admin-disable a single interface — same
+> effect on neighbours as a fiber cut. The peer end is still cabled, the
+> link goes oper-down on both sides.
+
+```bash
+make demo-cut NODE=hub-i20e INTERFACE=ethernet-1/2
+```
+
+> Twenty seconds later — Prometheus picks up oper_state=2. The alert is
+> in pending. Thirty seconds after that — firing.
+
+Switch to **Alert console**.
+
+> One row appears, severity-coded. Notice the Link column already has
+> the link_id — `ring-e-i20e` — and the Kind column says `backbone`.
+> That came from the recording rule join, not from the alert template.
+
+Switch to the **Argo Workflows UI**.
+
+> A new `enrich-notify-XXXXX` workflow ran. Click it.
+>
+> Three steps. The `enrich` step hit NetBox — site, agency, cable
+> label. The `analyze` step walked the cable graph from there:
+> hub-i20e is a corridor hub, so taking it down isolates its
+> field cabinet (fc-i20e) AND removes one ring segment.
+> Severity: high.
+>
+> The `notify` step would post to Slack — for this demo it's
+> short-circuited to stderr because we deliberately don't ship a Slack
+> token in the public repo.
+
+### Act 3 — restore + close (≈2 min)
+
+```bash
+make demo-restore NODE=hub-i20e INTERFACE=ethernet-1/2
+```
+
+> Within a minute the alert clears. The line on the Geomap goes green
+> again. If we'd posted to Slack, you'd now see the original message
+> updated with a ✅ + downtime computed from `alert.startsAt → endsAt`,
+> plus a threaded resolution summary. The Valkey ledger key gets DEL'd.
+
+### Act 4 (optional, advanced) — the legacy edge (≈3 min)
+
+Same demo, but cut a cabinet's interface via FRR.
+
+```bash
+make demo-cut-cabinet NODE=fc-n INTERFACE=eth1
+```
+
+> No SR Linux involvement here. The cabinet is FRR; its only telemetry
+> is SNMPv2c on udp:161. The same workflow fires — the demo shows that
+> mixed-vendor fleets don't have to rip-and-replace to get unified
+> alerting and enrichment.
+
+```bash
+make demo-restore-cabinet NODE=fc-n INTERFACE=eth1
+```
+
+## Optional Slack hook-up
+
+If you want real Slack messages instead of stderr:
+
+```bash
+kubectl -n argo-events create secret generic slack-bot \
+  --from-literal=bot_token='xoxb-...' \
+  --from-literal=channel_id='C0123456789'
+```
+
+The next workflow run picks it up via `secretKeyRef.optional: true`.
+Resolution updates the original message and threads a summary.
+
+## Soft reset
+
+If anything's stuck mid-demo, the cleanest reset is:
+
+```bash
+make demo-restore NODE=<X> INTERFACE=<Y>      # un-cut
+kubectl -n argo-events delete wf --all        # drop in-flight workflows
+kubectl -n argo-events get sensors interface-down -o yaml | \
+  kubectl apply -f -                          # re-arm sensor (occasionally needed)
+```
+
+Hard reset (re-creates everything from git): see
+`docs/runbook-troubleshoot.md`.
