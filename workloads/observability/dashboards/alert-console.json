@@ -1,178 +1,603 @@
 {
-  "annotations": {"list": [{"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
   "editable": true,
   "graphTooltip": 0,
   "id": null,
   "links": [
-    {"title": "Overview", "type": "link", "url": "/d/network-overview/network-overview", "icon": "external link"},
-    {"title": "Geomap", "type": "link", "url": "/d/geomap/atlanta-metro-geomap", "icon": "external link"},
-    {"title": "Link detail", "type": "link", "url": "/d/link-detail/link-detail", "icon": "external link"}
+    {
+      "title": "Overview",
+      "type": "link",
+      "url": "/d/network-overview/network-overview",
+      "icon": "external link"
+    },
+    {
+      "title": "Device detail",
+      "type": "link",
+      "url": "/d/device-detail/device-detail",
+      "icon": "external link"
+    },
+    {
+      "title": "Geomap",
+      "type": "link",
+      "url": "/d/geomap/atlanta-metro-geomap",
+      "icon": "external link"
+    },
+    {
+      "title": "Link detail",
+      "type": "link",
+      "url": "/d/link-detail/link-detail",
+      "icon": "external link"
+    }
   ],
   "panels": [
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]},
-          "unit": "short", "decimals": 0
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
         }
       },
-      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "value_and_name",
         "wideLayout": true
       },
       "title": "Critical alerts",
       "type": "stat",
       "targets": [
-        {"expr": "count(ALERTS{alertstate=\"firing\", severity=\"critical\"}) or vector(0)", "refId": "A", "legendFormat": "firing"}
+        {
+          "expr": "count(ALERTS{alertstate=\"firing\", severity=\"critical\"}) or vector(0)",
+          "refId": "A",
+          "legendFormat": "firing"
+        }
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}]}, "unit": "short", "decimals": 0}
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
       },
-      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
       "id": 2,
-      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
       "title": "Warning alerts",
       "type": "stat",
       "targets": [
-        {"expr": "count(ALERTS{alertstate=\"firing\", severity=\"warning\"}) or vector(0)", "refId": "A", "legendFormat": "firing"}
+        {
+          "expr": "count(ALERTS{alertstate=\"firing\", severity=\"warning\"}) or vector(0)",
+          "refId": "A",
+          "legendFormat": "firing"
+        }
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}]}, "unit": "short", "decimals": 0}
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
       },
-      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
       "id": 3,
-      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
       "title": "Pending alerts",
       "type": "stat",
       "targets": [
-        {"expr": "count(ALERTS{alertstate=\"pending\"}) or vector(0)", "refId": "A", "legendFormat": "pending"}
+        {
+          "expr": "count(ALERTS{alertstate=\"pending\"}) or vector(0)",
+          "refId": "A",
+          "legendFormat": "pending"
+        }
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}, "unit": "short", "decimals": 0}
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
       },
-      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
       "id": 4,
-      "options": {"colorMode": "background", "graphMode": "area", "justifyMode": "center", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
       "title": "Workflows triggered (1h)",
       "type": "stat",
       "targets": [
-        {"expr": "sum(increase(workflows_processed_total[1h])) or vector(0)", "refId": "A", "legendFormat": "runs"}
+        {
+          "expr": "sum(increase(workflows_processed_total[1h])) or vector(0)",
+          "refId": "A",
+          "legendFormat": "runs"
+        }
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "custom": {"align": "auto"}},
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto"
+          }
+        },
         "overrides": [
-          {"matcher": {"id": "byName", "options": "Severity"}, "properties": [
-            {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "gradient"}},
-            {"id": "mappings", "value": [{"type": "value", "options": {"critical": {"color": "red", "text": "🔥 CRITICAL"}, "warning": {"color": "yellow", "text": "⚠ WARNING"}}}]},
-            {"id": "custom.width", "value": 130}
-          ]},
-          {"matcher": {"id": "byName", "options": "Alert"}, "properties": [
-            {"id": "custom.width", "value": 230}
-          ]},
-          {"matcher": {"id": "byName", "options": "Telemetry"}, "properties": [
-            {"id": "custom.cellOptions", "value": {"type": "color-text"}},
-            {"id": "mappings", "value": [{"type": "value", "options": {"snmp": {"color": "orange", "text": "snmp"}, "gnmi": {"color": "blue", "text": "gnmi"}}}]}
-          ]}
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Severity"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background",
+                  "mode": "gradient"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "critical": {
+                        "color": "red",
+                        "text": "\ud83d\udd25 CRITICAL"
+                      },
+                      "warning": {
+                        "color": "yellow",
+                        "text": "\u26a0 WARNING"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Alert"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 230
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Telemetry"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "snmp": {
+                        "color": "orange",
+                        "text": "snmp"
+                      },
+                      "gnmi": {
+                        "color": "blue",
+                        "text": "gnmi"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Device"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open device detail",
+                    "url": "/d/device-detail/device-detail?var-node=${__value.text}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Link"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open link detail",
+                    "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"
+                  }
+                ]
+              }
+            ]
+          }
         ]
       },
-      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 6},
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
       "id": 5,
-      "options": {"showHeader": true, "sortBy": [{"displayName": "Severity", "desc": true}, {"displayName": "Started", "desc": true}], "footer": {"show": false}, "cellHeight": "md"},
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "Severity",
+            "desc": true
+          },
+          {
+            "displayName": "Started",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": false
+        },
+        "cellHeight": "md"
+      },
       "title": "Active alerts (firing + pending)",
       "type": "table",
       "targets": [
-        {"expr": "ALERTS{alertstate=~\"firing|pending\"}", "format": "table", "instant": true, "refId": "A"}
+        {
+          "expr": "ALERTS{alertstate=~\"firing|pending\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
       ],
       "transformations": [
         {
           "id": "organize",
           "options": {
             "excludeByName": {
-              "Time": true, "Value": true, "__name__": true,
-              "container": true, "endpoint": true, "instance": true, "job": true,
-              "namespace": true, "pod": true, "service": true, "subscription_name": true,
-              "interface_name": true, "source": true, "prometheus": true, "ifIndex": true,
-              "ifAlias": true, "ifName": true, "ifDescr": true, "node_role": true
+              "Time": true,
+              "Value": true,
+              "__name__": true,
+              "container": true,
+              "endpoint": true,
+              "instance": true,
+              "job": true,
+              "namespace": true,
+              "pod": true,
+              "service": true,
+              "subscription_name": true,
+              "interface_name": true,
+              "source": true,
+              "prometheus": true,
+              "ifIndex": true,
+              "ifAlias": true,
+              "ifName": true,
+              "ifDescr": true,
+              "node_role": true
             },
             "indexByName": {
-              "alertname": 0, "severity": 1, "alertstate": 2, "node": 3, "interface": 4,
-              "link_id": 5, "link_kind": 6, "site": 7, "city": 8, "role": 9, "telemetry_source": 10
+              "alertname": 0,
+              "severity": 1,
+              "alertstate": 2,
+              "node": 3,
+              "interface": 4,
+              "link_id": 5,
+              "link_kind": 6,
+              "site": 7,
+              "city": 8,
+              "role": 9,
+              "telemetry_source": 10
             },
             "renameByName": {
-              "alertname": "Alert", "severity": "Severity", "alertstate": "State",
-              "node": "Device", "interface": "Interface",
-              "link_id": "Link", "link_kind": "Kind", "site": "Site", "city": "City",
-              "role": "Role", "telemetry_source": "Telemetry"
+              "alertname": "Alert",
+              "severity": "Severity",
+              "alertstate": "State",
+              "node": "Device",
+              "interface": "Interface",
+              "link_id": "Link",
+              "link_kind": "Kind",
+              "site": "Site",
+              "city": "City",
+              "role": "Role",
+              "telemetry_source": "Telemetry"
             }
           }
         }
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {"drawStyle": "bars", "fillOpacity": 80, "gradientMode": "opacity", "lineWidth": 1, "barAlignment": -1}
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "opacity",
+            "lineWidth": 1,
+            "barAlignment": -1
+          }
         }
       },
-      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 20},
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
       "id": 6,
-      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["max"]}},
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "max"
+          ]
+        }
+      },
       "title": "Firing alert count over time (by severity)",
       "type": "timeseries",
       "targets": [
-        {"expr": "count by (severity) (ALERTS{alertstate=\"firing\"})", "legendFormat": "{{severity}}", "refId": "A"}
+        {
+          "expr": "count by (severity) (ALERTS{alertstate=\"firing\"})",
+          "legendFormat": "{{severity}}",
+          "refId": "A"
+        }
       ]
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {"drawStyle": "line", "lineWidth": 2, "fillOpacity": 25}
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 25
+          }
         }
       },
-      "gridPos": {"h": 7, "w": 12, "x": 12, "y": 20},
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
       "id": 7,
-      "options": {"legend": {"displayMode": "list"}},
+      "options": {
+        "legend": {
+          "displayMode": "list"
+        }
+      },
       "title": "Alert change rate (per minute)",
       "type": "timeseries",
       "targets": [
-        {"expr": "sum(rate(prometheus_notifications_sent_total[1m]))", "legendFormat": "notifications/s", "refId": "A"}
+        {
+          "expr": "sum(rate(prometheus_notifications_sent_total[1m]))",
+          "legendFormat": "notifications/s",
+          "refId": "A"
+        }
       ]
     },
     {
-      "datasource": {"type": "loki", "uid": "loki"},
-      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 27},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
       "id": 8,
-      "options": {"showLabels": false, "showCommonLabels": false, "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none"},
+      "options": {
+        "showLabels": false,
+        "showCommonLabels": false,
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
       "title": "enriched-notify Workflow output (Loki)",
       "type": "logs",
       "targets": [
         {
-          "datasource": {"type": "loki", "uid": "loki"},
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
           "expr": "{namespace=\"argo-events\"} |~ \"affected_device|severity_class|provisioned|enrichment\"",
           "refId": "A"
         }
@@ -182,9 +607,19 @@
   "refresh": "10s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["network", "atlas-dot", "demo", "alerts"],
-  "templating": {"list": []},
-  "time": {"from": "now-30m", "to": "now"},
+  "tags": [
+    "network",
+    "atlas-dot",
+    "demo",
+    "alerts"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
   "title": "Alert console",
   "uid": "alert-console",
   "version": 1
