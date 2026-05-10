@@ -50,10 +50,16 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import os, json, runpy
-          os.environ["ALERT_JSON"] = """{{inputs.parameters.alert}}"""
+          import runpy
           runpy.run_path("/scripts/enrich.py", run_name="__main__")
         env:
+          # Inject the alert payload via env value rather than a triple-quoted
+          # python string. Substituting JSON containing \n (description block)
+          # into """...""" makes Python interpret \n as a newline, producing
+          # an unescaped control char that breaks json.loads. As an env value
+          # the parameter substitution stays at the YAML-scalar layer.
+          - name: ALERT_JSON
+            value: "{{inputs.parameters.alert}}"
           - name: NETBOX_URL
             value: http://netbox.netbox.svc.cluster.local
           - name: NETBOX_TOKEN
@@ -76,10 +82,11 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import os, runpy
-          os.environ["ENRICHMENT_JSON"] = """{{inputs.parameters.enrichment}}"""
+          import runpy
           runpy.run_path("/scripts/analyze_impact.py", run_name="__main__")
         env:
+          - name: ENRICHMENT_JSON
+            value: "{{inputs.parameters.enrichment}}"
           - name: NETBOX_URL
             value: http://netbox.netbox.svc.cluster.local
           - name: NETBOX_TOKEN
@@ -110,10 +117,12 @@ spec:
                    "--no-cache-dir", "slack-sdk", "redis"],
                   stdout=devnull,
               )
-          os.environ["ENRICHMENT_JSON"] = """{{inputs.parameters.enrichment}}"""
-          os.environ["IMPACT_JSON"] = """{{inputs.parameters.impact}}"""
           runpy.run_path("/scripts/notify.py", run_name="__main__")
         env:
+          - name: ENRICHMENT_JSON
+            value: "{{inputs.parameters.enrichment}}"
+          - name: IMPACT_JSON
+            value: "{{inputs.parameters.impact}}"
           # Slack creds are optional — if the `slack-bot` Secret doesn't
           # exist (the default), notify.py short-circuits to stderr-printed
           # Block Kit payloads. To enable real Slack posting, see SECRETS.md.
