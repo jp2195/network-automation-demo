@@ -1,5 +1,6 @@
 .PHONY: up down status render demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet \
         scenario scenario-list scenario-hurricane scenario-backhoe scenario-cabinet scenario-flap \
+        scenario-gray-failure scenario-gray-failure-end \
         maintenance-start maintenance-end maintenance-list help
 
 CLUSTER_NAME ?= atlas-demo
@@ -20,6 +21,8 @@ help:
 	@echo "  scenario-backhoe     One random backbone strand cut for ~2 min"
 	@echo "  scenario-cabinet     Field cabinet uplink failure, ~1.5 min"
 	@echo "  scenario-flap        Trip SRLInterfaceFlapping via rapid up/down, ~3 min"
+	@echo "  scenario-gray-failure       Ramp Rx power down + synth errors up on LINK= (warning-severity)"
+	@echo "  scenario-gray-failure-end   Clear the gray-failure key for LINK= early"
 	@echo "  maintenance-start    Open a maintenance window for NODE= for HOURS= (default 2). Silences alerts."
 	@echo "  maintenance-end      Close the maintenance window for NODE= early."
 	@echo "  maintenance-list     Show currently active atlas-maintenance silences."
@@ -110,6 +113,12 @@ scenario-cabinet:
 
 scenario-flap:
 	@bin/scenarios.sh flapping
+
+scenario-gray-failure:
+	@bin/scenarios.sh gray-failure "$(LINK)"
+
+scenario-gray-failure-end:
+	@bin/scenarios.sh gray-failure-end "$(LINK)"
 
 # --- Maintenance windows -------------------------------------------------
 
