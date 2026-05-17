@@ -56,7 +56,7 @@ def _firing_blocks(enrichment, impact):
     cable = enrichment.get("cable", {})
     cf = cable.get("custom_fields", {}) if cable else {}
     severity = impact.get("severity_class", "low")
-    emoji = {"high": "🚨", "medium": "⚠️", "low": "ℹ️"}.get(severity, "ℹ️")
+    emoji = {"high": "🚨", "medium": "⚠️", "warning": "⚠️", "low": "ℹ️"}.get(severity, "ℹ️")
 
     blocks = [
         {"type": "header", "text": {
