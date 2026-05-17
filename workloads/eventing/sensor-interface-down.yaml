@@ -16,6 +16,8 @@ spec:
             value:
               - SRLInterfaceOperDown
               - SRLInterfaceFlapping
+              - SRLOpticalDegrading
+              - SRLInterfaceErrorsHigh
   triggers:
     - template:
         name: enrich-notify
