@@ -34,16 +34,52 @@ from __future__ import annotations
 import hashlib
 import http.server
 import json
+import logging
 import math
 import os
 import socketserver
 import time
+from dataclasses import dataclass
+from typing import Optional
 
 
 LINKS_FILE = os.environ.get("LINKS_FILE", "/data/links.json")
 PORT = int(os.environ.get("PORT", "8000"))
 DATA: dict = {}
 START_TIME = time.time()
+VALKEY_URL = os.environ.get("VALKEY_URL", "valkey://valkey.valkey.svc.cluster.local:6379/3")
+LOG = logging.getLogger("dom-synth")
+
+# Cumulative synthetic counter state, keyed by (node, interface).
+SYNTH_ERRORS_TOTAL: dict[tuple[str, str], float] = {}
+SYNTH_DISCARDS_TOTAL: dict[tuple[str, str], float] = {}
+LAST_SYNTH_TICK = time.time()
+
+# Rate-limit Valkey-unreachable warnings to once per minute.
+_LAST_VALKEY_WARN = 0.0
+
+
+@dataclass(frozen=True)
+class GrayFailure:
+    link_id: str
+    start_ts: float
+    duration_s: float
+    peak_rx_offset_dbm: float
+    peak_errors_per_sec: float
+
+
+def ramp(t_now: float, gf: GrayFailure) -> float:
+    """Piecewise-linear shape with 20% ramp-up, 60% plateau, 20% ramp-down."""
+    if gf.duration_s <= 0:
+        return 0.0
+    rel = (t_now - gf.start_ts) / gf.duration_s
+    if rel <= 0.0 or rel >= 1.0:
+        return 0.0
+    if rel < 0.20:
+        return rel / 0.20
+    if rel < 0.80:
+        return 1.0
+    return (1.0 - rel) / 0.20
 
 
 def load_data() -> dict:
