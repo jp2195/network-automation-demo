@@ -148,5 +148,31 @@ class LoadGrayFailuresTests(unittest.TestCase):
         self.assertEqual(result, {})
 
 
+class PortsByLinkTests(unittest.TestCase):
+    SAMPLE = {
+        "ports": [
+            {"node": "hub-n", "interface": "ethernet-1/1",
+             "link_id": "ring-n-e", "link_kind": "backbone"},
+            {"node": "hub-e", "interface": "ethernet-1/2",
+             "link_id": "ring-n-e", "link_kind": "backbone"},
+            {"node": "hub-e", "interface": "ethernet-1/1",
+             "link_id": "ring-e-i20e", "link_kind": "backbone"},
+        ]
+    }
+
+    def test_groups_two_ports_per_link(self):
+        idx = dom_synth._ports_by_link(self.SAMPLE)
+        self.assertEqual(
+            sorted(idx["ring-n-e"]),
+            [("hub-e", "ethernet-1/2"), ("hub-n", "ethernet-1/1")])
+        self.assertEqual(idx["ring-e-i20e"], [("hub-e", "ethernet-1/1")])
+
+    def test_empty_data_returns_empty(self):
+        self.assertEqual(dom_synth._ports_by_link({"ports": []}), {})
+
+    def test_missing_ports_key_returns_empty(self):
+        self.assertEqual(dom_synth._ports_by_link({}), {})
+
+
 if __name__ == "__main__":
     unittest.main()
