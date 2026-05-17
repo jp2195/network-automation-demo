@@ -119,7 +119,7 @@ def _load_gray_failures(client=None) -> dict[str, GrayFailure]:
     """Read all `gray:*` keys from Valkey DB 3 and parse them.
 
     The `client` argument is for tests; production callers pass None and
-    we lazily build a real redis.Redis from VALKEY_URL.
+    we lazily build a real valkey.Valkey from VALKEY_URL.
     """
     global _LAST_VALKEY_WARN
     if client is None:
