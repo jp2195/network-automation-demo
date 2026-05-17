@@ -235,6 +235,87 @@ class RxPowerOffsetTests(unittest.TestCase):
         self.assertAlmostEqual(degraded[unaffected], baseline[unaffected], places=4)
 
 
+class SynthCounterTests(unittest.TestCase):
+    def setUp(self):
+        self._saved_data = dom_synth.DATA
+        self._saved_errors = dict(dom_synth.SYNTH_ERRORS_TOTAL)
+        self._saved_discards = dict(dom_synth.SYNTH_DISCARDS_TOTAL)
+        self._saved_last_tick = dom_synth.LAST_SYNTH_TICK
+        dom_synth.SYNTH_ERRORS_TOTAL.clear()
+        dom_synth.SYNTH_DISCARDS_TOTAL.clear()
+        dom_synth.DATA = {
+            "ports": [
+                {"node": "hub-n", "interface": "ethernet-1/1",
+                 "link_id": "ring-n-e", "link_kind": "backbone"},
+                {"node": "hub-e", "interface": "ethernet-1/2",
+                 "link_id": "ring-n-e", "link_kind": "backbone"},
+            ]
+        }
+
+    def tearDown(self):
+        dom_synth.DATA = self._saved_data
+        dom_synth.SYNTH_ERRORS_TOTAL.clear()
+        dom_synth.SYNTH_ERRORS_TOTAL.update(self._saved_errors)
+        dom_synth.SYNTH_DISCARDS_TOTAL.clear()
+        dom_synth.SYNTH_DISCARDS_TOTAL.update(self._saved_discards)
+        dom_synth.LAST_SYNTH_TICK = self._saved_last_tick
+
+    def _counter_value(self, text, name, node, interface):
+        prefix = f'{name}{{'
+        for line in text.splitlines():
+            if not line.startswith(prefix):
+                continue
+            if f'node="{node}"' in line and f'interface="{interface}"' in line:
+                return float(line.rpartition(" ")[2])
+        return None
+
+    def test_no_gray_failure_emits_zero_counters(self):
+        text = dom_synth.render_metrics(gray_failures={})
+        for port in [("hub-n", "ethernet-1/1"), ("hub-e", "ethernet-1/2")]:
+            self.assertEqual(
+                self._counter_value(text, "synth_in_error_packets_total", *port),
+                0.0)
+            self.assertEqual(
+                self._counter_value(text, "synth_in_discarded_packets_total", *port),
+                0.0)
+
+    def test_gray_failure_plateau_increments_counters(self):
+        # Plateau (rel=0.5) -> ramp=1.0; peak 120 err/s
+        # We'll force a 10-second tick by setting LAST_SYNTH_TICK back.
+        dom_synth.LAST_SYNTH_TICK = time.time() - 10.0
+        gf = dom_synth.GrayFailure(
+            link_id="ring-n-e",
+            start_ts=time.time() - 50.0,
+            duration_s=100.0,
+            peak_rx_offset_dbm=8.0,
+            peak_errors_per_sec=120.0,
+        )
+        text = dom_synth.render_metrics(gray_failures={"ring-n-e": gf})
+        errs = self._counter_value(
+            text, "synth_in_error_packets_total", "hub-n", "ethernet-1/1")
+        discards = self._counter_value(
+            text, "synth_in_discarded_packets_total", "hub-n", "ethernet-1/1")
+        # 120 err/s * 10s = 1200, discards = 30% = 360
+        self.assertAlmostEqual(errs, 1200.0, delta=1.0)
+        self.assertAlmostEqual(discards, 360.0, delta=1.0)
+
+    def test_counters_are_monotonic_across_calls(self):
+        dom_synth.LAST_SYNTH_TICK = time.time() - 5.0
+        gf = dom_synth.GrayFailure(
+            link_id="ring-n-e",
+            start_ts=time.time() - 50.0,
+            duration_s=100.0,
+            peak_rx_offset_dbm=8.0,
+            peak_errors_per_sec=100.0,
+        )
+        dom_synth.render_metrics(gray_failures={"ring-n-e": gf})
+        v1 = dom_synth.SYNTH_ERRORS_TOTAL[("hub-n", "ethernet-1/1")]
+        dom_synth.LAST_SYNTH_TICK = time.time() - 5.0
+        dom_synth.render_metrics(gray_failures={"ring-n-e": gf})
+        v2 = dom_synth.SYNTH_ERRORS_TOTAL[("hub-n", "ethernet-1/1")]
+        self.assertGreater(v2, v1)
+
+
 def _label(blob: str, key: str) -> str:
     """Extract `key="value"` from a metric label blob."""
     needle = f'{key}="'
