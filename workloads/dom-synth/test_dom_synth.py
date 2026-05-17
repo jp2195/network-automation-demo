@@ -58,5 +58,45 @@ class RampTests(unittest.TestCase):
         self.assertAlmostEqual(dom_synth.ramp(1150.0, self._gf()), 0.0)
 
 
+class ParseGrayFailureTests(unittest.TestCase):
+    def test_valid_json_returns_dataclass(self):
+        raw = json.dumps({
+            "start_ts": 1747500000,
+            "duration_s": 600,
+            "peak_rx_offset_dbm": 8.0,
+            "peak_errors_per_sec": 120,
+        })
+        gf = dom_synth.parse_gray_failure("ring-n-e", raw)
+        self.assertIsNotNone(gf)
+        self.assertEqual(gf.link_id, "ring-n-e")
+        self.assertEqual(gf.start_ts, 1747500000)
+        self.assertEqual(gf.duration_s, 600)
+        self.assertEqual(gf.peak_rx_offset_dbm, 8.0)
+        self.assertEqual(gf.peak_errors_per_sec, 120)
+
+    def test_malformed_json_returns_none(self):
+        self.assertIsNone(dom_synth.parse_gray_failure("ring-n-e", "not-json"))
+
+    def test_missing_field_returns_none(self):
+        raw = json.dumps({"start_ts": 1, "duration_s": 60})  # missing two fields
+        self.assertIsNone(dom_synth.parse_gray_failure("ring-n-e", raw))
+
+    def test_zero_duration_returns_none(self):
+        raw = json.dumps({
+            "start_ts": 1, "duration_s": 0,
+            "peak_rx_offset_dbm": 1.0, "peak_errors_per_sec": 1.0,
+        })
+        self.assertIsNone(dom_synth.parse_gray_failure("ring-n-e", raw))
+
+    def test_bytes_input_is_accepted(self):
+        # Valkey returns bytes by default; the function must accept either.
+        raw = json.dumps({
+            "start_ts": 1, "duration_s": 60,
+            "peak_rx_offset_dbm": 1.0, "peak_errors_per_sec": 1.0,
+        }).encode()
+        gf = dom_synth.parse_gray_failure("ring-n-e", raw)
+        self.assertIsNotNone(gf)
+
+
 if __name__ == "__main__":
     unittest.main()
