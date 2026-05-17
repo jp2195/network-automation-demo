@@ -169,8 +169,17 @@ def offset(*parts: str) -> float:
     return (int(h[:8], 16) % 1000) / 1000.0 * 2.0 * math.pi
 
 
-def render_metrics() -> str:
+def render_metrics(gray_failures: Optional[dict[str, GrayFailure]] = None) -> str:
     now = time.time()
+    if gray_failures is None:
+        gray_failures = {}
+    # {(node, interface): cumulative_rx_offset_dbm}
+    rx_offset: dict[tuple[str, str], float] = {}
+    ports_by_link = _ports_by_link(DATA)
+    for link_id, gf in gray_failures.items():
+        amt = ramp(now, gf) * gf.peak_rx_offset_dbm
+        for port in ports_by_link.get(link_id, []):
+            rx_offset[port] = rx_offset.get(port, 0.0) + amt
     out: list[str] = []
 
     def hdr(name: str, help_: str, kind: str = "gauge") -> None:
@@ -189,6 +198,7 @@ def render_metrics() -> str:
     for l in ports:
         o = offset(l["node"], l["interface"])
         v = -4.5 + 1.5 * math.sin((now / 90.0) + o + 0.7)
+        v -= rx_offset.get((l["node"], l["interface"]), 0.0)
         out.append(_metric("dom_rx_power_dbm", l, v))
     hdr("dom_tx_power_dbm", "Optical transmit power (synthetic)")
     for l in ports:
@@ -300,7 +310,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):  # noqa: N802
         if self.path == "/metrics":
-            body = render_metrics().encode()
+            body = render_metrics(gray_failures=_load_gray_failures()).encode()
             self.send_response(200)
             self.send_header("Content-Type", "text/plain; version=0.0.4")
             self.send_header("Content-Length", str(len(body)))
