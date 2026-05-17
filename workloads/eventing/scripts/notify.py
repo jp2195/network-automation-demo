@@ -4,7 +4,7 @@
 Inputs (env):
   ENRICHMENT_JSON, IMPACT_JSON  — outputs from prior WFT steps
   SLACK_BOT_TOKEN, SLACK_CHANNEL_ID  — bot creds (xoxb-...)
-  VALKEY_URL  — incident ledger, e.g. redis://valkey.valkey.svc.cluster.local:6379/2
+  VALKEY_URL  — incident ledger, e.g. valkey://valkey.valkey.svc.cluster.local:6379/2
 
 Behavior:
   - On firing: chat.postMessage with Block Kit, persist
@@ -139,8 +139,8 @@ def main():
         from slack_sdk.errors import SlackApiError
         slack = WebClient(token=token)
 
-    import redis
-    ledger_db = redis.from_url(valkey_url, decode_responses=True)
+    import valkey
+    ledger_db = valkey.from_url(valkey_url, decode_responses=True)
     ledger_key = f"incident:{fingerprint}"
 
     if status == "firing":
