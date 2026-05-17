@@ -82,6 +82,39 @@ def ramp(t_now: float, gf: GrayFailure) -> float:
     return (1.0 - rel) / 0.20
 
 
+def parse_gray_failure(link_id: str, raw) -> Optional[GrayFailure]:
+    """Parse a Valkey value into a GrayFailure. Returns None on any error."""
+    if raw is None:
+        return None
+    if isinstance(raw, bytes):
+        try:
+            raw = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            return None
+    try:
+        d = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return None
+    if not isinstance(d, dict):
+        return None
+    required = ("start_ts", "duration_s", "peak_rx_offset_dbm", "peak_errors_per_sec")
+    if not all(k in d for k in required):
+        return None
+    try:
+        duration = float(d["duration_s"])
+        if duration <= 0:
+            return None
+        return GrayFailure(
+            link_id=link_id,
+            start_ts=float(d["start_ts"]),
+            duration_s=duration,
+            peak_rx_offset_dbm=float(d["peak_rx_offset_dbm"]),
+            peak_errors_per_sec=float(d["peak_errors_per_sec"]),
+        )
+    except (TypeError, ValueError):
+        return None
+
+
 def load_data() -> dict:
     with open(LINKS_FILE) as f:
         return json.load(f)
