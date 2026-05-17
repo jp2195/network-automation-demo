@@ -150,6 +150,14 @@ def _load_gray_failures(client=None) -> dict[str, GrayFailure]:
     return out
 
 
+def _ports_by_link(data: dict) -> dict[str, list[tuple[str, str]]]:
+    """Build {link_id: [(node, interface), ...]} from links.json shape."""
+    out: dict[str, list[tuple[str, str]]] = {}
+    for p in data.get("ports", []):
+        out.setdefault(p["link_id"], []).append((p["node"], p["interface"]))
+    return out
+
+
 def load_data() -> dict:
     with open(LINKS_FILE) as f:
         return json.load(f)
