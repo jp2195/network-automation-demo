@@ -216,6 +216,31 @@ def render_metrics(gray_failures: Optional[dict[str, GrayFailure]] = None) -> st
         v = 32.0 + 4.0 * math.sin((now / 180.0) + o + 2.1)
         out.append(_metric("dom_bias_current_milliamps", l, v))
 
+    # ── Synthetic gray-failure counters ──────────────────────────────
+    global LAST_SYNTH_TICK
+    dt = max(0.0, now - LAST_SYNTH_TICK)
+    LAST_SYNTH_TICK = now
+    for link_id, gf in gray_failures.items():
+        amt = ramp(now, gf) * gf.peak_errors_per_sec * dt
+        if amt <= 0.0:
+            continue
+        for port in ports_by_link.get(link_id, []):
+            SYNTH_ERRORS_TOTAL[port] = SYNTH_ERRORS_TOTAL.get(port, 0.0) + amt
+            SYNTH_DISCARDS_TOTAL[port] = SYNTH_DISCARDS_TOTAL.get(port, 0.0) + amt * 0.30
+
+    hdr("synth_in_error_packets_total",
+        "Synthetic ingress error packets (gray-failure scenario only)",
+        kind="counter")
+    for l in ports:
+        v = SYNTH_ERRORS_TOTAL.get((l["node"], l["interface"]), 0.0)
+        out.append(_metric("synth_in_error_packets_total", l, v))
+    hdr("synth_in_discarded_packets_total",
+        "Synthetic ingress discarded packets (gray-failure scenario only)",
+        kind="counter")
+    for l in ports:
+        v = SYNTH_DISCARDS_TOTAL.get((l["node"], l["interface"]), 0.0)
+        out.append(_metric("synth_in_discarded_packets_total", l, v))
+
     # ── Hardware health ──────────────────────────────────────────────
     nodes = DATA.get("nodes", [])
 
