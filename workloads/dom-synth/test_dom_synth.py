@@ -174,5 +174,74 @@ class PortsByLinkTests(unittest.TestCase):
         self.assertEqual(dom_synth._ports_by_link({}), {})
 
 
+class RxPowerOffsetTests(unittest.TestCase):
+    def setUp(self):
+        # Inject sample data; render_metrics reads module-level DATA.
+        self._saved = dom_synth.DATA
+        dom_synth.DATA = {
+            "ports": [
+                {"node": "hub-n", "interface": "ethernet-1/1",
+                 "link_id": "ring-n-e", "link_kind": "backbone"},
+                {"node": "hub-e", "interface": "ethernet-1/2",
+                 "link_id": "ring-n-e", "link_kind": "backbone"},
+                {"node": "hub-e", "interface": "ethernet-1/1",
+                 "link_id": "ring-e-i20e", "link_kind": "backbone"},
+            ]
+        }
+
+    def tearDown(self):
+        dom_synth.DATA = self._saved
+
+    def _rx_values(self, text):
+        """Pull dom_rx_power_dbm samples out of the metric exposition."""
+        out = {}
+        for line in text.splitlines():
+            if not line.startswith("dom_rx_power_dbm{"):
+                continue
+            # dom_rx_power_dbm{node="hub-n",interface="ethernet-1/1",...} -4.1234
+            labels_blob, _, value = line.rpartition(" ")
+            node = _label(labels_blob, "node")
+            interface = _label(labels_blob, "interface")
+            out[(node, interface)] = float(value)
+        return out
+
+    def test_no_gray_failure_baseline(self):
+        baseline = self._rx_values(dom_synth.render_metrics(gray_failures={}))
+        # Baseline values are sinusoidal around -4.5; just confirm they're in band.
+        for (_, _), v in baseline.items():
+            self.assertGreater(v, -7.0)
+            self.assertLess(v, -2.0)
+
+    def test_gray_failure_plateau_offsets_rx_power(self):
+        gf = dom_synth.GrayFailure(
+            link_id="ring-n-e",
+            start_ts=time.time() - 50.0,   # halfway through 100s duration => plateau
+            duration_s=100.0,
+            peak_rx_offset_dbm=8.0,
+            peak_errors_per_sec=120.0,
+        )
+        baseline = self._rx_values(dom_synth.render_metrics(gray_failures={}))
+        degraded = self._rx_values(
+            dom_synth.render_metrics(gray_failures={"ring-n-e": gf}))
+
+        # Both ports of ring-n-e are 8.0 dBm lower (full peak at plateau).
+        for port in [("hub-n", "ethernet-1/1"), ("hub-e", "ethernet-1/2")]:
+            self.assertAlmostEqual(
+                degraded[port] - baseline[port], -8.0, places=2,
+                msg=f"{port} should be 8 dBm below baseline")
+
+        # Unaffected port on ring-e-i20e is unchanged.
+        unaffected = ("hub-e", "ethernet-1/1")
+        self.assertAlmostEqual(degraded[unaffected], baseline[unaffected], places=4)
+
+
+def _label(blob: str, key: str) -> str:
+    """Extract `key="value"` from a metric label blob."""
+    needle = f'{key}="'
+    i = blob.index(needle) + len(needle)
+    j = blob.index('"', i)
+    return blob[i:j]
+
+
 if __name__ == "__main__":
     unittest.main()
