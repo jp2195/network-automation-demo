@@ -115,6 +115,41 @@ def parse_gray_failure(link_id: str, raw) -> Optional[GrayFailure]:
         return None
 
 
+def _load_gray_failures(client=None) -> dict[str, GrayFailure]:
+    """Read all `gray:*` keys from Valkey DB 3 and parse them.
+
+    The `client` argument is for tests; production callers pass None and
+    we lazily build a real redis.Redis from VALKEY_URL.
+    """
+    global _LAST_VALKEY_WARN
+    if client is None:
+        try:
+            import valkey
+            client = valkey.from_url(VALKEY_URL, socket_timeout=2)
+        except Exception:
+            return {}
+    out: dict[str, GrayFailure] = {}
+    try:
+        keys = client.keys("gray:*")
+    except Exception as exc:
+        now = time.time()
+        if now - _LAST_VALKEY_WARN > 60:
+            LOG.warning("Valkey unreachable for gray-failure poll: %s", exc)
+            _LAST_VALKEY_WARN = now
+        return out
+    for k in keys:
+        key_str = k.decode("utf-8") if isinstance(k, bytes) else k
+        link_id = key_str.removeprefix("gray:")
+        try:
+            raw = client.get(k)
+        except Exception:
+            continue
+        gf = parse_gray_failure(link_id, raw)
+        if gf is not None:
+            out[link_id] = gf
+    return out
+
+
 def load_data() -> dict:
     with open(LINKS_FILE) as f:
         return json.load(f)
