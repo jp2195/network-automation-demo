@@ -98,5 +98,55 @@ class ParseGrayFailureTests(unittest.TestCase):
         self.assertIsNotNone(gf)
 
 
+class LoadGrayFailuresTests(unittest.TestCase):
+    def setUp(self):
+        import fakeredis
+        self.fake = fakeredis.FakeRedis()
+
+    def _set(self, link_id, **kwargs):
+        defaults = {
+            "start_ts": 1747500000,
+            "duration_s": 600,
+            "peak_rx_offset_dbm": 8.0,
+            "peak_errors_per_sec": 120,
+        }
+        defaults.update(kwargs)
+        self.fake.set(f"gray:{link_id}", json.dumps(defaults))
+
+    def test_empty_db_returns_empty(self):
+        result = dom_synth._load_gray_failures(client=self.fake)
+        self.assertEqual(result, {})
+
+    def test_single_key_returns_one_entry(self):
+        self._set("ring-n-e")
+        result = dom_synth._load_gray_failures(client=self.fake)
+        self.assertEqual(set(result.keys()), {"ring-n-e"})
+        self.assertEqual(result["ring-n-e"].peak_rx_offset_dbm, 8.0)
+
+    def test_two_keys_return_two_entries(self):
+        self._set("ring-n-e")
+        self._set("ring-e-i20e", peak_rx_offset_dbm=4.0)
+        result = dom_synth._load_gray_failures(client=self.fake)
+        self.assertEqual(set(result.keys()), {"ring-n-e", "ring-e-i20e"})
+        self.assertEqual(result["ring-e-i20e"].peak_rx_offset_dbm, 4.0)
+
+    def test_malformed_value_is_skipped_others_kept(self):
+        self.fake.set("gray:ring-n-e", "not-json")
+        self._set("ring-e-i20e")
+        result = dom_synth._load_gray_failures(client=self.fake)
+        self.assertEqual(set(result.keys()), {"ring-e-i20e"})
+
+    def test_connection_error_returns_empty(self):
+        # Simulate a broken client by passing one whose .keys() raises.
+        class BrokenClient:
+            def keys(self, *_a, **_kw):
+                import valkey
+                raise valkey.ConnectionError("simulated")
+            def get(self, *_a, **_kw):
+                raise AssertionError("should not be reached")
+        result = dom_synth._load_gray_failures(client=BrokenClient())
+        self.assertEqual(result, {})
+
+
 if __name__ == "__main__":
     unittest.main()
