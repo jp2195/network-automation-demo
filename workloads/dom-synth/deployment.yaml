@@ -17,12 +17,18 @@ spec:
       containers:
         - name: dom-synth
           image: python:3.12-slim
-          command: ["python3", "/app/dom_synth.py"]
+          command: ["sh", "-c"]
+          args:
+            - |
+              pip install --quiet --no-cache-dir valkey &&
+              exec python3 /app/dom_synth.py
           env:
             - name: LINKS_FILE
               value: /data/links.json
             - name: PORT
               value: "8000"
+            - name: VALKEY_URL
+              value: valkey://valkey.valkey.svc.cluster.local:6379/3
           ports:
             - name: prom
               containerPort: 8000
