@@ -52,14 +52,14 @@ def lookup_thread_ts():
     the parent enrich-notify worker), so just look for the most-recent
     incident keyed on this affected node."""
     try:
-        import redis  # noqa: WPS433 — optional at runtime
+        import valkey  # noqa: WPS433 — optional at runtime
     except ImportError:
         return None, None
     url = os.environ.get("VALKEY_URL")
     if not url:
         return None, None
     try:
-        r = redis.from_url(url)
+        r = valkey.from_url(url)
         # Walk incident:* keys, find the latest one whose impact is this node.
         latest = None
         latest_seen = 0

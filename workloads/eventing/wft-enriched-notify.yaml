@@ -126,7 +126,7 @@ spec:
           with open(os.devnull, "w") as devnull:
               subprocess.check_call(
                   [sys.executable, "-m", "pip", "install", "--quiet",
-                   "--no-cache-dir", "slack-sdk", "redis"],
+                   "--no-cache-dir", "slack-sdk", "valkey"],
                   stdout=devnull,
               )
           runpy.run_path("/scripts/notify.py", run_name="__main__")
@@ -151,7 +151,7 @@ spec:
                 key: channel_id
                 optional: true
           - name: VALKEY_URL
-            value: redis://valkey.valkey.svc.cluster.local:6379/2
+            value: valkey://valkey.valkey.svc.cluster.local:6379/2
         volumeMounts:
           - name: scripts
             mountPath: /scripts

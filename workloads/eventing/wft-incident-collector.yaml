@@ -319,13 +319,13 @@ spec:
         command: [python3]
         source: |
           import os, subprocess, sys, runpy
-          # slack-sdk + redis are only needed if Slack is wired up; if
+          # slack-sdk + valkey are only needed if Slack is wired up; if
           # they fail to install, notify_bundle.py degrades to stderr.
           with open(os.devnull, "w") as devnull:
               try:
                   subprocess.check_call(
                       [sys.executable, "-m", "pip", "install", "--quiet",
-                       "--no-cache-dir", "slack-sdk", "redis"],
+                       "--no-cache-dir", "slack-sdk", "valkey"],
                       stdout=devnull,
                   )
               except Exception as e:
@@ -360,7 +360,7 @@ spec:
                 key: channel_id
                 optional: true
           - name: VALKEY_URL
-            value: redis://valkey.valkey.svc.cluster.local:6379/2
+            value: valkey://valkey.valkey.svc.cluster.local:6379/2
         volumeMounts:
           - name: scripts
             mountPath: /scripts
