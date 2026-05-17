@@ -34,8 +34,11 @@ hot()    { printf "${RED}🔥 %s${CLR}\n" "$*"; }
 # Pairs of (node, interface) to act on. Filled by each scenario; the
 # trap restores everything in reverse order on exit.
 RESTORE_QUEUE=()
+GRAY_QUEUE=()
 
 push_restore() { RESTORE_QUEUE+=("$1:$2"); }
+push_gray()    { GRAY_QUEUE+=("$1"); }
+delete_gray()  { kubectl -n valkey exec valkey-0 -- valkey-cli -n 3 DEL "gray:$1" >/dev/null 2>&1 || true; }
 
 cut() {
   local node=$1 intf=$2
@@ -58,6 +61,13 @@ cleanup() {
     for (( i=${#RESTORE_QUEUE[@]}-1; i>=0; i-- )); do
       IFS=: read -r n iface <<<"${RESTORE_QUEUE[$i]}"
       restore "$n" "$iface"
+    done
+  fi
+  if (( ${#GRAY_QUEUE[@]} > 0 )); then
+    banner "scenario cleanup — clearing ${#GRAY_QUEUE[@]} gray-failure keys"
+    for link in "${GRAY_QUEUE[@]}"; do
+      ok "cleared gray:$link"
+      delete_gray "$link"
     done
   fi
 }
@@ -167,6 +177,46 @@ scenario_flapping() {
 }
 
 # ────────────────────────────────────────────────────────────────────────
+# scenario: gray-failure
+# Set a Valkey control key (DB 3) that tells the dom-synth exporter to
+# ramp dom_rx_power_dbm down and synth ingress error counters up on the
+# chosen backbone link. Trips SRLOpticalDegrading + SRLInterfaceErrorsHigh
+# (severity=warning) through the same enriched-notify Sensor.
+# Auto-recovers via TTL (duration + 30s) and the exit-trap cleanup.
+# ────────────────────────────────────────────────────────────────────────
+gray_failure() {
+  local link="${1:-}"
+  if [[ -z "$link" ]]; then
+    echo "usage: bin/scenarios.sh gray-failure <LINK_ID>" >&2
+    return 2
+  fi
+  local duration="${SCENARIO_DURATION:-600}"
+  local rx_offset="${SCENARIO_RX_OFFSET:-8.0}"
+  local err_rate="${SCENARIO_ERR_RATE:-120}"
+  local now ttl json
+  now=$(date +%s)
+  ttl=$((duration + 30))
+  json=$(printf '{"start_ts":%d,"duration_s":%d,"peak_rx_offset_dbm":%s,"peak_errors_per_sec":%d}' \
+    "$now" "$duration" "$rx_offset" "$err_rate")
+  banner "gray-failure on link ${BOLD}${link}${CLR} for ${duration}s"
+  warn "Rx power will dip up to ${rx_offset} dBm; synth errors up to ${err_rate}/s"
+  kubectl -n valkey exec valkey-0 -- \
+    valkey-cli -n 3 SET "gray:$link" "$json" EX "$ttl" >/dev/null
+  push_gray "$link"
+  ok "Key gray:$link written; will auto-clear at $(date -d @$((now+ttl)))"
+}
+
+gray_failure_end() {
+  local link="${1:-}"
+  if [[ -z "$link" ]]; then
+    echo "usage: bin/scenarios.sh gray-failure-end <LINK_ID>" >&2
+    return 2
+  fi
+  delete_gray "$link"
+  ok "Cleared gray:$link"
+}
+
+# ────────────────────────────────────────────────────────────────────────
 list_scenarios() {
   cat <<EOF
 Available scenarios:
@@ -184,6 +234,15 @@ Available scenarios:
   flapping       Rapid up/down to trip SRLInterfaceFlapping (>4 changes/5min).
                  Total: ~3 minutes.
 
+  gray-failure <LINK_ID>
+                 Ramp Rx power down + synth error counters up on a backbone
+                 link. Fires SRLOpticalDegrading + SRLInterfaceErrorsHigh
+                 (severity=warning) through enriched-notify. Auto-clears
+                 via Valkey TTL (default SCENARIO_DURATION=600s + 30s).
+
+  gray-failure-end <LINK_ID>
+                 Clear the gray-failure key early.
+
 All scenarios auto-restore on completion or interrupt (Ctrl-C).
 EOF
 }
@@ -192,12 +251,14 @@ main() {
   local cmd=${1:-list}
   shift || true
   case "$cmd" in
-    list)            list_scenarios ;;
-    hurricane)       scenario_hurricane ;;
-    backhoe)         scenario_backhoe ;;
-    cabinet-loss)    scenario_cabinet_loss ;;
-    flapping)        scenario_flapping ;;
-    *)               warn "unknown scenario: $cmd"; list_scenarios; exit 1 ;;
+    list)              list_scenarios ;;
+    hurricane)         scenario_hurricane ;;
+    backhoe)           scenario_backhoe ;;
+    cabinet-loss)      scenario_cabinet_loss ;;
+    flapping)          scenario_flapping ;;
+    gray-failure)      gray_failure "${1:-}" ;;
+    gray-failure-end)  gray_failure_end "${1:-}" ;;
+    *)                 warn "unknown scenario: $cmd"; list_scenarios; exit 1 ;;
   esac
 }
 
