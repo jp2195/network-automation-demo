@@ -193,3 +193,81 @@ kubectl -n argo-events get sensors interface-down -o yaml | \
 
 Hard reset (re-creates everything from git): see
 `docs/runbook-troubleshoot.md`.
+
+## Gray-failure smoke test
+
+The `gray-failure` scenario simulates a deteriorating optic + climbing
+ingress error rate on a chosen backbone link, exercising the
+warning-severity branch of the enriched-notify pipeline. It auto-recovers.
+
+1. Pick a backbone link from `workloads/dom-synth/links.json` (e.g. `ring-n-e`).
+
+2. Start the scenario (default 600s, 8 dBm Rx offset, 120 err/s peak):
+
+   ```bash
+   make scenario-gray-failure LINK=ring-n-e
+   ```
+
+   Or shorter for a quick smoke:
+
+   ```bash
+   SCENARIO_DURATION=300 make scenario-gray-failure LINK=ring-n-e
+   ```
+
+3. Verify the control key landed:
+
+   ```bash
+   kubectl -n valkey exec valkey-0 -- valkey-cli -n 3 GET gray:ring-n-e
+   ```
+
+4. In Grafana → **device-detail** → pick `hub-n` or `hub-e`. The
+   `dom_rx_power_dbm` series for the affected port should ramp down
+   over ~2 minutes.
+
+5. After ~90 seconds, check Alertmanager:
+
+   ```bash
+   kubectl -n monitoring port-forward svc/kps-kube-prometheus-stack-alertmanager 9093:9093 &
+   curl -s localhost:9093/api/v2/alerts | jq '.[] | select(.labels.alertname | startswith("SRL"))'
+   ```
+
+   Expected: `SRLOpticalDegrading` *firing*, `severity=warning`,
+   `link_id=ring-n-e`. After another ~60 seconds, `SRLInterfaceErrorsHigh`
+   also fires.
+
+6. If Slack is wired (`slack-bot` Secret present), confirm two yellow
+   Block Kit messages in the channel. Otherwise:
+
+   ```bash
+   kubectl -n argo logs -l workflows.argoproj.io/workflow \
+     --tail=200 -c main | grep -A40 "block_kit"
+   ```
+
+7. At the end of the duration, both alerts resolve and the original
+   Slack messages flip to ✅ with downtime annotation.
+
+8. Verify the Valkey key auto-cleared:
+
+   ```bash
+   kubectl -n valkey exec valkey-0 -- valkey-cli -n 3 KEYS 'gray:*'
+   ```
+
+   Expected: empty within ~30 seconds of duration end.
+
+### Early termination
+
+```bash
+make scenario-gray-failure-end LINK=ring-n-e
+```
+
+Within one scrape (~15 s), the exporter returns to baseline. Alerts
+resolve within `for:` window (1–2 min).
+
+### Negative cases worth probing
+
+- Set a key with `peak_rx_offset_dbm: 0, peak_errors_per_sec: 0` →
+  baseline output, no alerts fire.
+- Set `duration_s: 0` → exporter logs no warning, no metrics affected
+  (skipped).
+- Run two scenarios on different links concurrently → independent ramps;
+  alerts fire per link.
