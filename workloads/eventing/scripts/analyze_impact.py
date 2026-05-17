@@ -68,11 +68,18 @@ def main():
             if tenant:
                 agencies.add(tenant.get("slug"))
 
+    alert = enrichment.get("alert", {}) or {}
+    alert_severity = (alert.get("labels") or {}).get("severity", "")
+
     severity_class = "low"
     if any(d["device"].startswith("fc-") for d in downstream):
         severity_class = "high"
     elif len(downstream) > 1:
         severity_class = "medium"
+    # An explicit alert-label severity=warning is a degradation signal —
+    # honor it as long as the impact analysis didn't already escalate.
+    if alert_severity == "warning" and severity_class in ("low", "medium"):
+        severity_class = "warning"
 
     impact = {
         "affected_device": affected_device,
