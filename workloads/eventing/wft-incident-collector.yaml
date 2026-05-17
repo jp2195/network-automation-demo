@@ -83,15 +83,14 @@ spec:
 
           - name: bundle
             template: bundle
-            # Tasks gated on `when:` end in Omitted (not Skipped).
-            # AnySucceeded matches Succeeded/Failed/Errored/Omitted —
-            # i.e. any terminal state — so the bundle just needs every
-            # upstream to be done.
+            # `when:`-gated tasks reach Skipped (not Omitted) — accept
+            # all terminal states so the bundle runs even if peers are
+            # absent in this topology.
             depends: >-
               (gather-affected.Succeeded || gather-affected.Failed) &&
-              (gather-peer.Succeeded     || gather-peer.Omitted     || gather-peer.Failed) &&
-              (gather-ring-a.Succeeded   || gather-ring-a.Omitted   || gather-ring-a.Failed) &&
-              (gather-ring-b.Succeeded   || gather-ring-b.Omitted   || gather-ring-b.Failed) &&
+              (gather-peer.Succeeded     || gather-peer.Skipped     || gather-peer.Failed) &&
+              (gather-ring-a.Succeeded   || gather-ring-a.Skipped   || gather-ring-a.Failed) &&
+              (gather-ring-b.Succeeded   || gather-ring-b.Skipped   || gather-ring-b.Failed) &&
               (gather-dom.Succeeded      || gather-dom.Failed)
             arguments:
               parameters:
