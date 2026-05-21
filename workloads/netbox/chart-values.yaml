@@ -2,7 +2,6 @@ superuser:
   name: admin
   email: admin@atlas-demo.local
   password: admin
-  apiToken: 0123456789abcdef0123456789abcdef01234567
 
 # netbox-chart 8.2.9 only injects SUPERUSER_NAME and SUPERUSER_EMAIL into
 # the pod env, so the bootstrap admin lands without the password from
