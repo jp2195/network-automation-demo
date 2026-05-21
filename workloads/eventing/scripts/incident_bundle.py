@@ -47,11 +47,11 @@ def slack_unconfigured():
 
 def lookup_thread_ts():
     """If the enriched-notify Workflow already posted to Slack for this
-    incident, the message ts lives in Valkey at incident:<fingerprint>.
-    We don't have the fingerprint here cleanly (the alert payload is in
-    the parent enrich-notify worker), so just look for the most-recent
-    incident keyed on this affected node."""
+    incident, the message ts lives in Valkey at incident:<fingerprint>
+    as a JSON blob (see notify.py). Walk incident:* keys, pick the
+    most-recent record whose impact mentions this affected node."""
     try:
+        import json
         import valkey  # noqa: WPS433 — optional at runtime
     except ImportError:
         return None, None
@@ -59,20 +59,26 @@ def lookup_thread_ts():
     if not url:
         return None, None
     try:
-        r = valkey.from_url(url)
-        # Walk incident:* keys, find the latest one whose impact is this node.
+        r = valkey.from_url(url, decode_responses=True)
         latest = None
-        latest_seen = 0
+        latest_seen = None
         for key in r.scan_iter("incident:*"):
-            data = r.hgetall(key)
-            if not data:
+            raw = r.get(key)
+            if not raw:
                 continue
-            decoded = {k.decode(): v.decode() for k, v in data.items()}
-            seen = int(decoded.get("first_seen", "0") or 0)
-            if AFFECTED.encode() in (decoded.get("impact", "").encode() or b""):
-                if seen > latest_seen:
-                    latest_seen = seen
-                    latest = decoded
+            try:
+                record = json.loads(raw)
+            except (TypeError, ValueError):
+                continue
+            impact = record.get("impact") or {}
+            affected = impact.get("affected_device", "")
+            downstream = [d.get("device") for d in impact.get("downstream_devices", [])]
+            if AFFECTED not in (affected, *downstream):
+                continue
+            seen = record.get("first_seen") or ""
+            if latest_seen is None or seen > latest_seen:
+                latest_seen = seen
+                latest = record
         if latest:
             return latest.get("channel"), latest.get("ts")
     except Exception as e:
