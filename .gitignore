@@ -8,6 +8,10 @@ Thumbs.db
 *.swp
 *.swo
 
+# Python
+__pycache__/
+*.pyc
+
 # Local kube/helm state dumps
 kubeconfig*
 *.kubeconfig
