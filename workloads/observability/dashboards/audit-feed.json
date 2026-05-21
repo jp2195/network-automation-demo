@@ -41,18 +41,6 @@
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 1}, {"color": "green", "value": 5}]}, "unit": "short", "decimals": 0}},
-      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 0},
-      "id": 3,
-      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
-      "title": "Avg incident MTTR (24h)",
-      "type": "stat",
-      "targets": [
-        {"expr": "avg by () (avg_over_time(ALERTS{alertstate=\"firing\", severity=\"critical\"}[24h])) * 60 or vector(0)", "refId": "A", "legendFormat": "minutes"}
-      ]
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "short", "decimals": 0}},
       "gridPos": {"h": 5, "w": 6, "x": 18, "y": 0},
       "id": 4,
