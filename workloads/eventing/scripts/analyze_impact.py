@@ -69,7 +69,7 @@ def main():
                 agencies.add(tenant.get("slug"))
 
     alert = enrichment.get("alert", {}) or {}
-    alert_severity = (alert.get("labels") or {}).get("severity", "")
+    alert_severity = alert.get("severity", "")
 
     severity_class = "low"
     if any(d["device"].startswith("fc-") for d in downstream):
