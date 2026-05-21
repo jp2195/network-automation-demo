@@ -13,9 +13,9 @@ import dom_synth  # noqa: E402
 
 class RampTests(unittest.TestCase):
     """Piecewise-linear ramp:
-        [0,     0.20*d) -> linear 0 -> 1.0
-        [0.20*d, 0.80*d) -> 1.0 (plateau)
-        [0.80*d, 1.00*d] -> linear 1.0 -> 0
+        [0,     0.05*d) -> linear 0 -> 1.0
+        [0.05*d, 0.95*d) -> 1.0 (plateau)
+        [0.95*d, 1.00*d] -> linear 1.0 -> 0
         outside [0, d]   -> 0
     """
 
@@ -35,11 +35,12 @@ class RampTests(unittest.TestCase):
         self.assertAlmostEqual(dom_synth.ramp(1000.0, self._gf()), 0.0)
 
     def test_mid_ramp_up_is_half(self):
-        # t/d = 0.10 -> half of ramp-up phase (which spans 0..0.20)
-        self.assertAlmostEqual(dom_synth.ramp(1010.0, self._gf()), 0.5, places=4)
+        # t/d = 0.025 -> half of ramp-up phase (which spans 0..0.05)
+        self.assertAlmostEqual(dom_synth.ramp(1002.5, self._gf()), 0.5, places=4)
 
     def test_end_of_ramp_up_is_one(self):
-        self.assertAlmostEqual(dom_synth.ramp(1020.0, self._gf()), 1.0, places=4)
+        # t/d = 0.05 -> top of the ramp, entering plateau
+        self.assertAlmostEqual(dom_synth.ramp(1005.0, self._gf()), 1.0, places=4)
 
     def test_plateau_is_one(self):
         self.assertAlmostEqual(dom_synth.ramp(1050.0, self._gf()), 1.0, places=4)
@@ -48,8 +49,8 @@ class RampTests(unittest.TestCase):
         self.assertAlmostEqual(dom_synth.ramp(1080.0, self._gf()), 1.0, places=4)
 
     def test_mid_ramp_down_is_half(self):
-        # t/d = 0.90 -> half of ramp-down phase (0.80..1.00)
-        self.assertAlmostEqual(dom_synth.ramp(1090.0, self._gf()), 0.5, places=4)
+        # t/d = 0.975 -> half of ramp-down phase (0.95..1.00)
+        self.assertAlmostEqual(dom_synth.ramp(1097.5, self._gf()), 0.5, places=4)
 
     def test_end_is_zero(self):
         self.assertAlmostEqual(dom_synth.ramp(1100.0, self._gf()), 0.0, places=4)

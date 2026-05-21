@@ -69,17 +69,17 @@ class GrayFailure:
 
 
 def ramp(t_now: float, gf: GrayFailure) -> float:
-    """Piecewise-linear shape with 20% ramp-up, 60% plateau, 20% ramp-down."""
+    """Piecewise-linear shape with 5% ramp-up, 90% plateau, 5% ramp-down."""
     if gf.duration_s <= 0:
         return 0.0
     rel = (t_now - gf.start_ts) / gf.duration_s
     if rel <= 0.0 or rel >= 1.0:
         return 0.0
-    if rel < 0.20:
-        return rel / 0.20
-    if rel < 0.80:
+    if rel < 0.05:
+        return rel / 0.05
+    if rel < 0.95:
         return 1.0
-    return (1.0 - rel) / 0.20
+    return (1.0 - rel) / 0.05
 
 
 def parse_gray_failure(link_id: str, raw) -> Optional[GrayFailure]:
