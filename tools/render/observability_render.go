@@ -90,11 +90,10 @@ func WriteLinkMembership(w io.Writer, s *Spec) error {
 		p("            lon_b: %q", fmt.Sprintf("%.4f", nb.Site.Lon))
 		// Two point rows per link so the geomap "route" layer can connect
 		// them as a line. Sequence label preserves a-then-b ordering.
-		for i, ep := range []struct {
+		for _, ep := range []struct {
 			n   *Node
 			seq string
 		}{{na, "1"}, {nb, "2"}} {
-			_ = i
 			p("        - record: link_endpoint_geo")
 			p("          expr: vector(1)")
 			p("          labels:")

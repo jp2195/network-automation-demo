@@ -142,10 +142,10 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 			continue
 		}
 		// hub-to-cabinet from the hub's perspective
-		hubSide, cabSide := l.A, l.B
+		hubSide := l.A
 		hubNode, cabNode := na, nb
 		if cabNode.Kind == "srlinux" {
-			hubSide, cabSide = l.B, l.A
+			hubSide = l.B
 			hubNode, cabNode = nb, na
 		}
 		// ifc lookup gives us the /30 the spec assigned.
@@ -176,7 +176,6 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 			PeerAS:   s.Metadata.ASN.Backbone,
 			Group:    "uplink",
 		})
-		_ = cabSide // referenced only via cabNode now
 	}
 	// TMC iBGP mesh: each TMC peers with every other TMC over loopbacks.
 	tmcs := []*Node{}
