@@ -18,6 +18,7 @@ dist/
 bin/*
 !bin/scenarios.sh
 !bin/maintenance.sh
+!bin/wow-test.sh
 /render
 
 # Architectural reference kept locally only (not for the public repo)
