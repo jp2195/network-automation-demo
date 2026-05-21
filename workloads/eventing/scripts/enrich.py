@@ -64,6 +64,7 @@ def main():
         "alert": {
             "name": labels.get("alertname"),
             "severity": labels.get("severity"),
+            "corridor": labels.get("corridor"),
             "started": a.get("startsAt"),
             "ended": a.get("endsAt"),
             "status": a.get("status"),
@@ -89,6 +90,8 @@ def main():
             "label": cable.get("label"),
             "status": cable.get("status", {}).get("value") if cable.get("status") else None,
             "custom_fields": cable.get("custom_fields", {}),
+            "owner": cable.get("owner") or {},
+            "site_group": cable.get("site_group") or {},
             "terminations": [
                 {
                     "object_type": t.get("object_type"),

@@ -58,6 +58,18 @@ def _firing_blocks(enrichment, impact):
     severity = impact.get("severity_class", "low")
     emoji = {"high": "🚨", "medium": "⚠️", "warning": "⚠️", "low": "ℹ️"}.get(severity, "ℹ️")
 
+    # Provider lives on cable.owner (NetBox 4.x owner model). Corridor flows
+    # through the alert's relabeled `corridor` label, lifted by the
+    # link_membership_info join — fall back to cable.site_group.slug and
+    # cable.custom_fields.corridor for back-compat with seed data that still
+    # carries it there.
+    provider = (cable.get("owner") or {}).get("name") or cf.get("provider") or "unknown provider"
+    corridor = (alert.get("corridor")
+                or (cable.get("site_group") or {}).get("slug")
+                or cf.get("corridor")
+                or "unknown")
+    sla = cf.get("restoration_sla_hours", "?")
+
     blocks = [
         {"type": "header", "text": {
             "type": "plain_text",
@@ -72,9 +84,7 @@ def _firing_blocks(enrichment, impact):
     if cable:
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text":
             f"*Cable* `{cable.get('label')}` "
-            f"({cf.get('provider', 'unknown provider')}, "
-            f"corridor {cf.get('corridor', 'unknown')}, "
-            f"SLA {cf.get('restoration_sla_hours', '?')}h)"}})
+            f"({provider}, corridor {corridor}, SLA {sla}h)"}})
     if impact.get("downstream_devices"):
         downstream = ", ".join(d["device"] for d in impact["downstream_devices"])
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text":
