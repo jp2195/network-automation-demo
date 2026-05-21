@@ -40,7 +40,7 @@ def _parse_iso(ts):
 
 
 def _humanize_seconds(secs):
-    secs = int(secs)
+    secs = max(0, int(secs))
     if secs < 60:
         return f"{secs}s"
     if secs < 3600:
