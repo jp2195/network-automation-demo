@@ -91,11 +91,6 @@ type nbTenant struct {
 	Name string `json:"name"`
 }
 
-type nbProvider struct {
-	Slug string `json:"slug"`
-	Name string `json:"name"`
-}
-
 type nbManufacturer struct {
 	Slug string `json:"slug"`
 	Name string `json:"name"`
