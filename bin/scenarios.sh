@@ -190,7 +190,7 @@ gray_failure() {
     echo "usage: bin/scenarios.sh gray-failure <LINK_ID>" >&2
     return 2
   fi
-  local duration="${SCENARIO_DURATION:-600}"
+  local duration="${SCENARIO_DURATION:-180}"
   local rx_offset="${SCENARIO_RX_OFFSET:-8.0}"
   local err_rate="${SCENARIO_ERR_RATE:-120}"
   local now ttl json
