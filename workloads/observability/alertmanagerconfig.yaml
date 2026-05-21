@@ -8,7 +8,7 @@ spec:
   route:
     receiver: argo-events
     groupBy: ["alertname", "interface_name", "source"]
-    groupWait: 10s
+    groupWait: 1s
     groupInterval: 30s
     repeatInterval: 1h
     routes:
