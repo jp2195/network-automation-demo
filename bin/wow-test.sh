@@ -57,14 +57,16 @@ T_ALERT=""
 while (( $(date +%s) - T0 < TIMEOUT )); do
   payload=$(prom_query_alerts "$PROM_POD")
   if echo "$payload" | grep -q "SRLInterfaceOperDown"; then
-    if echo "$payload" | python3 -c "
-import json,sys
-alerts = json.load(sys.stdin).get('data',{}).get('alerts',[])
+    if echo "$payload" | NODE="$NODE" INTERFACE="$INTERFACE" python3 -c "
+import json, os, sys
+node = os.environ['NODE']
+interface = os.environ['INTERFACE']
+alerts = json.load(sys.stdin).get('data', {}).get('alerts', [])
 for a in alerts:
-    lbl = a.get('labels',{})
+    lbl = a.get('labels', {})
     if (lbl.get('alertname') == 'SRLInterfaceOperDown'
-        and lbl.get('node') == '$NODE'
-        and lbl.get('interface') == '$INTERFACE'
+        and lbl.get('node') == node
+        and lbl.get('interface') == interface
         and a.get('state') == 'firing'):
         sys.exit(0)
 sys.exit(1)
