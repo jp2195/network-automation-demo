@@ -19,7 +19,7 @@ spec:
         - alert: SRLInterfaceOperDown
           expr: |
             (srl_nokia_interfaces_interface_oper_state == 2)
-              * on(node, interface) group_left(link_id, link_kind)
+              * on(node, interface) group_left(link_id, link_kind, site, city, role)
             link_membership_info
           for: 30s
           labels:
