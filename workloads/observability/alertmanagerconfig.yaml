@@ -11,12 +11,6 @@ spec:
     groupWait: 1s
     groupInterval: 30s
     repeatInterval: 1h
-    routes:
-      - matchers:
-          - name: severity
-            value: critical
-        receiver: argo-events
-        continue: false
   receivers:
     - name: argo-events
       webhookConfigs:
