@@ -38,8 +38,7 @@ func main() {
 	gnmicDir := filepath.Join(*outDir, "workloads", "gnmic")
 	netboxDir := filepath.Join(*outDir, "workloads", "netbox")
 	netboxSeedDir := filepath.Join(netboxDir, "seed")
-	geojsonDir := filepath.Join(*outDir, "workloads", "observability", "dashboards")
-	for _, d := range []string{cfgDir, gnmicDir, netboxDir, netboxSeedDir, geojsonDir} {
+	for _, d := range []string{cfgDir, gnmicDir, netboxDir, netboxSeedDir} {
 		must(os.MkdirAll(d, 0o755))
 	}
 
@@ -82,12 +81,6 @@ func main() {
 		seedPath, len(spec.Nodes), len(spec.Links), len(spec.Agencies))
 	f = mustCreate(seedPath)
 	must(WriteNetBox(f, spec))
-	f.Close()
-
-	geoPath := filepath.Join(geojsonDir, "links.geojson")
-	fmt.Printf("==> Writing %s (%d features)\n", geoPath, len(spec.Links))
-	f = mustCreate(geoPath)
-	must(WriteGeoJSON(f, spec))
 	f.Close()
 
 	topoDir := filepath.Join(*outDir, "workloads", "topology")
