@@ -33,6 +33,7 @@ func WriteLinkMembership(w io.Writer, s *Spec) error {
 	p("      rules:")
 	for _, l := range s.Links {
 		for _, ep := range []Endpoint{l.A, l.B} {
+			n := s.NodeByName(ep.Node)
 			p("        - record: link_membership_info")
 			p("          expr: vector(1)")
 			p("          labels:")
@@ -41,6 +42,11 @@ func WriteLinkMembership(w io.Writer, s *Spec) error {
 			p("            link_id: %q", l.ID)
 			p("            link_kind: %q", l.Kind)
 			p("            cable_label: %q", l.Cable.Label)
+			if n != nil {
+				p("            site: %q", n.Site.Label)
+				p("            city: %q", n.Site.City)
+				p("            role: %q", n.Role)
+			}
 			if l.Cable.Corridor != "" {
 				p("            corridor: %q", l.Cable.Corridor)
 			}
