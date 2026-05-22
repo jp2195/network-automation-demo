@@ -28,3 +28,5 @@ configMapGenerator:
       - scripts/incident_bundle.py
       - scripts/maintenance_on.py
       - scripts/maintenance_off.py
+      - scripts/identify_targets.py
+      - scripts/gather_dom.py
