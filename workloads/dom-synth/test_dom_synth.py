@@ -176,10 +176,8 @@ class PortsByLinkTests(unittest.TestCase):
 
 
 class RxPowerOffsetTests(unittest.TestCase):
-    def setUp(self):
-        # Inject sample data; render_metrics reads module-level DATA.
-        self._saved = dom_synth.DATA
-        dom_synth.DATA = {
+    def _state(self):
+        return dom_synth.State.fresh({
             "ports": [
                 {"node": "hub-n", "interface": "ethernet-1/1",
                  "link_id": "ring-n-e", "link_kind": "backbone"},
@@ -188,10 +186,7 @@ class RxPowerOffsetTests(unittest.TestCase):
                 {"node": "hub-e", "interface": "ethernet-1/1",
                  "link_id": "ring-e-i20e", "link_kind": "backbone"},
             ]
-        }
-
-    def tearDown(self):
-        dom_synth.DATA = self._saved
+        })
 
     def _rx_values(self, text):
         """Pull dom_rx_power_dbm samples out of the metric exposition."""
@@ -207,13 +202,14 @@ class RxPowerOffsetTests(unittest.TestCase):
         return out
 
     def test_no_gray_failure_baseline(self):
-        baseline = self._rx_values(dom_synth.render_metrics(gray_failures={}))
+        baseline = self._rx_values(dom_synth.render_metrics(state=self._state(), gray_failures={}))
         # Baseline values are sinusoidal around -4.5; just confirm they're in band.
         for (_, _), v in baseline.items():
             self.assertGreater(v, -7.0)
             self.assertLess(v, -2.0)
 
     def test_gray_failure_plateau_offsets_rx_power(self):
+        state = self._state()
         gf = dom_synth.GrayFailure(
             link_id="ring-n-e",
             start_ts=time.time() - 50.0,   # halfway through 100s duration => plateau
@@ -221,9 +217,9 @@ class RxPowerOffsetTests(unittest.TestCase):
             peak_rx_offset_dbm=8.0,
             peak_errors_per_sec=120.0,
         )
-        baseline = self._rx_values(dom_synth.render_metrics(gray_failures={}))
+        baseline = self._rx_values(dom_synth.render_metrics(state=state, gray_failures={}))
         degraded = self._rx_values(
-            dom_synth.render_metrics(gray_failures={"ring-n-e": gf}))
+            dom_synth.render_metrics(state=state, gray_failures={"ring-n-e": gf}))
 
         # Both ports of ring-n-e are 8.0 dBm lower (full peak at plateau).
         for port in [("hub-n", "ethernet-1/1"), ("hub-e", "ethernet-1/2")]:
@@ -237,29 +233,15 @@ class RxPowerOffsetTests(unittest.TestCase):
 
 
 class SynthCounterTests(unittest.TestCase):
-    def setUp(self):
-        self._saved_data = dom_synth.DATA
-        self._saved_errors = dict(dom_synth.SYNTH_ERRORS_TOTAL)
-        self._saved_discards = dict(dom_synth.SYNTH_DISCARDS_TOTAL)
-        self._saved_last_tick = dom_synth.LAST_SYNTH_TICK
-        dom_synth.SYNTH_ERRORS_TOTAL.clear()
-        dom_synth.SYNTH_DISCARDS_TOTAL.clear()
-        dom_synth.DATA = {
+    def _state(self):
+        return dom_synth.State.fresh({
             "ports": [
                 {"node": "hub-n", "interface": "ethernet-1/1",
                  "link_id": "ring-n-e", "link_kind": "backbone"},
                 {"node": "hub-e", "interface": "ethernet-1/2",
                  "link_id": "ring-n-e", "link_kind": "backbone"},
             ]
-        }
-
-    def tearDown(self):
-        dom_synth.DATA = self._saved_data
-        dom_synth.SYNTH_ERRORS_TOTAL.clear()
-        dom_synth.SYNTH_ERRORS_TOTAL.update(self._saved_errors)
-        dom_synth.SYNTH_DISCARDS_TOTAL.clear()
-        dom_synth.SYNTH_DISCARDS_TOTAL.update(self._saved_discards)
-        dom_synth.LAST_SYNTH_TICK = self._saved_last_tick
+        })
 
     def _counter_value(self, text, name, node, interface):
         prefix = f'{name}{{'
@@ -271,7 +253,7 @@ class SynthCounterTests(unittest.TestCase):
         return None
 
     def test_no_gray_failure_emits_zero_counters(self):
-        text = dom_synth.render_metrics(gray_failures={})
+        text = dom_synth.render_metrics(state=self._state(), gray_failures={})
         for port in [("hub-n", "ethernet-1/1"), ("hub-e", "ethernet-1/2")]:
             self.assertEqual(
                 self._counter_value(text, "synth_in_error_packets_total", *port),
@@ -282,8 +264,9 @@ class SynthCounterTests(unittest.TestCase):
 
     def test_gray_failure_plateau_increments_counters(self):
         # Plateau (rel=0.5) -> ramp=1.0; peak 120 err/s
-        # We'll force a 10-second tick by setting LAST_SYNTH_TICK back.
-        dom_synth.LAST_SYNTH_TICK = time.time() - 10.0
+        # We'll force a 10-second tick by setting state.last_synth_tick back.
+        state = self._state()
+        state.last_synth_tick = time.time() - 10.0
         gf = dom_synth.GrayFailure(
             link_id="ring-n-e",
             start_ts=time.time() - 50.0,
@@ -291,7 +274,7 @@ class SynthCounterTests(unittest.TestCase):
             peak_rx_offset_dbm=8.0,
             peak_errors_per_sec=120.0,
         )
-        text = dom_synth.render_metrics(gray_failures={"ring-n-e": gf})
+        text = dom_synth.render_metrics(state=state, gray_failures={"ring-n-e": gf})
         errs = self._counter_value(
             text, "synth_in_error_packets_total", "hub-n", "ethernet-1/1")
         discards = self._counter_value(
@@ -301,7 +284,8 @@ class SynthCounterTests(unittest.TestCase):
         self.assertAlmostEqual(discards, 360.0, delta=1.0)
 
     def test_counters_are_monotonic_across_calls(self):
-        dom_synth.LAST_SYNTH_TICK = time.time() - 5.0
+        state = self._state()
+        state.last_synth_tick = time.time() - 5.0
         gf = dom_synth.GrayFailure(
             link_id="ring-n-e",
             start_ts=time.time() - 50.0,
@@ -309,11 +293,11 @@ class SynthCounterTests(unittest.TestCase):
             peak_rx_offset_dbm=8.0,
             peak_errors_per_sec=100.0,
         )
-        dom_synth.render_metrics(gray_failures={"ring-n-e": gf})
-        v1 = dom_synth.SYNTH_ERRORS_TOTAL[("hub-n", "ethernet-1/1")]
-        dom_synth.LAST_SYNTH_TICK = time.time() - 5.0
-        dom_synth.render_metrics(gray_failures={"ring-n-e": gf})
-        v2 = dom_synth.SYNTH_ERRORS_TOTAL[("hub-n", "ethernet-1/1")]
+        dom_synth.render_metrics(state=state, gray_failures={"ring-n-e": gf})
+        v1 = state.errors_total[("hub-n", "ethernet-1/1")]
+        state.last_synth_tick = time.time() - 5.0
+        dom_synth.render_metrics(state=state, gray_failures={"ring-n-e": gf})
+        v2 = state.errors_total[("hub-n", "ethernet-1/1")]
         self.assertGreater(v2, v1)
 
 
