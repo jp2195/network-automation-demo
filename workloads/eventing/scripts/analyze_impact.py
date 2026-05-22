@@ -12,27 +12,16 @@ Output: JSON {downstream_devices: [...], affected_agencies: [...], severity_clas
 import json
 import os
 import sys
-import urllib.parse
-import urllib.request
 
+from netbox_client import Client
 from constants import (
     CABINET_NAME_PREFIX,
     SEVERITY_HIGH, SEVERITY_LOW, SEVERITY_MEDIUM, SEVERITY_WARNING,
 )
 
-NETBOX = os.environ["NETBOX_URL"].rstrip("/")
-TOKEN = os.environ["NETBOX_TOKEN"]
-HEADERS = {
-    "Authorization": f"Token {TOKEN}",
-    "Accept": "application/json",
-}
 
-
-def get(path, **params):
-    qs = "?" + urllib.parse.urlencode(params) if params else ""
-    req = urllib.request.Request(f"{NETBOX}{path}{qs}", headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=20) as r:
-        return json.loads(r.read())
+_nb = Client()
+get = _nb.get
 
 
 def main():

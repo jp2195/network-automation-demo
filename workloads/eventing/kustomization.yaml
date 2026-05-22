@@ -21,6 +21,7 @@ configMapGenerator:
   - name: workflow-scripts
     files:
       - scripts/constants.py
+      - scripts/netbox_client.py
       - scripts/enrich.py
       - scripts/analyze_impact.py
       - scripts/notify.py
