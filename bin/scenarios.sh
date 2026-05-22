@@ -92,8 +92,15 @@ scenario_hurricane() {
 
   log "3/4  recovery — ring-i20e-sw repaired first"
   restore hub-i20e ethernet-1/1
-  RESTORE_QUEUE=("${RESTORE_QUEUE[@]/hub-i20e:ethernet-1\/1/}")
-  RESTORE_QUEUE=(${RESTORE_QUEUE[@]:-})
+  # Drop the restored interface from the queue so cleanup doesn't try
+  # to restore it again on exit. Index-based filter keeps the loop
+  # explicit instead of relying on bash's pattern-substitution removal.
+  new_queue=()
+  for entry in "${RESTORE_QUEUE[@]}"; do
+    [[ "$entry" == "hub-i20e:ethernet-1/1" ]] && continue
+    new_queue+=("$entry")
+  done
+  RESTORE_QUEUE=("${new_queue[@]}")
   sleep 30
 
   log "4/4  ring-e-i20e back up — full restoration"
