@@ -25,6 +25,8 @@ import os
 import sys
 from datetime import datetime, timezone
 
+from constants import SEVERITY_HIGH, SEVERITY_LOW, SEVERITY_MEDIUM, SEVERITY_WARNING
+
 
 def _slack_unconfigured(token, channel):
     return not token or not channel
@@ -55,8 +57,13 @@ def _firing_blocks(enrichment, impact):
     iface = enrichment.get("interface", {})
     cable = enrichment.get("cable", {})
     cf = cable.get("custom_fields", {}) if cable else {}
-    severity = impact.get("severity_class", "low")
-    emoji = {"high": "🚨", "medium": "⚠️", "warning": "⚠️", "low": "ℹ️"}.get(severity, "ℹ️")
+    severity = impact.get("severity_class", SEVERITY_LOW)
+    emoji = {
+        SEVERITY_HIGH:    "🚨",
+        SEVERITY_MEDIUM:  "⚠️",
+        SEVERITY_WARNING: "⚠️",
+        SEVERITY_LOW:     "ℹ️",
+    }.get(severity, "ℹ️")
 
     # Provider lives on cable.owner (NetBox 4.x owner model). Corridor flows
     # through the alert's relabeled `corridor` label, lifted by the
