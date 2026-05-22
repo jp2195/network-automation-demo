@@ -258,109 +258,11 @@
           "refId": "B"
         },
         {
-          "expr": "link_endpoint_geo{link_id=\"hubi20e-fci20e\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"hubi20e-fci20e\"})",
+          "expr": "link_endpoint_geo * on(link_id) group_left(link_kind, corridor) max by(link_id, link_kind, corridor) (link:oper_state_with_meta)",
           "format": "table",
           "instant": true,
-          "refId": "L01",
-          "legendFormat": "hubi20e-fci20e"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"hubn-fcn\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"hubn-fcn\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L02",
-          "legendFormat": "hubn-fcn"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"hubnw-fcnw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"hubnw-fcnw\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L03",
-          "legendFormat": "hubnw-fcnw"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"hubsw-fcsw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"hubsw-fcsw\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L04",
-          "legendFormat": "hubsw-fcsw"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"ring-e-i20e\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-e-i20e\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L05",
-          "legendFormat": "ring-e-i20e"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"ring-i20e-sw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-i20e-sw\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L06",
-          "legendFormat": "ring-i20e-sw"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"ring-i20w-nw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-i20w-nw\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L07",
-          "legendFormat": "ring-i20w-nw"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"ring-n-e\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-n-e\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L08",
-          "legendFormat": "ring-n-e"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"ring-nw-n\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-nw-n\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L09",
-          "legendFormat": "ring-nw-n"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"ring-sw-i20w\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"ring-sw-i20w\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L10",
-          "legendFormat": "ring-sw-i20w"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"tmc1-hubnw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"tmc1-hubnw\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L11",
-          "legendFormat": "tmc1-hubnw"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"tmc1-hubsw\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"tmc1-hubsw\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L12",
-          "legendFormat": "tmc1-hubsw"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"tmc1-tmc2\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"tmc1-tmc2\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L13",
-          "legendFormat": "tmc1-tmc2"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"tmc2-hube\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"tmc2-hube\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L14",
-          "legendFormat": "tmc2-hube"
-        },
-        {
-          "expr": "link_endpoint_geo{link_id=\"tmc2-hubn\"} * on(link_id) group_left() max by(link_id) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"tmc2-hubn\"})",
-          "format": "table",
-          "instant": true,
-          "refId": "L15",
-          "legendFormat": "tmc2-hubn"
+          "refId": "L",
+          "legendFormat": "{{link_id}}"
         }
       ],
       "transformations": [
