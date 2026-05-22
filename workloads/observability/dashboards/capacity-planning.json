@@ -24,7 +24,7 @@
       "type": "gauge",
       "targets": [
         {
-          "expr": "100 * (quantile by (link_id) (0.95, rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_kind=\"backbone\"}) * 8 / 1e10)",
+          "expr": "100 * (link:p95_out_bps:30m{link_kind=\"backbone\"} / 1e10)",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
@@ -46,7 +46,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "sum by (link_id) (rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_kind=\"backbone\"}) * 8",
+          "expr": "link:rate_out_bps:1m{link_kind=\"backbone\"}",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
@@ -68,7 +68,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "quantile_over_time(0.95, (sum by (link_id) (rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_kind=\"backbone\"}))[30m:1m]) * 8",
+          "expr": "link:p95_out_bps:30m{link_kind=\"backbone\"}",
           "legendFormat": "p95 {{link_id}}",
           "refId": "A"
         }
@@ -104,13 +104,13 @@
       "type": "table",
       "targets": [
         {
-          "expr": "(quantile by (link_id) (0.95, rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_kind=\"backbone\"}) * 8 / 1e6)",
+          "expr": "(link:p95_out_bps:30m{link_kind=\"backbone\"} / 1e6)",
           "format": "table",
           "instant": true,
           "refId": "A"
         },
         {
-          "expr": "(quantile by (link_id) (0.95, rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_kind=\"backbone\"}) * 8 / 1e10) * 100",
+          "expr": "(link:p95_out_bps:30m{link_kind=\"backbone\"} / 1e10) * 100",
           "format": "table",
           "instant": true,
           "refId": "B"

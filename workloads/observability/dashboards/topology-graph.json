@@ -36,7 +36,7 @@
       "type": "state-timeline",
       "targets": [
         {
-          "expr": "srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_kind=\"backbone\"}",
+          "expr": "link:oper_state_with_meta{link_kind=\"backbone\"}",
           "legendFormat": "{{link_id}} ({{node}}/{{interface}})",
           "refId": "A"
         }
@@ -65,7 +65,7 @@
       "type": "state-timeline",
       "targets": [
         {
-          "expr": "srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_kind=\"cabinet\"}",
+          "expr": "link:oper_state_with_meta{link_kind=\"cabinet\"}",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
@@ -147,7 +147,7 @@
       "type": "gauge",
       "targets": [
         {
-          "expr": "100 * (sum by (link_id) (rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_kind=\"backbone\"}) * 8 / 1e10)",
+          "expr": "100 * (sum by (link_id) (link:rate_out_bps:1m{link_kind=\"backbone\"}) / 1e10)",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }

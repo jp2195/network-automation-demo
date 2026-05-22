@@ -38,7 +38,7 @@
       "type": "stat",
       "targets": [
         {
-          "expr": "max by (corridor) ((srl_nokia_interfaces_interface_oper_state) * on(node, interface) group_left(corridor) link_membership_info{corridor!=\"\"})",
+          "expr": "max by (corridor) (link:oper_state_with_meta{corridor!=\"\"})",
           "legendFormat": "{{corridor}}",
           "refId": "A"
         }
@@ -64,7 +64,7 @@
       "type": "stat",
       "targets": [
         {
-          "expr": "100 * avg by (corridor) (avg_over_time(((srl_nokia_interfaces_interface_oper_state == 1) * on(node, interface) group_left(corridor) link_membership_info{corridor!=\"\"})[24h:1m]))",
+          "expr": "100 * avg by (corridor) (avg_over_time(((link:oper_state_with_meta{corridor!=\"\"} == 1))[24h:1m]))",
           "legendFormat": "{{corridor}}",
           "refId": "A"
         }
@@ -95,7 +95,7 @@
       "type": "table",
       "targets": [
         {
-          "expr": "srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id, link_kind, corridor, cable_label, provider, restoration_sla_hours) link_membership_info{corridor!=\"\"}",
+          "expr": "link:oper_state_with_meta{corridor!=\"\"}",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -125,7 +125,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "sum by (corridor) (rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(corridor) link_membership_info{corridor!=\"\"}) * 8",
+          "expr": "sum by (corridor) (link:rate_out_bps:1m{corridor!=\"\"})",
           "legendFormat": "{{corridor}}",
           "refId": "A"
         }
@@ -144,7 +144,7 @@
       "type": "status-history",
       "targets": [
         {
-          "expr": "max by (corridor) ((srl_nokia_interfaces_interface_oper_state) * on(node, interface) group_left(corridor) link_membership_info{corridor!=\"\"})",
+          "expr": "max by (corridor) (link:oper_state_with_meta{corridor!=\"\"})",
           "legendFormat": "{{corridor}}",
           "refId": "A"
         }

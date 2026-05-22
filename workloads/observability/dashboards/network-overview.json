@@ -183,7 +183,7 @@
       "type": "stat",
       "targets": [
         {
-          "expr": "count((srl_nokia_interfaces_interface_oper_state == 1) * on(node, interface) group_left(link_kind) link_membership_info{link_kind=\"backbone\"}) / 2",
+          "expr": "count(link:oper_state_with_meta{link_kind=\"backbone\"} == 1) / 2",
           "refId": "A",
           "legendFormat": "lit"
         }
@@ -346,7 +346,7 @@
       "type": "stat",
       "targets": [
         {
-          "expr": "sum(rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(link_kind) link_membership_info{link_kind=\"backbone\"}) * 8",
+          "expr": "sum(link:rate_out_bps:1m{link_kind=\"backbone\"})",
           "refId": "A",
           "legendFormat": "bps"
         }
@@ -464,7 +464,7 @@
       "type": "geomap",
       "targets": [
         {
-          "expr": "max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"srlinux\"} * on(node) group_right(lat, lon, site, city, role, kind) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left link_membership_info))",
+          "expr": "max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"srlinux\"} * on(node) group_right(lat, lon, site, city, role, kind) (link:oper_state_with_meta))",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -588,7 +588,7 @@
       "type": "table",
       "targets": [
         {
-          "expr": "srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id, link_kind) link_membership_info",
+          "expr": "link:oper_state_with_meta",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -675,7 +675,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "sum by (link_id) (rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(link_id, link_kind) link_membership_info{link_kind=\"backbone\"}) * 8",
+          "expr": "sum by (link_id) (link:rate_out_bps:1m{link_kind=\"backbone\"})",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
