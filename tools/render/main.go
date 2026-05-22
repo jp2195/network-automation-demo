@@ -93,6 +93,8 @@ func main() {
 	renderTo(filepath.Join(obsDir, "link-membership.yaml"),
 		fmt.Sprintf(" (%d link endpoints)", len(spec.Links)*2),
 		func(w io.Writer) error { return WriteLinkMembership(w, spec) })
+	renderTo(filepath.Join(obsDir, "link-rate-rules.yaml"), "",
+		func(w io.Writer) error { return WriteLinkRateRules(w, spec) })
 	renderTo(filepath.Join(domDir, "links.json"), " (DOM synth interface list)",
 		func(w io.Writer) error { return WriteDOMLinks(w, spec) })
 
