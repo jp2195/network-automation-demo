@@ -1,107 +1,387 @@
 {
-  "annotations": {"list": [{"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
   "links": [
-    {"title": "Overview", "type": "link", "url": "/d/network-overview/network-overview", "icon": "external link"},
-    {"title": "Geomap", "type": "link", "url": "/d/geomap/atlanta-metro-geomap", "icon": "external link"},
-    {"title": "Routing protocols", "type": "link", "url": "/d/routing-protocols/routing-protocols", "icon": "external link"},
-    {"title": "Hardware health", "type": "link", "url": "/d/hardware-health/hardware-health", "icon": "external link"},
-    {"title": "Route flaps", "type": "link", "url": "/d/route-flaps/route-flaps", "icon": "external link"}
+    {
+      "icon": "external link",
+      "title": "Overview",
+      "type": "link",
+      "url": "/d/network-overview/network-overview"
+    },
+    {
+      "icon": "external link",
+      "title": "Geomap",
+      "type": "link",
+      "url": "/d/geomap/atlanta-metro-geomap"
+    },
+    {
+      "icon": "external link",
+      "title": "Topology",
+      "type": "link",
+      "url": "/d/topology-graph/topology-timeline"
+    },
+    {
+      "icon": "external link",
+      "title": "Corridor status",
+      "type": "link",
+      "url": "/d/corridor-status/corridor-status"
+    },
+    {
+      "icon": "external link",
+      "title": "Link detail",
+      "type": "link",
+      "url": "/d/link-detail/link-detail"
+    },
+    {
+      "icon": "external link",
+      "title": "Device detail",
+      "type": "link",
+      "url": "/d/device-detail/device-detail"
+    },
+    {
+      "icon": "external link",
+      "title": "Alert console",
+      "type": "link",
+      "url": "/d/alert-console/alert-console"
+    },
+    {
+      "icon": "external link",
+      "title": "Audit feed",
+      "type": "link",
+      "url": "/d/audit-feed/audit-feed"
+    },
+    {
+      "icon": "external link",
+      "title": "Hardware health",
+      "type": "link",
+      "url": "/d/hardware-health/hardware-health"
+    },
+    {
+      "icon": "external link",
+      "title": "Route flaps",
+      "type": "link",
+      "url": "/d/route-flaps/route-flaps"
+    },
+    {
+      "icon": "external link",
+      "title": "Routing",
+      "type": "link",
+      "url": "/d/routing-protocols/routing-protocols"
+    }
   ],
   "panels": [
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 50}, {"color": "red", "value": 80}]}, "unit": "percent", "min": 0, "max": 100, "decimals": 1}
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
       },
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
-      "options": {"minVizHeight": 75, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto"},
-      "title": "Per-link 95th-percentile utilization (% of 10G, last 1h)",
-      "type": "gauge",
+      "options": {
+        "minVizHeight": 75,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
       "targets": [
         {
           "expr": "100 * (link:p95_out_bps:30m{link_kind=\"backbone\"} / 1e10)",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Per-link 95th-percentile utilization (% of 10G, last 1h)",
+      "type": "gauge"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 25, "spanNulls": true},
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "spanNulls": true
+          },
           "unit": "bps"
         }
       },
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
       "id": 2,
-      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"]}},
-      "title": "Per-link traffic — backbone egress",
-      "type": "timeseries",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
       "targets": [
         {
           "expr": "link:rate_out_bps:1m{link_kind=\"backbone\"}",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Per-link traffic — backbone egress",
+      "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 25, "spanNulls": true},
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "spanNulls": true
+          },
           "unit": "bps"
         }
       },
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
       "id": 3,
-      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["max"]}},
-      "title": "Per-link 95th-percentile (rolling 30 min)",
-      "type": "timeseries",
+      "options": {
+        "legend": {
+          "calcs": [
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
       "targets": [
         {
           "expr": "link:p95_out_bps:30m{link_kind=\"backbone\"}",
           "legendFormat": "p95 {{link_id}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Per-link 95th-percentile (rolling 30 min)",
+      "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}},
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          }
+        },
         "overrides": [
-          {"matcher": {"id": "byName", "options": "p95 (Mbps)"}, "properties": [
-            {"id": "custom.cellOptions", "value": {"type": "gauge", "mode": "gradient"}},
-            {"id": "max", "value": 10000},
-            {"id": "min", "value": 0},
-            {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 5000}, {"color": "red", "value": 8000}]}},
-            {"id": "custom.width", "value": 200}
-          ]},
-          {"matcher": {"id": "byName", "options": "Utilization"}, "properties": [
-            {"id": "unit", "value": "percent"},
-            {"id": "decimals", "value": 1},
-            {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "gradient"}},
-            {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 50}, {"color": "red", "value": 80}]}}
-          ]},
-          {"matcher": {"id": "byName", "options": "Link"}, "properties": [
-            {"id": "links", "value": [{"title": "Open link", "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"}]}
-          ]}
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p95 (Mbps)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "gauge"
+                }
+              },
+              {
+                "id": "max",
+                "value": 10000
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 5000
+                    },
+                    {
+                      "color": "red",
+                      "value": 8000
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Utilization"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 50
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Link"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open link",
+                    "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"
+                  }
+                ]
+              }
+            ]
+          }
         ]
       },
-      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 16},
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
       "id": 4,
-      "options": {"showHeader": true, "sortBy": [{"displayName": "Utilization", "desc": true}], "footer": {"show": false}, "cellHeight": "md"},
-      "title": "Capacity table — links sorted by 1h p95",
-      "type": "table",
+      "options": {
+        "cellHeight": "md",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Utilization"
+          }
+        ]
+      },
       "targets": [
         {
           "expr": "(link:p95_out_bps:30m{link_kind=\"backbone\"} / 1e6)",
@@ -116,44 +396,100 @@
           "refId": "B"
         }
       ],
+      "title": "Capacity table — links sorted by 1h p95",
       "transformations": [
-        {"id": "joinByField", "options": {"byField": "link_id", "mode": "outer"}},
-        {"id": "organize", "options": {
-          "excludeByName": {"Time 1": true, "Time 2": true, "Time": true},
-          "indexByName": {"link_id": 0, "Value #A": 1, "Value #B": 2},
-          "renameByName": {"link_id": "Link", "Value #A": "p95 (Mbps)", "Value #B": "Utilization"}
-        }}
-      ]
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "link_id",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Time 1": true,
+              "Time 2": true
+            },
+            "indexByName": {
+              "Value #A": 1,
+              "Value #B": 2,
+              "link_id": 0
+            },
+            "renameByName": {
+              "Value #A": "p95 (Mbps)",
+              "Value #B": "Utilization",
+              "link_id": "Link"
+            }
+          }
+        }
+      ],
+      "type": "table"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 80},
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1
+          },
           "unit": "Bps"
         }
       },
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 28},
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
       "id": 5,
-      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"]}},
-      "title": "Top talkers — outbound bytes/s by node",
-      "type": "timeseries",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
       "targets": [
         {
           "expr": "topk(8, sum by (node) (rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left link_membership_info))",
           "legendFormat": "{{node}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Top talkers — outbound bytes/s by node",
+      "type": "timeseries"
     }
   ],
   "refresh": "30s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["network", "atlas-dot", "demo", "capacity"],
-  "templating": {"list": []},
-  "time": {"from": "now-1h", "to": "now"},
+  "tags": [
+    "network",
+    "atlas-dot",
+    "demo",
+    "capacity"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
   "title": "Capacity planning",
   "uid": "capacity-planning",
   "version": 1

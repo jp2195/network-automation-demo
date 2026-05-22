@@ -18,46 +18,70 @@
   "id": null,
   "links": [
     {
+      "icon": "external link",
       "title": "Overview",
       "type": "link",
-      "url": "/d/network-overview/network-overview",
-      "icon": "external link"
+      "url": "/d/network-overview/network-overview"
     },
     {
-      "title": "Device detail",
+      "icon": "external link",
+      "title": "Topology",
       "type": "link",
-      "url": "/d/device-detail/device-detail",
-      "icon": "external link"
+      "url": "/d/topology-graph/topology-timeline"
     },
     {
-      "title": "Link detail",
-      "type": "link",
-      "url": "/d/link-detail/link-detail",
-      "icon": "external link"
-    },
-    {
-      "title": "Alert console",
-      "type": "link",
-      "url": "/d/alert-console/alert-console",
-      "icon": "external link"
-    },
-    {
+      "icon": "external link",
       "title": "Corridor status",
       "type": "link",
-      "url": "/d/corridor-status/corridor-status",
-      "icon": "external link"
+      "url": "/d/corridor-status/corridor-status"
     },
     {
-      "title": "Topology timeline",
+      "icon": "external link",
+      "title": "Link detail",
       "type": "link",
-      "url": "/d/topology-graph/topology-timeline",
-      "icon": "external link"
+      "url": "/d/link-detail/link-detail"
     },
     {
+      "icon": "external link",
+      "title": "Device detail",
+      "type": "link",
+      "url": "/d/device-detail/device-detail"
+    },
+    {
+      "icon": "external link",
+      "title": "Alert console",
+      "type": "link",
+      "url": "/d/alert-console/alert-console"
+    },
+    {
+      "icon": "external link",
       "title": "Audit feed",
       "type": "link",
-      "url": "/d/audit-feed/audit-feed",
-      "icon": "external link"
+      "url": "/d/audit-feed/audit-feed"
+    },
+    {
+      "icon": "external link",
+      "title": "Hardware health",
+      "type": "link",
+      "url": "/d/hardware-health/hardware-health"
+    },
+    {
+      "icon": "external link",
+      "title": "Capacity",
+      "type": "link",
+      "url": "/d/capacity-planning/capacity-planning"
+    },
+    {
+      "icon": "external link",
+      "title": "Route flaps",
+      "type": "link",
+      "url": "/d/route-flaps/route-flaps"
+    },
+    {
+      "icon": "external link",
+      "title": "Routing",
+      "type": "link",
+      "url": "/d/routing-protocols/routing-protocols"
     }
   ],
   "panels": [
@@ -113,71 +137,52 @@
       },
       "id": 1,
       "options": {
-        "view": {
-          "id": "coords",
-          "lat": 33.78,
-          "lon": -84.39,
-          "zoom": 9.7
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
         },
         "controls": {
-          "showZoom": true,
+          "mouseWheelZoom": true,
           "showAttribution": true,
-          "showScale": true,
           "showDebug": false,
           "showMeasure": true,
-          "mouseWheelZoom": true
-        },
-        "tooltip": {
-          "mode": "details"
-        },
-        "basemap": {
-          "type": "default",
-          "name": "Layer 0",
-          "config": {}
+          "showScale": true,
+          "showZoom": true
         },
         "layers": [
           {
-            "type": "route",
-            "name": "Backbone fiber rings",
-            "location": {
-              "mode": "coords",
-              "latitude": "lat",
-              "longitude": "lon"
-            },
-            "filterData": {
-              "id": "byRefId",
-              "options": "L.*"
-            },
             "config": {
+              "arrow": 0,
               "style": {
                 "color": {
                   "field": "Value"
                 },
                 "lineWidth": 4,
                 "opacity": 0.9
-              },
-              "arrow": 0
-            },
-            "tooltip": true
-          },
-          {
-            "type": "markers",
-            "name": "Cabinets (FRR / SNMP)",
-            "location": {
-              "mode": "coords",
-              "latitude": "lat",
-              "longitude": "lon"
+              }
             },
             "filterData": {
               "id": "byRefId",
-              "options": "A"
+              "options": "L.*"
             },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "Backbone fiber rings",
+            "tooltip": true,
+            "type": "route"
+          },
+          {
             "config": {
               "showLegend": true,
               "style": {
                 "color": {
                   "field": "Value"
                 },
+                "opacity": 0.95,
                 "size": {
                   "fixed": 10
                 },
@@ -185,39 +190,39 @@
                   "fixed": "img/icons/marker/triangle.svg",
                   "mode": "fixed"
                 },
+                "text": {
+                  "field": "node"
+                },
                 "textConfig": {
                   "fontSize": 11,
                   "offsetX": 0,
                   "offsetY": 14,
                   "textAlign": "center",
                   "textBaseline": "top"
-                },
-                "text": {
-                  "field": "node"
-                },
-                "opacity": 0.95
+                }
               }
-            },
-            "tooltip": true
-          },
-          {
-            "type": "markers",
-            "name": "Backbone hubs (SR Linux / gNMI)",
-            "location": {
-              "mode": "coords",
-              "latitude": "lat",
-              "longitude": "lon"
             },
             "filterData": {
               "id": "byRefId",
-              "options": "B"
+              "options": "A"
             },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "Cabinets (FRR / SNMP)",
+            "tooltip": true,
+            "type": "markers"
+          },
+          {
             "config": {
               "showLegend": true,
               "style": {
                 "color": {
                   "field": "Value"
                 },
+                "opacity": 0.95,
                 "size": {
                   "fixed": 16
                 },
@@ -225,25 +230,42 @@
                   "fixed": "img/icons/marker/circle.svg",
                   "mode": "fixed"
                 },
+                "text": {
+                  "field": "node"
+                },
                 "textConfig": {
                   "fontSize": 13,
                   "offsetX": 0,
                   "offsetY": -18,
                   "textAlign": "center",
                   "textBaseline": "bottom"
-                },
-                "text": {
-                  "field": "node"
-                },
-                "opacity": 0.95
+                }
               }
             },
-            "tooltip": true
+            "filterData": {
+              "id": "byRefId",
+              "options": "B"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "Backbone hubs (SR Linux / gNMI)",
+            "tooltip": true,
+            "type": "markers"
           }
-        ]
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "id": "coords",
+          "lat": 33.78,
+          "lon": -84.39,
+          "zoom": 9.7
+        }
       },
-      "title": "Atlanta metro \u2014 Atlas DOT Region 7",
-      "type": "geomap",
       "targets": [
         {
           "expr": "max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"frr\"} * on(node) group_right(lat, lon, site, city, role, kind) (2 - up{job=\"snmp-frr-cabinets\"}))",
@@ -261,28 +283,30 @@
           "expr": "link_endpoint_geo * on(link_id) group_left(link_kind, corridor) max by(link_id, link_kind, corridor) (link:oper_state_with_meta)",
           "format": "table",
           "instant": true,
-          "refId": "L",
-          "legendFormat": "{{link_id}}"
+          "legendFormat": "{{link_id}}",
+          "refId": "L"
         }
       ],
+      "title": "Atlanta metro — Atlas DOT Region 7",
       "transformations": [
         {
           "id": "convertFieldType",
           "options": {
             "conversions": [
               {
-                "targetField": "lat",
-                "destinationType": "number"
+                "destinationType": "number",
+                "targetField": "lat"
               },
               {
-                "targetField": "lon",
-                "destinationType": "number"
+                "destinationType": "number",
+                "targetField": "lon"
               }
             ],
             "fields": {}
           }
         }
-      ]
+      ],
+      "type": "geomap"
     }
   ],
   "refresh": "10s",
@@ -301,7 +325,7 @@
     "from": "now-15m",
     "to": "now"
   },
-  "title": "Atlanta metro \u2014 Geomap",
+  "title": "Atlanta metro — Geomap",
   "uid": "geomap",
   "version": 1
 }

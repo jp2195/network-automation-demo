@@ -1,98 +1,357 @@
 {
-  "annotations": {"list": [{"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
   "links": [
-    {"title": "Overview", "type": "link", "url": "/d/network-overview/network-overview", "icon": "external link"},
-    {"title": "Geomap", "type": "link", "url": "/d/geomap/atlanta-metro-geomap", "icon": "external link"},
-    {"title": "Device detail", "type": "link", "url": "/d/device-detail/device-detail", "icon": "external link"},
-    {"title": "Link detail", "type": "link", "url": "/d/link-detail/link-detail", "icon": "external link"},
-    {"title": "Alert console", "type": "link", "url": "/d/alert-console/alert-console", "icon": "external link"}
+    {
+      "icon": "external link",
+      "title": "Overview",
+      "type": "link",
+      "url": "/d/network-overview/network-overview"
+    },
+    {
+      "icon": "external link",
+      "title": "Geomap",
+      "type": "link",
+      "url": "/d/geomap/atlanta-metro-geomap"
+    },
+    {
+      "icon": "external link",
+      "title": "Topology",
+      "type": "link",
+      "url": "/d/topology-graph/topology-timeline"
+    },
+    {
+      "icon": "external link",
+      "title": "Link detail",
+      "type": "link",
+      "url": "/d/link-detail/link-detail"
+    },
+    {
+      "icon": "external link",
+      "title": "Device detail",
+      "type": "link",
+      "url": "/d/device-detail/device-detail"
+    },
+    {
+      "icon": "external link",
+      "title": "Alert console",
+      "type": "link",
+      "url": "/d/alert-console/alert-console"
+    },
+    {
+      "icon": "external link",
+      "title": "Audit feed",
+      "type": "link",
+      "url": "/d/audit-feed/audit-feed"
+    },
+    {
+      "icon": "external link",
+      "title": "Hardware health",
+      "type": "link",
+      "url": "/d/hardware-health/hardware-health"
+    },
+    {
+      "icon": "external link",
+      "title": "Capacity",
+      "type": "link",
+      "url": "/d/capacity-planning/capacity-planning"
+    },
+    {
+      "icon": "external link",
+      "title": "Route flaps",
+      "type": "link",
+      "url": "/d/route-flaps/route-flaps"
+    },
+    {
+      "icon": "external link",
+      "title": "Routing",
+      "type": "link",
+      "url": "/d/routing-protocols/routing-protocols"
+    }
   ],
   "panels": [
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [
-            {"options": {"1": {"color": "green", "text": "🟢 IN SERVICE"}, "2": {"color": "red", "text": "🔴 DEGRADED"}}, "type": "value"}
+            {
+              "options": {
+                "1": {
+                  "color": "green",
+                  "text": "🟢 IN SERVICE"
+                },
+                "2": {
+                  "color": "red",
+                  "text": "🔴 DEGRADED"
+                }
+              },
+              "type": "value"
+            }
           ],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}, {"color": "red", "value": 1.5}]}
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 1.5
+              }
+            ]
+          }
         }
       },
-      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
         "orientation": "auto",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "title": "Corridor service status (live)",
-      "type": "stat",
       "targets": [
         {
           "expr": "max by (corridor) (link:oper_state_with_meta{corridor!=\"\"})",
           "legendFormat": "{{corridor}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Corridor service status (live)",
+      "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "yellow", "value": 99.0}, {"color": "green", "value": 99.9}]}, "unit": "percent", "max": 100, "min": 95, "decimals": 3}
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
       },
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 6},
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 3,
+          "max": 100,
+          "min": 95,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 99.0
+              },
+              {
+                "color": "green",
+                "value": 99.9
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
       "id": 2,
       "options": {
         "colorMode": "background",
         "graphMode": "area",
         "justifyMode": "center",
         "orientation": "horizontal",
-        "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""},
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "title": "24-hour availability by corridor",
-      "type": "stat",
       "targets": [
         {
           "expr": "100 * avg by (corridor) (avg_over_time(((link:oper_state_with_meta{corridor!=\"\"} == 1))[24h:1m]))",
           "legendFormat": "{{corridor}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "24-hour availability by corridor",
+      "type": "stat"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "custom": {"align": "auto"}},
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto"
+          }
+        },
         "overrides": [
-          {"matcher": {"id": "byName", "options": "State"}, "properties": [
-            {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "basic"}},
-            {"id": "mappings", "value": [{"type": "value", "options": {"1": {"color": "green", "text": "UP"}, "2": {"color": "red", "text": "DOWN"}}}]},
-            {"id": "custom.width", "value": 90}
-          ]},
-          {"matcher": {"id": "byName", "options": "Link"}, "properties": [
-            {"id": "links", "value": [{"title": "Drill into ${__value.text}", "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"}]},
-            {"id": "custom.width", "value": 200}
-          ]},
-          {"matcher": {"id": "byName", "options": "Corridor"}, "properties": [{"id": "custom.width", "value": 130}]},
-          {"matcher": {"id": "byName", "options": "SLA hrs"}, "properties": [{"id": "custom.width", "value": 80}, {"id": "unit", "value": "h"}]}
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "State"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "1": {
+                        "color": "green",
+                        "text": "UP"
+                      },
+                      "2": {
+                        "color": "red",
+                        "text": "DOWN"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Link"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Drill into ${__value.text}",
+                    "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Corridor"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SLA hrs"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "unit",
+                "value": "h"
+              }
+            ]
+          }
         ]
       },
-      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 14},
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
       "id": 3,
-      "options": {"showHeader": true, "sortBy": [{"displayName": "Corridor", "desc": false}, {"displayName": "State", "desc": true}], "footer": {"show": false}, "cellHeight": "md"},
-      "title": "Cables — full inventory",
-      "type": "table",
+      "options": {
+        "cellHeight": "md",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Corridor"
+          },
+          {
+            "desc": true,
+            "displayName": "State"
+          }
+        ]
+      },
       "targets": [
         {
           "expr": "link:oper_state_with_meta{corridor!=\"\"}",
@@ -101,62 +360,200 @@
           "refId": "A"
         }
       ],
+      "title": "Cables — full inventory",
       "transformations": [
-        {"id": "organize", "options": {
-          "excludeByName": {"Time": true, "__name__": true, "container": true, "endpoint": true, "instance": true, "interface_name": true, "job": true, "namespace": true, "pod": true, "service": true, "source": true, "subscription_name": true, "prometheus": true, "city": true, "site": true, "role": true, "node": true, "interface": true, "link_kind": true},
-          "indexByName": {"corridor": 0, "link_id": 1, "cable_label": 2, "provider": 3, "restoration_sla_hours": 4, "Value": 5},
-          "renameByName": {"corridor": "Corridor", "link_id": "Link", "cable_label": "Cable", "provider": "Provider", "restoration_sla_hours": "SLA hrs", "Value": "State"}
-        }}
-      ]
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "city": true,
+              "container": true,
+              "endpoint": true,
+              "instance": true,
+              "interface": true,
+              "interface_name": true,
+              "job": true,
+              "link_kind": true,
+              "namespace": true,
+              "node": true,
+              "pod": true,
+              "prometheus": true,
+              "role": true,
+              "service": true,
+              "site": true,
+              "source": true,
+              "subscription_name": true
+            },
+            "indexByName": {
+              "Value": 5,
+              "cable_label": 2,
+              "corridor": 0,
+              "link_id": 1,
+              "provider": 3,
+              "restoration_sla_hours": 4
+            },
+            "renameByName": {
+              "Value": "State",
+              "cable_label": "Cable",
+              "corridor": "Corridor",
+              "link_id": "Link",
+              "provider": "Provider",
+              "restoration_sla_hours": "SLA hrs"
+            }
+          }
+        }
+      ],
+      "type": "table"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 25, "spanNulls": true},
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "spanNulls": true
+          },
           "unit": "bps"
         }
       },
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 28},
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
       "id": 4,
-      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull", "max"]}},
-      "title": "Aggregate egress per corridor",
-      "type": "timeseries",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
       "targets": [
         {
           "expr": "sum by (corridor) (link:rate_out_bps:1m{corridor!=\"\"})",
           "legendFormat": "{{corridor}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Aggregate egress per corridor",
+      "type": "timeseries"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}, {"color": "red", "value": 1.5}]}, "min": 0.5, "max": 2.5, "mappings": [{"options": {"1": {"color": "green", "text": "UP"}, "2": {"color": "red", "text": "DOWN"}}, "type": "value"}]},
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                },
+                "2": {
+                  "color": "red",
+                  "text": "DOWN"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "max": 2.5,
+          "min": 0.5,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 1.5
+              }
+            ]
+          }
+        },
         "overrides": []
       },
-      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 36},
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
       "id": 5,
-      "options": {"calculate": false, "cellGap": 2, "color": {"mode": "thresholds"}, "rowsFrame": {"layout": "auto"}, "showValue": "never", "tooltip": {"show": true, "yHistogram": false}, "yAxis": {"axisPlacement": "left"}},
-      "title": "Per-corridor link state heatmap (last 30m)",
-      "type": "status-history",
+      "options": {
+        "calculate": false,
+        "cellGap": 2,
+        "color": {
+          "mode": "thresholds"
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "showValue": "never",
+        "tooltip": {
+          "show": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left"
+        }
+      },
       "targets": [
         {
           "expr": "max by (corridor) (link:oper_state_with_meta{corridor!=\"\"})",
           "legendFormat": "{{corridor}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Per-corridor link state heatmap (last 30m)",
+      "type": "status-history"
     }
   ],
   "refresh": "10s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["network", "atlas-dot", "demo", "corridor", "agency"],
-  "templating": {"list": []},
-  "time": {"from": "now-30m", "to": "now"},
+  "tags": [
+    "network",
+    "atlas-dot",
+    "demo",
+    "corridor",
+    "agency"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
   "title": "Corridor service status",
   "uid": "corridor-status",
   "version": 1
