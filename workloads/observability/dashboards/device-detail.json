@@ -18,40 +18,70 @@
   "id": null,
   "links": [
     {
+      "icon": "external link",
       "title": "Overview",
       "type": "link",
-      "url": "/d/network-overview/network-overview",
-      "icon": "external link"
+      "url": "/d/network-overview/network-overview"
     },
     {
+      "icon": "external link",
       "title": "Geomap",
       "type": "link",
-      "url": "/d/geomap/atlanta-metro-geomap",
-      "icon": "external link"
+      "url": "/d/geomap/atlanta-metro-geomap"
     },
     {
-      "title": "Alert console",
+      "icon": "external link",
+      "title": "Topology",
       "type": "link",
-      "url": "/d/alert-console/alert-console",
-      "icon": "external link"
+      "url": "/d/topology-graph/topology-timeline"
     },
     {
+      "icon": "external link",
       "title": "Corridor status",
       "type": "link",
-      "url": "/d/corridor-status/corridor-status",
-      "icon": "external link"
+      "url": "/d/corridor-status/corridor-status"
     },
     {
-      "title": "Topology timeline",
+      "icon": "external link",
+      "title": "Link detail",
       "type": "link",
-      "url": "/d/topology-graph/topology-timeline",
-      "icon": "external link"
+      "url": "/d/link-detail/link-detail"
     },
     {
+      "icon": "external link",
+      "title": "Alert console",
+      "type": "link",
+      "url": "/d/alert-console/alert-console"
+    },
+    {
+      "icon": "external link",
       "title": "Audit feed",
       "type": "link",
-      "url": "/d/audit-feed/audit-feed",
-      "icon": "external link"
+      "url": "/d/audit-feed/audit-feed"
+    },
+    {
+      "icon": "external link",
+      "title": "Hardware health",
+      "type": "link",
+      "url": "/d/hardware-health/hardware-health"
+    },
+    {
+      "icon": "external link",
+      "title": "Capacity",
+      "type": "link",
+      "url": "/d/capacity-planning/capacity-planning"
+    },
+    {
+      "icon": "external link",
+      "title": "Route flaps",
+      "type": "link",
+      "url": "/d/route-flaps/route-flaps"
+    },
+    {
+      "icon": "external link",
+      "title": "Routing",
+      "type": "link",
+      "url": "/d/routing-protocols/routing-protocols"
     }
   ],
   "panels": [
@@ -118,14 +148,14 @@
         },
         "textMode": "value"
       },
-      "title": "$node \u2014 overall state",
-      "type": "stat",
       "targets": [
         {
           "expr": "max(srl_nokia_interfaces_interface_oper_state{node=\"$node\"} * on(node, interface) group_left link_membership_info) or (2 - max(up{job=\"snmp-frr-cabinets\", node=\"$node\"}))",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "$node — overall state",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -167,8 +197,6 @@
         },
         "textMode": "value_and_name"
       },
-      "title": "Role",
-      "type": "stat",
       "targets": [
         {
           "expr": "device_geo_info{node=\"$node\"}",
@@ -177,6 +205,7 @@
           "refId": "A"
         }
       ],
+      "title": "Role",
       "transformations": [
         {
           "id": "filterFieldsByName",
@@ -188,7 +217,8 @@
             }
           }
         }
-      ]
+      ],
+      "type": "stat"
     },
     {
       "datasource": {
@@ -229,8 +259,6 @@
         },
         "textMode": "value_and_name"
       },
-      "title": "Site",
-      "type": "stat",
       "targets": [
         {
           "expr": "device_geo_info{node=\"$node\"}",
@@ -239,6 +267,7 @@
           "refId": "A"
         }
       ],
+      "title": "Site",
       "transformations": [
         {
           "id": "filterFieldsByName",
@@ -250,7 +279,8 @@
             }
           }
         }
-      ]
+      ],
+      "type": "stat"
     },
     {
       "datasource": {
@@ -293,15 +323,15 @@
         },
         "textMode": "value_and_name"
       },
-      "title": "Total egress",
-      "type": "stat",
       "targets": [
         {
           "expr": "sum(rate(srl_nokia_interfaces_interface_statistics_out_octets{node=\"$node\"}[1m]) * on(node, interface) group_left link_membership_info) * 8",
-          "refId": "A",
-          "legendFormat": "bps"
+          "legendFormat": "bps",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Total egress",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -313,6 +343,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -326,8 +357,7 @@
               }
             ]
           },
-          "unit": "short",
-          "decimals": 0
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -348,15 +378,15 @@
         },
         "textMode": "value_and_name"
       },
-      "title": "Active alerts on this device",
-      "type": "stat",
       "targets": [
         {
           "expr": "count(ALERTS{alertstate=\"firing\", node=\"$node\"}) or vector(0)",
-          "refId": "A",
-          "legendFormat": "firing"
+          "legendFormat": "firing",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Active alerts on this device",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -396,15 +426,14 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background",
-                  "mode": "basic"
+                  "mode": "basic",
+                  "type": "color-background"
                 }
               },
               {
                 "id": "mappings",
                 "value": [
                   {
-                    "type": "value",
                     "options": {
                       "1": {
                         "color": "green",
@@ -414,7 +443,8 @@
                         "color": "red",
                         "text": "DOWN"
                       }
-                    }
+                    },
+                    "type": "value"
                   }
                 ]
               }
@@ -463,14 +493,12 @@
       },
       "id": 6,
       "options": {
-        "showHeader": true,
+        "cellHeight": "md",
         "footer": {
           "show": false
         },
-        "cellHeight": "md"
+        "showHeader": true
       },
-      "title": "Configured links on $node",
-      "type": "table",
       "targets": [
         {
           "expr": "srl_nokia_interfaces_interface_oper_state{node=\"$node\"} * on(node, interface) group_left(link_id, link_kind) link_membership_info",
@@ -479,6 +507,7 @@
           "refId": "A"
         }
       ],
+      "title": "Configured links on $node",
       "transformations": [
         {
           "id": "organize",
@@ -486,37 +515,38 @@
             "excludeByName": {
               "Time": true,
               "__name__": true,
+              "city": true,
               "container": true,
               "endpoint": true,
               "instance": true,
               "interface_name": true,
               "job": true,
               "namespace": true,
+              "node": true,
               "pod": true,
-              "service": true,
-              "source": true,
-              "subscription_name": true,
               "prometheus": true,
-              "city": true,
-              "site": true,
               "role": true,
-              "node": true
+              "service": true,
+              "site": true,
+              "source": true,
+              "subscription_name": true
             },
             "indexByName": {
+              "Value": 3,
               "interface": 0,
               "link_id": 1,
-              "link_kind": 2,
-              "Value": 3
+              "link_kind": 2
             },
             "renameByName": {
+              "Value": "Oper",
               "interface": "Interface",
               "link_id": "Link",
-              "link_kind": "Kind",
-              "Value": "Oper"
+              "link_kind": "Kind"
             }
           }
         }
-      ]
+      ],
+      "type": "table"
     },
     {
       "datasource": {
@@ -530,15 +560,13 @@
           },
           "custom": {
             "drawStyle": "line",
+            "fillOpacity": 25,
             "lineInterpolation": "stepAfter",
             "lineWidth": 2,
-            "fillOpacity": 25,
-            "spanNulls": true,
             "pointSize": 5,
-            "showPoints": "always"
+            "showPoints": "always",
+            "spanNulls": true
           },
-          "min": 0.5,
-          "max": 2.5,
           "mappings": [
             {
               "options": {
@@ -553,7 +581,9 @@
               },
               "type": "value"
             }
-          ]
+          ],
+          "max": 2.5,
+          "min": 0.5
         }
       },
       "gridPos": {
@@ -565,22 +595,22 @@
       "id": 7,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right"
         }
       },
-      "title": "Per-interface oper-state history",
-      "type": "timeseries",
       "targets": [
         {
           "expr": "srl_nokia_interfaces_interface_oper_state{node=\"$node\"} * on(node, interface) group_left(link_id) link_membership_info",
           "legendFormat": "{{interface}} ({{link_id}})",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Per-interface oper-state history",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -594,9 +624,9 @@
           },
           "custom": {
             "drawStyle": "line",
+            "fillOpacity": 25,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
-            "fillOpacity": 25,
             "spanNulls": true
           },
           "unit": "bps"
@@ -611,16 +641,14 @@
       "id": 8,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
           "calcs": [
             "lastNotNull",
             "max"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right"
         }
       },
-      "title": "Bidirectional traffic by interface",
-      "type": "timeseries",
       "targets": [
         {
           "expr": "rate(srl_nokia_interfaces_interface_statistics_out_octets{node=\"$node\"}[1m]) * 8 * on(node, interface) group_left(link_id) link_membership_info",
@@ -632,7 +660,9 @@
           "legendFormat": "{{interface}} IN ({{link_id}})",
           "refId": "B"
         }
-      ]
+      ],
+      "title": "Bidirectional traffic by interface",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -646,8 +676,8 @@
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
             "fillOpacity": 15,
+            "lineWidth": 1,
             "spanNulls": true
           },
           "unit": "pps"
@@ -666,8 +696,6 @@
           "placement": "right"
         }
       },
-      "title": "Errors and discards by interface",
-      "type": "timeseries",
       "targets": [
         {
           "expr": "rate(srl_nokia_interfaces_interface_statistics_in_error_packets{node=\"$node\"}[1m]) * on(node, interface) group_left(link_id) link_membership_info",
@@ -679,7 +707,9 @@
           "legendFormat": "{{interface}} in-disc ({{link_id}})",
           "refId": "B"
         }
-      ]
+      ],
+      "title": "Errors and discards by interface",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -694,15 +724,13 @@
       },
       "id": 10,
       "options": {
-        "showLabels": false,
+        "dedupStrategy": "none",
         "showCommonLabels": false,
+        "showLabels": false,
         "showTime": true,
-        "wrapLogMessage": true,
         "sortOrder": "Descending",
-        "dedupStrategy": "none"
+        "wrapLogMessage": true
       },
-      "title": "Pod logs for $node (Loki)",
-      "type": "logs",
       "targets": [
         {
           "datasource": {
@@ -712,7 +740,9 @@
           "expr": "{namespace=\"clabernetes\"} |~ \"$node\"",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Pod logs for $node (Loki)",
+      "type": "logs"
     },
     {
       "datasource": {
@@ -726,9 +756,9 @@
           },
           "custom": {
             "drawStyle": "line",
+            "fillOpacity": 25,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
-            "fillOpacity": 25,
             "spanNulls": true
           },
           "unit": "celsius"
@@ -743,23 +773,23 @@
       "id": 11,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
           "calcs": [
             "lastNotNull",
             "max"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right"
         }
       },
-      "title": "Transceiver case temperature",
-      "type": "timeseries",
       "targets": [
         {
           "expr": "dom_temperature_celsius{node=\"$node\"}",
           "legendFormat": "{{node}} {{interface}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Transceiver case temperature",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -773,14 +803,14 @@
           },
           "custom": {
             "drawStyle": "line",
+            "fillOpacity": 25,
             "lineInterpolation": "smooth",
             "lineWidth": 2,
-            "fillOpacity": 25,
             "spanNulls": true
           },
-          "unit": "dB",
+          "max": 4,
           "min": -10,
-          "max": 4
+          "unit": "dB"
         }
       },
       "gridPos": {
@@ -792,15 +822,13 @@
       "id": 12,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
           "calcs": [
             "lastNotNull"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right"
         }
       },
-      "title": "Optical power (Rx/Tx)",
-      "type": "timeseries",
       "targets": [
         {
           "expr": "dom_rx_power_dbm{node=\"$node\"}",
@@ -812,7 +840,9 @@
           "legendFormat": "{{node}} {{interface}} TX",
           "refId": "B"
         }
-      ]
+      ],
+      "title": "Optical power (Rx/Tx)",
+      "type": "timeseries"
     }
   ],
   "refresh": "10s",
@@ -827,23 +857,23 @@
   "templating": {
     "list": [
       {
-        "name": "node",
-        "type": "query",
+        "current": {},
         "datasource": {
           "type": "prometheus",
           "uid": "prometheus"
         },
+        "definition": "label_values(device_geo_info, node)",
+        "includeAll": false,
+        "label": "Device",
+        "multi": false,
+        "name": "node",
         "query": {
           "query": "label_values(device_geo_info, node)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
-        "definition": "label_values(device_geo_info, node)",
-        "label": "Device",
-        "current": {},
-        "includeAll": false,
-        "multi": false,
         "refresh": 2,
-        "sort": 1
+        "sort": 1,
+        "type": "query"
       }
     ]
   },

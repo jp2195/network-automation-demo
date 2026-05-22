@@ -17,46 +17,70 @@
   "id": null,
   "links": [
     {
+      "icon": "external link",
       "title": "Overview",
       "type": "link",
-      "url": "/d/network-overview/network-overview",
-      "icon": "external link"
+      "url": "/d/network-overview/network-overview"
     },
     {
-      "title": "Device detail",
-      "type": "link",
-      "url": "/d/device-detail/device-detail",
-      "icon": "external link"
-    },
-    {
+      "icon": "external link",
       "title": "Geomap",
       "type": "link",
-      "url": "/d/geomap/atlanta-metro-geomap",
-      "icon": "external link"
+      "url": "/d/geomap/atlanta-metro-geomap"
     },
     {
-      "title": "Link detail",
+      "icon": "external link",
+      "title": "Topology",
       "type": "link",
-      "url": "/d/link-detail/link-detail",
-      "icon": "external link"
+      "url": "/d/topology-graph/topology-timeline"
     },
     {
+      "icon": "external link",
       "title": "Corridor status",
       "type": "link",
-      "url": "/d/corridor-status/corridor-status",
-      "icon": "external link"
+      "url": "/d/corridor-status/corridor-status"
     },
     {
-      "title": "Topology timeline",
+      "icon": "external link",
+      "title": "Link detail",
       "type": "link",
-      "url": "/d/topology-graph/topology-timeline",
-      "icon": "external link"
+      "url": "/d/link-detail/link-detail"
     },
     {
+      "icon": "external link",
+      "title": "Device detail",
+      "type": "link",
+      "url": "/d/device-detail/device-detail"
+    },
+    {
+      "icon": "external link",
       "title": "Audit feed",
       "type": "link",
-      "url": "/d/audit-feed/audit-feed",
-      "icon": "external link"
+      "url": "/d/audit-feed/audit-feed"
+    },
+    {
+      "icon": "external link",
+      "title": "Hardware health",
+      "type": "link",
+      "url": "/d/hardware-health/hardware-health"
+    },
+    {
+      "icon": "external link",
+      "title": "Capacity",
+      "type": "link",
+      "url": "/d/capacity-planning/capacity-planning"
+    },
+    {
+      "icon": "external link",
+      "title": "Route flaps",
+      "type": "link",
+      "url": "/d/route-flaps/route-flaps"
+    },
+    {
+      "icon": "external link",
+      "title": "Routing",
+      "type": "link",
+      "url": "/d/routing-protocols/routing-protocols"
     }
   ],
   "panels": [
@@ -70,6 +94,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -83,8 +108,7 @@
               }
             ]
           },
-          "unit": "short",
-          "decimals": 0
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -109,15 +133,15 @@
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "title": "Critical alerts",
-      "type": "stat",
       "targets": [
         {
           "expr": "count(ALERTS{alertstate=\"firing\", severity=\"critical\"}) or vector(0)",
-          "refId": "A",
-          "legendFormat": "firing"
+          "legendFormat": "firing",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Critical alerts",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -129,6 +153,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -142,8 +167,7 @@
               }
             ]
           },
-          "unit": "short",
-          "decimals": 0
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -165,15 +189,15 @@
         },
         "textMode": "value_and_name"
       },
-      "title": "Warning alerts",
-      "type": "stat",
       "targets": [
         {
           "expr": "count(ALERTS{alertstate=\"firing\", severity=\"warning\"}) or vector(0)",
-          "refId": "A",
-          "legendFormat": "firing"
+          "legendFormat": "firing",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Warning alerts",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -185,6 +209,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -198,8 +223,7 @@
               }
             ]
           },
-          "unit": "short",
-          "decimals": 0
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -221,15 +245,15 @@
         },
         "textMode": "value_and_name"
       },
-      "title": "Pending alerts",
-      "type": "stat",
       "targets": [
         {
           "expr": "count(ALERTS{alertstate=\"pending\"}) or vector(0)",
-          "refId": "A",
-          "legendFormat": "pending"
+          "legendFormat": "pending",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Pending alerts",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -241,6 +265,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -250,8 +275,7 @@
               }
             ]
           },
-          "unit": "short",
-          "decimals": 0
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -273,15 +297,15 @@
         },
         "textMode": "value_and_name"
       },
-      "title": "Workflows triggered (1h)",
-      "type": "stat",
       "targets": [
         {
           "expr": "sum(increase(workflows_processed_total[1h])) or vector(0)",
-          "refId": "A",
-          "legendFormat": "runs"
+          "legendFormat": "runs",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Workflows triggered (1h)",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -307,25 +331,25 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background",
-                  "mode": "gradient"
+                  "mode": "gradient",
+                  "type": "color-background"
                 }
               },
               {
                 "id": "mappings",
                 "value": [
                   {
-                    "type": "value",
                     "options": {
                       "critical": {
                         "color": "red",
-                        "text": "\ud83d\udd25 CRITICAL"
+                        "text": "🔥 CRITICAL"
                       },
                       "warning": {
                         "color": "yellow",
-                        "text": "\u26a0 WARNING"
+                        "text": "⚠ WARNING"
                       }
-                    }
+                    },
+                    "type": "value"
                   }
                 ]
               },
@@ -363,17 +387,17 @@
                 "id": "mappings",
                 "value": [
                   {
-                    "type": "value",
                     "options": {
-                      "snmp": {
-                        "color": "orange",
-                        "text": "snmp"
-                      },
                       "gnmi": {
                         "color": "blue",
                         "text": "gnmi"
+                      },
+                      "snmp": {
+                        "color": "orange",
+                        "text": "snmp"
                       }
-                    }
+                    },
+                    "type": "value"
                   }
                 ]
               }
@@ -423,24 +447,22 @@
       },
       "id": 5,
       "options": {
-        "showHeader": true,
-        "sortBy": [
-          {
-            "displayName": "Severity",
-            "desc": true
-          },
-          {
-            "displayName": "Started",
-            "desc": true
-          }
-        ],
+        "cellHeight": "md",
         "footer": {
           "show": false
         },
-        "cellHeight": "md"
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Severity"
+          },
+          {
+            "desc": true,
+            "displayName": "Started"
+          }
+        ]
       },
-      "title": "Active alerts (firing + pending)",
-      "type": "table",
       "targets": [
         {
           "expr": "ALERTS{alertstate=~\"firing|pending\"}",
@@ -449,6 +471,7 @@
           "refId": "A"
         }
       ],
+      "title": "Active alerts (firing + pending)",
       "transformations": [
         {
           "id": "organize",
@@ -459,50 +482,51 @@
               "__name__": true,
               "container": true,
               "endpoint": true,
+              "ifAlias": true,
+              "ifDescr": true,
+              "ifIndex": true,
+              "ifName": true,
               "instance": true,
+              "interface_name": true,
               "job": true,
               "namespace": true,
+              "node_role": true,
               "pod": true,
-              "service": true,
-              "subscription_name": true,
-              "interface_name": true,
-              "source": true,
               "prometheus": true,
-              "ifIndex": true,
-              "ifAlias": true,
-              "ifName": true,
-              "ifDescr": true,
-              "node_role": true
+              "service": true,
+              "source": true,
+              "subscription_name": true
             },
             "indexByName": {
               "alertname": 0,
-              "severity": 1,
               "alertstate": 2,
-              "node": 3,
+              "city": 8,
               "interface": 4,
               "link_id": 5,
               "link_kind": 6,
-              "site": 7,
-              "city": 8,
+              "node": 3,
               "role": 9,
+              "severity": 1,
+              "site": 7,
               "telemetry_source": 10
             },
             "renameByName": {
               "alertname": "Alert",
-              "severity": "Severity",
               "alertstate": "State",
-              "node": "Device",
+              "city": "City",
               "interface": "Interface",
               "link_id": "Link",
               "link_kind": "Kind",
-              "site": "Site",
-              "city": "City",
+              "node": "Device",
               "role": "Role",
+              "severity": "Severity",
+              "site": "Site",
               "telemetry_source": "Telemetry"
             }
           }
         }
-      ]
+      ],
+      "type": "table"
     },
     {
       "datasource": {
@@ -515,11 +539,11 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "barAlignment": -1,
             "drawStyle": "bars",
             "fillOpacity": 80,
             "gradientMode": "opacity",
-            "lineWidth": 1,
-            "barAlignment": -1
+            "lineWidth": 1
           }
         }
       },
@@ -532,22 +556,22 @@
       "id": 6,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
           "calcs": [
             "max"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right"
         }
       },
-      "title": "Firing alert count over time (by severity)",
-      "type": "timeseries",
       "targets": [
         {
           "expr": "count by (severity) (ALERTS{alertstate=\"firing\"})",
           "legendFormat": "{{severity}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Firing alert count over time (by severity)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -561,8 +585,8 @@
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 2,
-            "fillOpacity": 25
+            "fillOpacity": 25,
+            "lineWidth": 2
           }
         }
       },
@@ -578,15 +602,15 @@
           "displayMode": "list"
         }
       },
-      "title": "Alert change rate (per minute)",
-      "type": "timeseries",
       "targets": [
         {
           "expr": "sum(rate(prometheus_notifications_sent_total[1m]))",
           "legendFormat": "notifications/s",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Alert change rate (per minute)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -601,15 +625,13 @@
       },
       "id": 8,
       "options": {
-        "showLabels": false,
+        "dedupStrategy": "none",
         "showCommonLabels": false,
+        "showLabels": false,
         "showTime": true,
-        "wrapLogMessage": true,
         "sortOrder": "Descending",
-        "dedupStrategy": "none"
+        "wrapLogMessage": true
       },
-      "title": "enriched-notify Workflow output (Loki)",
-      "type": "logs",
       "targets": [
         {
           "datasource": {
@@ -619,7 +641,9 @@
           "expr": "{namespace=\"argo-events\"} |~ \"affected_device|severity_class|provisioned|enrichment\"",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "enriched-notify Workflow output (Loki)",
+      "type": "logs"
     }
   ],
   "refresh": "10s",

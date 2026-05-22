@@ -1,135 +1,555 @@
 {
-  "annotations": {"list": [{"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
   "links": [
-    {"title": "Overview", "type": "link", "url": "/d/network-overview/network-overview", "icon": "external link"},
-    {"title": "Geomap", "type": "link", "url": "/d/geomap/atlanta-metro-geomap", "icon": "external link"},
-    {"title": "Routing protocols", "type": "link", "url": "/d/routing-protocols/routing-protocols", "icon": "external link"},
-    {"title": "Capacity planning", "type": "link", "url": "/d/capacity-planning/capacity-planning", "icon": "external link"},
-    {"title": "Topology timeline", "type": "link", "url": "/d/topology-graph/topology-timeline", "icon": "external link"}
+    {
+      "icon": "external link",
+      "title": "Overview",
+      "type": "link",
+      "url": "/d/network-overview/network-overview"
+    },
+    {
+      "icon": "external link",
+      "title": "Geomap",
+      "type": "link",
+      "url": "/d/geomap/atlanta-metro-geomap"
+    },
+    {
+      "icon": "external link",
+      "title": "Topology",
+      "type": "link",
+      "url": "/d/topology-graph/topology-timeline"
+    },
+    {
+      "icon": "external link",
+      "title": "Corridor status",
+      "type": "link",
+      "url": "/d/corridor-status/corridor-status"
+    },
+    {
+      "icon": "external link",
+      "title": "Link detail",
+      "type": "link",
+      "url": "/d/link-detail/link-detail"
+    },
+    {
+      "icon": "external link",
+      "title": "Device detail",
+      "type": "link",
+      "url": "/d/device-detail/device-detail"
+    },
+    {
+      "icon": "external link",
+      "title": "Alert console",
+      "type": "link",
+      "url": "/d/alert-console/alert-console"
+    },
+    {
+      "icon": "external link",
+      "title": "Audit feed",
+      "type": "link",
+      "url": "/d/audit-feed/audit-feed"
+    },
+    {
+      "icon": "external link",
+      "title": "Hardware health",
+      "type": "link",
+      "url": "/d/hardware-health/hardware-health"
+    },
+    {
+      "icon": "external link",
+      "title": "Capacity",
+      "type": "link",
+      "url": "/d/capacity-planning/capacity-planning"
+    },
+    {
+      "icon": "external link",
+      "title": "Routing",
+      "type": "link",
+      "url": "/d/routing-protocols/routing-protocols"
+    }
   ],
   "panels": [
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 5}]}, "unit": "short", "decimals": 0}},
-      "gridPos": {"h": 5, "w": 6, "x": 0, "y": 0},
-      "id": 1,
-      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
-      "title": "Flap events — last 5 min",
-      "type": "stat",
-      "targets": [
-        {"expr": "sum(changes(srl_nokia_interfaces_interface_oper_state[5m]) * on(node, interface) group_left link_membership_info)", "refId": "A", "legendFormat": "events"}
-      ]
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 5}, {"color": "red", "value": 20}]}, "unit": "short", "decimals": 0}},
-      "gridPos": {"h": 5, "w": 6, "x": 6, "y": 0},
-      "id": 2,
-      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
-      "title": "Flap events — last 1 hour",
-      "type": "stat",
-      "targets": [
-        {"expr": "sum(changes(srl_nokia_interfaces_interface_oper_state[1h]) * on(node, interface) group_left link_membership_info)", "refId": "A", "legendFormat": "events"}
-      ]
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "blue", "value": null}]}, "unit": "short", "decimals": 0}},
-      "gridPos": {"h": 5, "w": 6, "x": 12, "y": 0},
-      "id": 3,
-      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
-      "title": "Links that flapped (last hour)",
-      "type": "stat",
-      "targets": [
-        {"expr": "count(count by (link_id) (changes(srl_nokia_interfaces_interface_oper_state[1h]) * on(node, interface) group_left(link_id) link_membership_info > 0)) or vector(0)", "refId": "A", "legendFormat": "links"}
-      ]
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}, "unit": "short", "decimals": 0}},
-      "gridPos": {"h": 5, "w": 6, "x": 18, "y": 0},
-      "id": 4,
-      "options": {"colorMode": "background", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"], "fields": ""}, "textMode": "value_and_name"},
-      "title": "Active flapping alerts",
-      "type": "stat",
-      "targets": [
-        {"expr": "count(ALERTS{alertname=\"SRLInterfaceFlapping\", alertstate=\"firing\"}) or vector(0)", "refId": "A", "legendFormat": "firing"}
-      ]
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 4}]}, "unit": "short", "decimals": 0}
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
       },
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 5},
-      "id": 5,
-      "options": {
-        "calculate": false, "cellGap": 1,
-        "color": {"exponent": 0.5, "fill": "dark-orange", "mode": "scheme", "scale": "exponential", "scheme": "Reds", "steps": 32},
-        "filterValues": {"le": 1e-9},
-        "rowsFrame": {"layout": "auto"},
-        "tooltip": {"show": true},
-        "yAxis": {"axisPlacement": "left", "reverse": false}
-      },
-      "title": "Flap heatmap — link vs time (5-min windows)",
-      "type": "heatmap",
-      "targets": [
-        {
-          "expr": "sum by (link_id) (changes(srl_nokia_interfaces_interface_oper_state[5m]) * on(node, interface) group_left(link_id) link_membership_info)",
-          "legendFormat": "{{link_id}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "palette-classic"},
-          "custom": {"drawStyle": "bars", "lineWidth": 1, "fillOpacity": 70, "barAlignment": -1},
-          "unit": "short", "decimals": 0
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "short"
         }
       },
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 13},
-      "id": 6,
-      "options": {"legend": {"displayMode": "table", "placement": "right", "calcs": ["sum", "max"]}},
-      "title": "Flap-events-per-link, last 1 hour",
-      "type": "timeseries",
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "expr": "sum(changes(srl_nokia_interfaces_interface_oper_state[5m]) * on(node, interface) group_left link_membership_info)",
+          "legendFormat": "events",
+          "refId": "A"
+        }
+      ],
+      "title": "Flap events — last 5 min",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "expr": "sum(changes(srl_nokia_interfaces_interface_oper_state[1h]) * on(node, interface) group_left link_membership_info)",
+          "legendFormat": "events",
+          "refId": "A"
+        }
+      ],
+      "title": "Flap events — last 1 hour",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "expr": "count(count by (link_id) (changes(srl_nokia_interfaces_interface_oper_state[1h]) * on(node, interface) group_left(link_id) link_membership_info > 0)) or vector(0)",
+          "legendFormat": "links",
+          "refId": "A"
+        }
+      ],
+      "title": "Links that flapped (last hour)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "expr": "count(ALERTS{alertname=\"SRLInterfaceFlapping\", alertstate=\"firing\"}) or vector(0)",
+          "legendFormat": "firing",
+          "refId": "A"
+        }
+      ],
+      "title": "Active flapping alerts",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 4
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 5,
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-orange",
+          "mode": "scheme",
+          "scale": "exponential",
+          "scheme": "Reds",
+          "steps": 32
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false
+        }
+      },
       "targets": [
         {
           "expr": "sum by (link_id) (changes(srl_nokia_interfaces_interface_oper_state[5m]) * on(node, interface) group_left(link_id) link_membership_info)",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Flap heatmap — link vs time (5-min windows)",
+      "type": "heatmap"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
-        "defaults": {"color": {"mode": "thresholds"}},
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "barAlignment": -1,
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "lineWidth": 1
+          },
+          "decimals": 0,
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (link_id) (changes(srl_nokia_interfaces_interface_oper_state[5m]) * on(node, interface) group_left(link_id) link_membership_info)",
+          "legendFormat": "{{link_id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Flap-events-per-link, last 1 hour",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          }
+        },
         "overrides": [
-          {"matcher": {"id": "byName", "options": "5m flaps"}, "properties": [
-            {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "gradient"}},
-            {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 4}]}}
-          ]},
-          {"matcher": {"id": "byName", "options": "1h flaps"}, "properties": [
-            {"id": "custom.cellOptions", "value": {"type": "color-background", "mode": "gradient"}},
-            {"id": "thresholds", "value": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 5}, {"color": "red", "value": 20}]}}
-          ]},
-          {"matcher": {"id": "byName", "options": "Link"}, "properties": [
-            {"id": "links", "value": [{"title": "Open link", "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"}]}
-          ]}
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "5m flaps"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 4
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "1h flaps"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 5
+                    },
+                    {
+                      "color": "red",
+                      "value": 20
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Link"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open link",
+                    "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"
+                  }
+                ]
+              }
+            ]
+          }
         ]
       },
-      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 21},
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
       "id": 7,
-      "options": {"showHeader": true, "sortBy": [{"displayName": "1h flaps", "desc": true}], "footer": {"show": false}, "cellHeight": "md"},
-      "title": "Top flapping links",
-      "type": "table",
+      "options": {
+        "cellHeight": "md",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "1h flaps"
+          }
+        ]
+      },
       "targets": [
         {
           "expr": "sum by (link_id, link_kind) (changes(srl_nokia_interfaces_interface_oper_state[5m]) * on(node, interface) group_left(link_id, link_kind) link_membership_info)",
@@ -144,37 +564,89 @@
           "refId": "B"
         }
       ],
+      "title": "Top flapping links",
       "transformations": [
-        {"id": "joinByField", "options": {"byField": "link_id", "mode": "outer"}},
-        {"id": "organize", "options": {
-          "excludeByName": {"Time 1": true, "Time 2": true},
-          "indexByName": {"link_id": 0, "link_kind": 1, "Value #A": 2, "Value #B": 3},
-          "renameByName": {"link_id": "Link", "link_kind": "Kind", "Value #A": "5m flaps", "Value #B": "1h flaps"}
-        }}
-      ]
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "link_id",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time 1": true,
+              "Time 2": true
+            },
+            "indexByName": {
+              "Value #A": 2,
+              "Value #B": 3,
+              "link_id": 0,
+              "link_kind": 1
+            },
+            "renameByName": {
+              "Value #A": "5m flaps",
+              "Value #B": "1h flaps",
+              "link_id": "Link",
+              "link_kind": "Kind"
+            }
+          }
+        }
+      ],
+      "type": "table"
     },
     {
-      "datasource": {"type": "loki", "uid": "loki"},
-      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 31},
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
       "id": 8,
-      "options": {"showLabels": false, "showCommonLabels": false, "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "dedupStrategy": "none"},
-      "title": "Recent SR Linux interface state-change log lines",
-      "type": "logs",
+      "options": {
+        "dedupStrategy": "none",
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
       "targets": [
         {
-          "datasource": {"type": "loki", "uid": "loki"},
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
           "expr": "{namespace=\"clabernetes\"} |~ \"(?i)(oper-down|oper-up|interface ethernet|admin-state)\"",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Recent SR Linux interface state-change log lines",
+      "type": "logs"
     }
   ],
   "refresh": "10s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["network", "atlas-dot", "demo", "stability"],
-  "templating": {"list": []},
-  "time": {"from": "now-1h", "to": "now"},
+  "tags": [
+    "network",
+    "atlas-dot",
+    "demo",
+    "stability"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
   "title": "Route flaps",
   "uid": "route-flaps",
   "version": 1

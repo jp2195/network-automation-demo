@@ -1,165 +1,476 @@
 {
-  "annotations": {"list": [{"builtIn": 1, "datasource": "-- Grafana --", "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "id": null,
   "links": [
-    {"title": "Overview", "type": "link", "url": "/d/network-overview/network-overview", "icon": "external link"},
-    {"title": "Geomap", "type": "link", "url": "/d/geomap/atlanta-metro-geomap", "icon": "external link"},
-    {"title": "Device detail", "type": "link", "url": "/d/device-detail/device-detail", "icon": "external link"},
-    {"title": "Link detail", "type": "link", "url": "/d/link-detail/link-detail", "icon": "external link"},
-    {"title": "Corridor status", "type": "link", "url": "/d/corridor-status/corridor-status", "icon": "external link"}
+    {
+      "icon": "external link",
+      "title": "Overview",
+      "type": "link",
+      "url": "/d/network-overview/network-overview"
+    },
+    {
+      "icon": "external link",
+      "title": "Geomap",
+      "type": "link",
+      "url": "/d/geomap/atlanta-metro-geomap"
+    },
+    {
+      "icon": "external link",
+      "title": "Corridor status",
+      "type": "link",
+      "url": "/d/corridor-status/corridor-status"
+    },
+    {
+      "icon": "external link",
+      "title": "Link detail",
+      "type": "link",
+      "url": "/d/link-detail/link-detail"
+    },
+    {
+      "icon": "external link",
+      "title": "Device detail",
+      "type": "link",
+      "url": "/d/device-detail/device-detail"
+    },
+    {
+      "icon": "external link",
+      "title": "Alert console",
+      "type": "link",
+      "url": "/d/alert-console/alert-console"
+    },
+    {
+      "icon": "external link",
+      "title": "Audit feed",
+      "type": "link",
+      "url": "/d/audit-feed/audit-feed"
+    },
+    {
+      "icon": "external link",
+      "title": "Hardware health",
+      "type": "link",
+      "url": "/d/hardware-health/hardware-health"
+    },
+    {
+      "icon": "external link",
+      "title": "Capacity",
+      "type": "link",
+      "url": "/d/capacity-planning/capacity-planning"
+    },
+    {
+      "icon": "external link",
+      "title": "Route flaps",
+      "type": "link",
+      "url": "/d/route-flaps/route-flaps"
+    },
+    {
+      "icon": "external link",
+      "title": "Routing",
+      "type": "link",
+      "url": "/d/routing-protocols/routing-protocols"
+    }
   ],
   "panels": [
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
-          "mappings": [{"options": {"1": {"color": "green", "text": "UP"}, "2": {"color": "red", "text": "DOWN"}}, "type": "value"}],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}, {"color": "red", "value": 1.5}]},
-          "min": 0.5, "max": 2.5
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                },
+                "2": {
+                  "color": "red",
+                  "text": "DOWN"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "max": 2.5,
+          "min": 0.5,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 1.5
+              }
+            ]
+          }
         }
       },
-      "gridPos": {"h": 14, "w": 24, "x": 0, "y": 0},
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
       "options": {
         "alignValue": "left",
-        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": false},
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
         "mergeValues": true,
         "rowHeight": 0.85,
         "showValue": "never",
-        "tooltip": {"mode": "single"}
+        "tooltip": {
+          "mode": "single"
+        }
       },
-      "title": "Backbone link state — 1 hour",
-      "type": "state-timeline",
       "targets": [
         {
           "expr": "link:oper_state_with_meta{link_kind=\"backbone\"}",
           "legendFormat": "{{link_id}} ({{node}}/{{interface}})",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Backbone link state — 1 hour",
+      "type": "state-timeline"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
-          "mappings": [{"options": {"1": {"color": "green", "text": "UP"}, "2": {"color": "red", "text": "DOWN"}}, "type": "value"}],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}, {"color": "red", "value": 1.5}]},
-          "min": 0.5, "max": 2.5
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                },
+                "2": {
+                  "color": "red",
+                  "text": "DOWN"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "max": 2.5,
+          "min": 0.5,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 1.5
+              }
+            ]
+          }
         }
       },
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
       "id": 2,
       "options": {
         "alignValue": "left",
-        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": false},
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
         "mergeValues": true,
         "rowHeight": 0.85,
         "showValue": "never"
       },
-      "title": "Cabinet uplinks (SR Linux side)",
-      "type": "state-timeline",
       "targets": [
         {
           "expr": "link:oper_state_with_meta{link_kind=\"cabinet\"}",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Cabinet uplinks (SR Linux side)",
+      "type": "state-timeline"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
-          "mappings": [{"options": {"1": {"color": "green", "text": "RESPONDING"}, "0": {"color": "red", "text": "UNREACHABLE"}}, "type": "value"}],
-          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 0.5}]},
-          "min": -0.5, "max": 1.5
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "UNREACHABLE"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "RESPONDING"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "max": 1.5,
+          "min": -0.5,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0.5
+              }
+            ]
+          }
         }
       },
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
       "id": 3,
       "options": {
         "alignValue": "left",
-        "legend": {"displayMode": "list", "placement": "bottom", "showLegend": false},
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
         "mergeValues": true,
         "rowHeight": 0.85,
         "showValue": "never"
       },
-      "title": "Cabinet SNMP reachability (FRR side)",
-      "type": "state-timeline",
       "targets": [
-        {"expr": "up{job=\"snmp-frr-cabinets\"}", "legendFormat": "{{node}}", "refId": "A"}
-      ]
+        {
+          "expr": "up{job=\"snmp-frr-cabinets\"}",
+          "legendFormat": "{{node}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Cabinet SNMP reachability (FRR side)",
+      "type": "state-timeline"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 4}]},
-          "unit": "short", "decimals": 0
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 4
+              }
+            ]
+          },
+          "unit": "short"
         }
       },
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 22},
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
       "id": 4,
       "options": {
-        "calculate": false, "cellGap": 1,
-        "cellValues": {"unit": "short", "decimals": 0},
-        "color": {"exponent": 0.5, "fill": "dark-orange", "mode": "scheme", "scale": "exponential", "scheme": "Reds", "steps": 32},
-        "exemplars": {"color": "rgba(255,0,255,0.7)"},
-        "filterValues": {"le": 1e-9},
-        "legend": {"show": false},
-        "rowsFrame": {"layout": "auto"},
-        "tooltip": {"show": true, "yHistogram": false},
-        "yAxis": {"axisPlacement": "left", "reverse": false}
+        "calculate": false,
+        "cellGap": 1,
+        "cellValues": {
+          "decimals": 0,
+          "unit": "short"
+        },
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-orange",
+          "mode": "scheme",
+          "scale": "exponential",
+          "scheme": "Reds",
+          "steps": 32
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": false
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false
+        }
       },
-      "title": "Flap heatmap — interface oper-state changes (5-min windows)",
-      "type": "heatmap",
       "targets": [
         {
           "expr": "sum by (link_id) (changes(srl_nokia_interfaces_interface_oper_state[5m]) * on(node, interface) group_left(link_id) link_membership_info)",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Flap heatmap — interface oper-state changes (5-min windows)",
+      "type": "heatmap"
     },
     {
-      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
-          "color": {"mode": "thresholds"},
-          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 50}, {"color": "red", "value": 80}]},
-          "unit": "percent", "min": 0, "max": 100
+          "color": {
+            "mode": "thresholds"
+          },
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
         }
       },
-      "gridPos": {"h": 6, "w": 24, "x": 0, "y": 30},
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
       "id": 5,
       "options": {
-        "minVizHeight": 75, "minVizWidth": 75, "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
-        "showThresholdLabels": false, "showThresholdMarkers": true, "sizing": "auto"
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
       },
-      "title": "Backbone link utilization (% of 10G — synthetic)",
-      "type": "gauge",
       "targets": [
         {
           "expr": "100 * (sum by (link_id) (link:rate_out_bps:1m{link_kind=\"backbone\"}) / 1e10)",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Backbone link utilization (% of 10G — synthetic)",
+      "type": "gauge"
     }
   ],
   "refresh": "10s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["network", "atlas-dot", "demo", "topology"],
-  "templating": {"list": []},
-  "time": {"from": "now-1h", "to": "now"},
+  "tags": [
+    "network",
+    "atlas-dot",
+    "demo",
+    "topology"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
   "title": "Topology timeline",
   "uid": "topology-graph",
   "version": 1

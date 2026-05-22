@@ -118,5 +118,11 @@ func main() {
 	renderTo(filepath.Join(*outDir, "workloads", "versions.yaml"), "",
 		func(w io.Writer) error { return WriteVersions(w) })
 
+	dashboardsDir := filepath.Join(*outDir, "workloads", "observability", "dashboards")
+	fmt.Printf("==> Rewriting dashboard cross-nav in %s/\n", dashboardsDir)
+	if err := RewriteDashboards(dashboardsDir); err != nil {
+		log.Fatal(err)
+	}
+
 	fmt.Println("==> Done.")
 }

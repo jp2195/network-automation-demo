@@ -11,14 +11,14 @@
         "type": "dashboard"
       },
       {
-        "name": "Critical alerts",
         "datasource": {
           "type": "prometheus",
           "uid": "prometheus"
         },
+        "enable": true,
         "expr": "ALERTS{alertstate=\"firing\", severity=\"critical\"}",
         "iconColor": "red",
-        "enable": true,
+        "name": "Critical alerts",
         "tagKeys": "alertname,node,interface,link_id"
       }
     ]
@@ -29,40 +29,70 @@
   "id": null,
   "links": [
     {
-      "title": "Link detail",
+      "icon": "external link",
+      "title": "Geomap",
       "type": "link",
-      "url": "/d/link-detail/link-detail",
-      "icon": "external link"
+      "url": "/d/geomap/atlanta-metro-geomap"
     },
     {
-      "title": "Device detail",
+      "icon": "external link",
+      "title": "Topology",
       "type": "link",
-      "url": "/d/device-detail/device-detail",
-      "icon": "external link"
+      "url": "/d/topology-graph/topology-timeline"
     },
     {
-      "title": "Alert console",
-      "type": "link",
-      "url": "/d/alert-console/alert-console",
-      "icon": "external link"
-    },
-    {
+      "icon": "external link",
       "title": "Corridor status",
       "type": "link",
-      "url": "/d/corridor-status/corridor-status",
-      "icon": "external link"
+      "url": "/d/corridor-status/corridor-status"
     },
     {
-      "title": "Topology timeline",
+      "icon": "external link",
+      "title": "Link detail",
       "type": "link",
-      "url": "/d/topology-graph/topology-timeline",
-      "icon": "external link"
+      "url": "/d/link-detail/link-detail"
     },
     {
+      "icon": "external link",
+      "title": "Device detail",
+      "type": "link",
+      "url": "/d/device-detail/device-detail"
+    },
+    {
+      "icon": "external link",
+      "title": "Alert console",
+      "type": "link",
+      "url": "/d/alert-console/alert-console"
+    },
+    {
+      "icon": "external link",
       "title": "Audit feed",
       "type": "link",
-      "url": "/d/audit-feed/audit-feed",
-      "icon": "external link"
+      "url": "/d/audit-feed/audit-feed"
+    },
+    {
+      "icon": "external link",
+      "title": "Hardware health",
+      "type": "link",
+      "url": "/d/hardware-health/hardware-health"
+    },
+    {
+      "icon": "external link",
+      "title": "Capacity",
+      "type": "link",
+      "url": "/d/capacity-planning/capacity-planning"
+    },
+    {
+      "icon": "external link",
+      "title": "Route flaps",
+      "type": "link",
+      "url": "/d/route-flaps/route-flaps"
+    },
+    {
+      "icon": "external link",
+      "title": "Routing",
+      "type": "link",
+      "url": "/d/routing-protocols/routing-protocols"
     }
   ],
   "panels": [
@@ -76,6 +106,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -93,8 +124,7 @@
               }
             ]
           },
-          "unit": "short",
-          "decimals": 0
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -119,15 +149,15 @@
         "textMode": "value_and_name",
         "wideLayout": true
       },
-      "title": "SR Linux nodes UP",
-      "type": "stat",
       "targets": [
         {
           "expr": "count(group by (node) (srl_nokia_interfaces_interface_oper_state{interface=~\"ethernet-1/.*\"} == 1))",
-          "refId": "A",
-          "legendFormat": "online"
+          "legendFormat": "online",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "SR Linux nodes UP",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -139,6 +169,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -156,8 +187,7 @@
               }
             ]
           },
-          "unit": "short",
-          "decimals": 0
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -179,15 +209,15 @@
         },
         "textMode": "value_and_name"
       },
-      "title": "Backbone links UP",
-      "type": "stat",
       "targets": [
         {
           "expr": "count(link:oper_state_with_meta{link_kind=\"backbone\"} == 1) / 2",
-          "refId": "A",
-          "legendFormat": "lit"
+          "legendFormat": "lit",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Backbone links UP",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -199,6 +229,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -212,8 +243,7 @@
               }
             ]
           },
-          "unit": "short",
-          "decimals": 0
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -235,15 +265,15 @@
         },
         "textMode": "value_and_name"
       },
-      "title": "Cabinets reachable (SNMP)",
-      "type": "stat",
       "targets": [
         {
           "expr": "count(up{job=\"snmp-frr-cabinets\"} == 1)",
-          "refId": "A",
-          "legendFormat": "responding"
+          "legendFormat": "responding",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Cabinets reachable (SNMP)",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -255,6 +285,7 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -268,8 +299,7 @@
               }
             ]
           },
-          "unit": "short",
-          "decimals": 0
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -291,15 +321,15 @@
         },
         "textMode": "value_and_name"
       },
-      "title": "Critical alerts",
-      "type": "stat",
       "targets": [
         {
           "expr": "count(ALERTS{alertstate=\"firing\", severity=\"critical\"}) or vector(0)",
-          "refId": "A",
-          "legendFormat": "firing"
+          "legendFormat": "firing",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Critical alerts",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -342,15 +372,15 @@
         },
         "textMode": "value_and_name"
       },
-      "title": "Aggregate backbone egress",
-      "type": "stat",
       "targets": [
         {
           "expr": "sum(link:rate_out_bps:1m{link_kind=\"backbone\"})",
-          "refId": "A",
-          "legendFormat": "bps"
+          "legendFormat": "bps",
+          "refId": "A"
         }
-      ]
+      ],
+      "title": "Aggregate backbone egress",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -400,36 +430,20 @@
       },
       "id": 1,
       "options": {
-        "view": {
-          "id": "coords",
-          "lat": 33.78,
-          "lon": -84.39,
-          "zoom": 9.5
+        "basemap": {
+          "config": {},
+          "name": "Layer 0",
+          "type": "default"
         },
         "controls": {
-          "showZoom": true,
           "showAttribution": true,
-          "showScale": true,
           "showDebug": false,
-          "showMeasure": false
-        },
-        "tooltip": {
-          "mode": "details"
-        },
-        "basemap": {
-          "type": "default",
-          "name": "Layer 0",
-          "config": {}
+          "showMeasure": false,
+          "showScale": true,
+          "showZoom": true
         },
         "layers": [
           {
-            "type": "markers",
-            "name": "Devices",
-            "location": {
-              "mode": "coords",
-              "latitude": "lat",
-              "longitude": "lon"
-            },
             "config": {
               "showLegend": true,
               "style": {
@@ -444,24 +458,38 @@
                   "fixed": "img/icons/marker/circle.svg",
                   "mode": "fixed"
                 },
+                "text": {
+                  "field": "node"
+                },
                 "textConfig": {
                   "fontSize": 12,
                   "offsetX": 0,
                   "offsetY": -16,
                   "textAlign": "center",
                   "textBaseline": "bottom"
-                },
-                "text": {
-                  "field": "node"
                 }
               }
             },
-            "tooltip": true
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "Devices",
+            "tooltip": true,
+            "type": "markers"
           }
-        ]
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "id": "coords",
+          "lat": 33.78,
+          "lon": -84.39,
+          "zoom": 9.5
+        }
       },
-      "title": "Atlanta metro \u2014 device oper-state",
-      "type": "geomap",
       "targets": [
         {
           "expr": "max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"srlinux\"} * on(node) group_right(lat, lon, site, city, role, kind) (link:oper_state_with_meta))",
@@ -475,7 +503,9 @@
           "instant": true,
           "refId": "B"
         }
-      ]
+      ],
+      "title": "Atlanta metro — device oper-state",
+      "type": "geomap"
     },
     {
       "datasource": {
@@ -511,15 +541,14 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "type": "color-background",
-                  "mode": "basic"
+                  "mode": "basic",
+                  "type": "color-background"
                 }
               },
               {
                 "id": "mappings",
                 "value": [
                   {
-                    "type": "value",
                     "options": {
                       "1": {
                         "color": "green",
@@ -529,7 +558,8 @@
                         "color": "red",
                         "text": "DOWN"
                       }
-                    }
+                    },
+                    "type": "value"
                   }
                 ]
               }
@@ -579,13 +609,11 @@
       },
       "id": 2,
       "options": {
-        "showHeader": true,
         "footer": {
           "show": false
-        }
+        },
+        "showHeader": true
       },
-      "title": "Configured links",
-      "type": "table",
       "targets": [
         {
           "expr": "link:oper_state_with_meta",
@@ -594,6 +622,7 @@
           "refId": "A"
         }
       ],
+      "title": "Configured links",
       "transformations": [
         {
           "id": "organize",
@@ -601,6 +630,7 @@
             "excludeByName": {
               "Time": true,
               "__name__": true,
+              "city": true,
               "container": true,
               "endpoint": true,
               "instance": true,
@@ -608,31 +638,31 @@
               "job": true,
               "namespace": true,
               "pod": true,
-              "service": true,
-              "source": true,
-              "subscription_name": true,
               "prometheus": true,
-              "city": true,
+              "role": true,
+              "service": true,
               "site": true,
-              "role": true
+              "source": true,
+              "subscription_name": true
             },
             "indexByName": {
+              "Value": 4,
+              "interface": 3,
               "link_id": 0,
               "link_kind": 1,
-              "node": 2,
-              "interface": 3,
-              "Value": 4
+              "node": 2
             },
             "renameByName": {
+              "Value": "State",
+              "interface": "Interface",
               "link_id": "Link",
               "link_kind": "Kind",
-              "node": "Device",
-              "interface": "Interface",
-              "Value": "State"
+              "node": "Device"
             }
           }
         }
-      ]
+      ],
+      "type": "table"
     },
     {
       "datasource": {
@@ -646,10 +676,10 @@
           },
           "custom": {
             "drawStyle": "line",
-            "lineWidth": 1,
             "fillOpacity": 30,
-            "spanNulls": true,
-            "lineInterpolation": "smooth"
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "spanNulls": true
           },
           "unit": "bps"
         }
@@ -663,23 +693,23 @@
       "id": 3,
       "options": {
         "legend": {
-          "displayMode": "table",
-          "placement": "right",
           "calcs": [
             "lastNotNull",
             "max"
-          ]
+          ],
+          "displayMode": "table",
+          "placement": "right"
         }
       },
-      "title": "Backbone link traffic (out, by link)",
-      "type": "timeseries",
       "targets": [
         {
           "expr": "sum by (link_id) (link:rate_out_bps:1m{link_kind=\"backbone\"})",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Backbone link traffic (out, by link)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -694,15 +724,13 @@
       },
       "id": 4,
       "options": {
-        "showLabels": false,
+        "dedupStrategy": "none",
         "showCommonLabels": false,
+        "showLabels": false,
         "showTime": true,
-        "wrapLogMessage": true,
         "sortOrder": "Descending",
-        "dedupStrategy": "none"
+        "wrapLogMessage": true
       },
-      "title": "Topology errors / down events (Loki)",
-      "type": "logs",
       "targets": [
         {
           "datasource": {
@@ -712,7 +740,9 @@
           "expr": "{namespace=\"clabernetes\"} |~ \"(?i)(error|warn|fail|down|adjacency)\"",
           "refId": "A"
         }
-      ]
+      ],
+      "title": "Topology errors / down events (Loki)",
+      "type": "logs"
     }
   ],
   "refresh": "10s",
