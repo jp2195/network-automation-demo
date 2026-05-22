@@ -15,6 +15,11 @@ type Spec struct {
 	Providers []Provider `yaml:"providers"`
 	Nodes     []Node     `yaml:"nodes"`
 	Links     []Link     `yaml:"links"`
+
+	// Indexed views of Nodes / Links, populated by LoadSpec. Use these
+	// in hot paths instead of NodeByName / InterfacesOf, which are O(N).
+	nodesByName       map[string]*Node
+	interfacesByNode  map[string][]IfaceOnNode
 }
 
 type Metadata struct {
@@ -121,6 +126,14 @@ func LoadSpec(path string) (*Spec, error) {
 	if err := s.Validate(); err != nil {
 		return nil, err
 	}
+	s.nodesByName = make(map[string]*Node, len(s.Nodes))
+	for i := range s.Nodes {
+		s.nodesByName[s.Nodes[i].Name] = &s.Nodes[i]
+	}
+	s.interfacesByNode = make(map[string][]IfaceOnNode, len(s.Nodes))
+	for i := range s.Nodes {
+		s.interfacesByNode[s.Nodes[i].Name] = computeInterfaces(&s, s.Nodes[i].Name)
+	}
 	return &s, nil
 }
 
@@ -147,6 +160,9 @@ func (s *Spec) Validate() error {
 }
 
 func (s *Spec) NodeByName(name string) *Node {
+	if s.nodesByName != nil {
+		return s.nodesByName[name]
+	}
 	for i := range s.Nodes {
 		if s.Nodes[i].Name == name {
 			return &s.Nodes[i]
@@ -178,6 +194,13 @@ type IfaceOnNode struct {
 }
 
 func (s *Spec) InterfacesOf(nodeName string) []IfaceOnNode {
+	if s.interfacesByNode != nil {
+		return s.interfacesByNode[nodeName]
+	}
+	return computeInterfaces(s, nodeName)
+}
+
+func computeInterfaces(s *Spec, nodeName string) []IfaceOnNode {
 	var out []IfaceOnNode
 	for _, l := range s.Links {
 		var local, peer Endpoint
