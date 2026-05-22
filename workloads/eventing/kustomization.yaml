@@ -26,3 +26,5 @@ configMapGenerator:
       - scripts/analyze_impact.py
       - scripts/notify.py
       - scripts/incident_bundle.py
+      - scripts/maintenance_on.py
+      - scripts/maintenance_off.py

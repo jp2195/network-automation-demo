@@ -5,6 +5,10 @@ metadata:
 spec:
   serviceAccountName: operate-workflow-sa
   entrypoint: open
+  volumes:
+    - name: scripts
+      configMap:
+        name: workflow-scripts
   arguments:
     parameters:
       - name: node
@@ -23,74 +27,11 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import json, os, sys, urllib.request
-          from datetime import datetime, timezone, timedelta
-
-          NODE = os.environ["NODE"]
-          HOURS = float(os.environ["DURATION_HOURS"])
-          COMMENT = os.environ.get("COMMENT", "scheduled maintenance")
-          AM = os.environ["ALERTMANAGER_URL"].rstrip("/")
-          NB = os.environ.get("NETBOX_URL", "").rstrip("/")
-          TOKEN = os.environ.get("NETBOX_TOKEN", "")
-
-          now = datetime.now(timezone.utc)
-          ends = now + timedelta(hours=HOURS)
-          silence = {
-              "matchers": [
-                  {"name": "node", "value": NODE, "isRegex": False, "isEqual": True}
-              ],
-              "startsAt": now.replace(microsecond=0).isoformat(),
-              "endsAt":   ends.replace(microsecond=0).isoformat(),
-              "createdBy": "atlas-maintenance",
-              "comment": f"{COMMENT} (workflow={os.environ.get('ARGO_WORKFLOW_NAME','?')})"
-          }
-          req = urllib.request.Request(
-              AM + "/api/v2/silences", method="POST",
-              data=json.dumps(silence).encode(),
-              headers={"Content-Type": "application/json", "Accept": "application/json"})
-          with urllib.request.urlopen(req, timeout=10) as r:
-              body = json.loads(r.read())
-              sid = body.get("silenceID") or body.get("id")
-              print(f"silence id: {sid}", flush=True)
-              print(f"endsAt:     {ends.isoformat()}", flush=True)
-
-          if NB and TOKEN:
-              dev_req = urllib.request.Request(
-                  f"{NB}/api/dcim/devices/?name={NODE}",
-                  headers={"Authorization": f"Token {TOKEN}", "Accept": "application/json"})
-              with urllib.request.urlopen(dev_req, timeout=10) as r:
-                  results = json.loads(r.read()).get("results", [])
-              if results:
-                  did = results[0]["id"]
-                  entry = {
-                      "assigned_object_type": "dcim.device",
-                      "assigned_object_id": did,
-                      "kind": "info",
-                      "comments": (
-                          f"**Maintenance window opened** \n\n"
-                          f"- Duration: {HOURS}h \n"
-                          f"- Until: {ends.isoformat()}Z \n"
-                          f"- Comment: {COMMENT} \n"
-                          f"- Alertmanager silence id: {sid}\n"
-                      )
-                  }
-                  req = urllib.request.Request(
-                      NB + "/api/extras/journal-entries/", method="POST",
-                      data=json.dumps(entry).encode(),
-                      headers={
-                          "Authorization": f"Token {TOKEN}",
-                          "Content-Type": "application/json",
-                          "Accept": "application/json"})
-                  try:
-                      with urllib.request.urlopen(req, timeout=10) as r:
-                          r.read()
-                      print(f"netbox journal entry written for device {NODE} (id={did})", flush=True)
-                  except Exception as e:
-                      print(f"netbox journal entry FAILED: {e}", file=sys.stderr, flush=True)
-              else:
-                  print(f"netbox: device {NODE} not found, skipping journal entry", flush=True)
-          else:
-              print("netbox: no token / URL — skipping journal entry", flush=True)
+          import runpy
+          runpy.run_path("/scripts/maintenance_on.py", run_name="__main__")
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
         env:
           - name: NODE
             value: "{{inputs.parameters.node}}"
@@ -119,6 +60,10 @@ metadata:
 spec:
   serviceAccountName: operate-workflow-sa
   entrypoint: close
+  volumes:
+    - name: scripts
+      configMap:
+        name: workflow-scripts
   arguments:
     parameters:
       - name: node
@@ -131,64 +76,11 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import json, os, sys, urllib.request, urllib.parse
-          from datetime import datetime, timezone
-
-          NODE = os.environ["NODE"]
-          AM = os.environ["ALERTMANAGER_URL"].rstrip("/")
-          NB = os.environ.get("NETBOX_URL", "").rstrip("/")
-          TOKEN = os.environ.get("NETBOX_TOKEN", "")
-
-          # Find active silences this maintenance workflow created for the node.
-          with urllib.request.urlopen(AM + "/api/v2/silences", timeout=10) as r:
-              silences = json.loads(r.read())
-          targets = []
-          for s in silences:
-              state = (s.get("status", {}) or {}).get("state", "")
-              if state != "active":
-                  continue
-              if s.get("createdBy") != "atlas-maintenance":
-                  continue
-              if any(m.get("name") == "node" and m.get("value") == NODE for m in s.get("matchers", [])):
-                  targets.append(s["id"])
-
-          for sid in targets:
-              req = urllib.request.Request(
-                  AM + "/api/v2/silence/" + sid, method="DELETE")
-              urllib.request.urlopen(req, timeout=10).read()
-              print(f"removed silence {sid}", flush=True)
-          print(f"silences removed: {len(targets)}", flush=True)
-
-          if NB and TOKEN:
-              dev_req = urllib.request.Request(
-                  f"{NB}/api/dcim/devices/?name={NODE}",
-                  headers={"Authorization": f"Token {TOKEN}", "Accept": "application/json"})
-              with urllib.request.urlopen(dev_req, timeout=10) as r:
-                  results = json.loads(r.read()).get("results", [])
-              if results:
-                  did = results[0]["id"]
-                  entry = {
-                      "assigned_object_type": "dcim.device",
-                      "assigned_object_id": did,
-                      "kind": "success",
-                      "comments": (
-                          f"**Maintenance window closed** \n\n"
-                          f"- Closed at: {datetime.now(timezone.utc).isoformat()} \n"
-                          f"- Silences removed: {len(targets)}\n"
-                      )
-                  }
-                  req = urllib.request.Request(
-                      NB + "/api/extras/journal-entries/", method="POST",
-                      data=json.dumps(entry).encode(),
-                      headers={
-                          "Authorization": f"Token {TOKEN}",
-                          "Content-Type": "application/json",
-                          "Accept": "application/json"})
-                  try:
-                      urllib.request.urlopen(req, timeout=10).read()
-                      print(f"netbox journal entry written for device {NODE}", flush=True)
-                  except Exception as e:
-                      print(f"netbox journal entry FAILED: {e}", file=sys.stderr, flush=True)
+          import runpy
+          runpy.run_path("/scripts/maintenance_off.py", run_name="__main__")
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
         env:
           - name: NODE
             value: "{{inputs.parameters.node}}"
