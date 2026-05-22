@@ -28,35 +28,46 @@ def main():
     enrichment = json.loads(os.environ["ENRICHMENT_JSON"])
     affected_device = enrichment.get("device", {}).get("name")
 
-    # Cabinets attached to the same device (i.e. devices we eBGP to)
-    interfaces = get("/api/dcim/interfaces/", device=affected_device, limit=100)
+    # One batched query for every interface attached to the affected
+    # device, with cable expanded inline. NetBox 4.x supports `expand`
+    # to nest related objects in the response.
+    ifc_resp = get(
+        "/api/dcim/interfaces/",
+        device=affected_device, limit=100, expand="cable",
+    )
     downstream = []
-    for iface in interfaces.get("results", []):
-        cable_ref = iface.get("cable")
-        if not cable_ref:
+    for iface in ifc_resp.get("results", []):
+        cable = iface.get("cable") or {}
+        if not cable:
             continue
-        cable = get(f"/api/dcim/cables/{cable_ref['id']}/")
-        # other end of this cable (device whose name != affected_device)
+        # Walk both sides of the cable's terminations; collect the
+        # device name on the side that is NOT the affected device.
         for side in ("a_terminations", "b_terminations"):
             for t in cable.get(side, []):
                 if t.get("object_type") != "dcim.interface":
                     continue
-                tiface = get(f"/api/dcim/interfaces/{t['object_id']}/")
-                tdev = tiface.get("device", {}).get("name")
+                # NetBox returns the device name inline on expanded
+                # terminations under `device.name`. Fall back to the
+                # interface name if device name is missing.
+                tiface = t.get("object") or {}
+                tdev = (tiface.get("device") or {}).get("name", "")
+                tname = tiface.get("name", "")
                 if tdev and tdev != affected_device:
                     downstream.append({
                         "device": tdev,
-                        "interface": tiface.get("name"),
+                        "interface": tname,
                         "cable_label": cable.get("label"),
                     })
 
-    # Agencies = tenants whose site contains affected_device or any downstream
     site_slug = enrichment.get("device", {}).get("site_slug")
-    affected_devices = {affected_device, *(d["device"] for d in downstream)}
+
+    # Batched tenant lookup for affected + downstream devices in one call.
+    affected_devices = sorted({affected_device, *(d["device"] for d in downstream)})
     agencies = set()
-    for name in affected_devices:
-        devs = get("/api/dcim/devices/", name=name)
-        for d in devs.get("results", []):
+    if affected_devices:
+        names = ",".join(affected_devices)
+        dev_resp = get("/api/dcim/devices/", **{"name__in": names})
+        for d in dev_resp.get("results", []):
             tenant = d.get("tenant")
             if tenant:
                 agencies.add(tenant.get("slug"))
