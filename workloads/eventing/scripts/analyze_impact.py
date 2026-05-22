@@ -15,6 +15,10 @@ import sys
 import urllib.parse
 import urllib.request
 
+from constants import (
+    CABINET_NAME_PREFIX,
+    SEVERITY_HIGH, SEVERITY_LOW, SEVERITY_MEDIUM, SEVERITY_WARNING,
+)
 
 NETBOX = os.environ["NETBOX_URL"].rstrip("/")
 TOKEN = os.environ["NETBOX_TOKEN"]
@@ -71,15 +75,15 @@ def main():
     alert = enrichment.get("alert", {}) or {}
     alert_severity = alert.get("severity", "")
 
-    severity_class = "low"
-    if any(d["device"].startswith("fc-") for d in downstream):
-        severity_class = "high"
+    severity_class = SEVERITY_LOW
+    if any(d["device"].startswith(CABINET_NAME_PREFIX) for d in downstream):
+        severity_class = SEVERITY_HIGH
     elif len(downstream) > 1:
-        severity_class = "medium"
+        severity_class = SEVERITY_MEDIUM
     # An explicit alert-label severity=warning is a degradation signal —
     # honor it as long as the impact analysis didn't already escalate.
-    if alert_severity == "warning" and severity_class in ("low", "medium"):
-        severity_class = "warning"
+    if alert_severity == SEVERITY_WARNING and severity_class in (SEVERITY_LOW, SEVERITY_MEDIUM):
+        severity_class = SEVERITY_WARNING
 
     impact = {
         "affected_device": affected_device,

@@ -20,6 +20,7 @@ generatorOptions:
 configMapGenerator:
   - name: workflow-scripts
     files:
+      - scripts/constants.py
       - scripts/enrich.py
       - scripts/analyze_impact.py
       - scripts/notify.py
