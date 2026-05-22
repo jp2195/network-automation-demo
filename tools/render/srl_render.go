@@ -77,12 +77,7 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	}
 	p("")
 
-	// SR-MPLS / prefix-SID config is intentionally absent. The public
-	// ghcr.io/nokia/srlinux image does not advertise the `mpls` or
-	// `segment-routing` base features on any 7220 IXR chassis, so the YANG
-	// containers (`network-instance/segment-routing`, `mpls`) are not
-	// instantiable. The narrative still positions the backbone as SR-MPLS in
-	// design — runtime forwarding falls back to plain IS-IS / IPv4.
+	// SR-MPLS config intentionally absent — public srlinux image lacks the feature flag. See docs/architecture.md.
 
 
 	isTMC := n.Role == "tmc"
