@@ -115,58 +115,11 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import json, os, sys, urllib.parse, urllib.request
-
-          alert = json.loads(os.environ["ALERT_JSON"])
-          a = alert["alerts"][0]
-          labels = a["labels"]
-          affected   = labels.get("node", "")
-          iface      = labels.get("interface", "")
-          link_id    = labels.get("link_id", "")
-          link_kind  = labels.get("link_kind", "")
-
-          PROM = os.environ["PROM_URL"].rstrip("/")
-
-          def query(q: str):
-              url = PROM + "/api/v1/query?query=" + urllib.parse.quote(q)
-              with urllib.request.urlopen(url, timeout=10) as r:
-                  return json.loads(r.read())["data"]["result"]
-
-          # 1. The PEER end of the cut link — the other (node, interface)
-          #    in link_membership_info{link_id=X}. This is the most
-          #    important forensic context: the same fiber, opposite side.
-          peer_node = ""
-          peer_iface = ""
-          for row in query(f'link_membership_info{{link_id="{link_id}", node!="{affected}"}}'):
-              peer_node = row["metric"].get("node", "")
-              peer_iface = row["metric"].get("interface", "")
-              break
-
-          # 2. Ring neighbors of the affected device on its *other*
-          #    backbone links — useful for confirming IS-IS converged
-          #    around the fault.
-          ring_neighbors = []
-          local_links = {r["metric"]["link_id"]
-                         for r in query(
-                             f'group by (link_id) '
-                             f'(link_membership_info{{node="{affected}", link_kind="backbone"}})')}
-          for lid in sorted(local_links):
-              if lid == link_id:
-                  continue
-              for row in query(f'group by (node) '
-                               f'(link_membership_info{{link_id="{lid}", node!="{affected}"}})'):
-                  ring_neighbors.append(row["metric"]["node"])
-          ring_a = ring_neighbors[0] if len(ring_neighbors) > 0 else ""
-          ring_b = ring_neighbors[1] if len(ring_neighbors) > 1 else ""
-
-          os.makedirs("/tmp/argo", exist_ok=True)
-          for k, v in (("affected", affected), ("interface", iface),
-                       ("link_id", link_id),
-                       ("peer_node", peer_node), ("peer_interface", peer_iface),
-                       ("ring_a", ring_a), ("ring_b", ring_b)):
-              with open(f"/tmp/argo/{k}", "w") as f:
-                  f.write(v)
-          print(f"affected={affected}/{iface} peer={peer_node}/{peer_iface} ring=[{ring_a},{ring_b}] link={link_id}", flush=True)
+          import runpy
+          runpy.run_path("/scripts/identify_targets.py", run_name="__main__")
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
         env:
           - name: ALERT_JSON
             value: "{{inputs.parameters.alert}}"
@@ -247,41 +200,11 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import json, os, sys, urllib.parse, urllib.request
-
-          PROM = os.environ["PROM_URL"].rstrip("/")
-          LINK = os.environ["LINK_ID"]
-
-          def query(q: str):
-              url = PROM + "/api/v1/query?query=" + urllib.parse.quote(q)
-              with urllib.request.urlopen(url, timeout=10) as r:
-                  return json.loads(r.read())["data"]["result"]
-
-          def latest(metric: str, link: str) -> dict:
-              rows = query(f'{metric}{{link_id="{link}"}}')
-              return {(r["metric"]["node"], r["metric"]["interface"]): float(r["value"][1])
-                      for r in rows}
-
-          temp  = latest("dom_temperature_celsius",     LINK)
-          rxp   = latest("dom_rx_power_dbm",            LINK)
-          txp   = latest("dom_tx_power_dbm",            LINK)
-          bias  = latest("dom_bias_current_milliamps",  LINK)
-
-          print(f"## DOM snapshot — link {LINK}")
-          print()
-          print("| End | Node | Interface | Temp (°C) | Rx (dBm) | Tx (dBm) | Bias (mA) |")
-          print("|-----|------|-----------|-----------|----------|----------|-----------|")
-          for (end, n, i) in [
-              ("affected",  os.environ["AFFECTED"],  os.environ["AFFECTED_IFACE"]),
-              ("peer",      os.environ["PEER"],      os.environ["PEER_IFACE"]),
-          ]:
-              if not n or not i:
-                  continue
-              t  = temp.get((n, i), float('nan'))
-              rx = rxp.get((n, i), float('nan'))
-              tx = txp.get((n, i), float('nan'))
-              ba = bias.get((n, i), float('nan'))
-              print(f"| {end} | {n} | {i} | {t:.2f} | {rx:.2f} | {tx:.2f} | {ba:.2f} |")
+          import runpy
+          runpy.run_path("/scripts/gather_dom.py", run_name="__main__")
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
         env:
           - name: PROM_URL
             value: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
