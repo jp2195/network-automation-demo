@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -38,113 +39,62 @@ func main() {
 	gnmicDir := filepath.Join(*outDir, "workloads", "gnmic")
 	netboxDir := filepath.Join(*outDir, "workloads", "netbox")
 	netboxSeedDir := filepath.Join(netboxDir, "seed")
-	for _, d := range []string{cfgDir, gnmicDir, netboxDir, netboxSeedDir} {
-		must(os.MkdirAll(d, 0o755))
+	topoDir := filepath.Join(*outDir, "workloads", "topology")
+	obsDir := filepath.Join(*outDir, "workloads", "observability")
+	domDir := filepath.Join(*outDir, "workloads", "dom-synth")
+	for _, d := range []string{cfgDir, gnmicDir, netboxDir, netboxSeedDir, topoDir, obsDir, domDir} {
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	fmt.Printf("==> Rendering SR Linux startup configs → %s/\n", cfgDir)
 	var srlNames []string
-	for _, n := range spec.Nodes {
+	for i := range spec.Nodes {
+		n := &spec.Nodes[i]
 		if n.Kind != "srlinux" {
 			continue
 		}
-		path := filepath.Join(cfgDir, n.Name+".cfg")
-		f := mustCreate(path)
-		must(WriteSRL(f, &n, spec))
-		f.Close()
+		renderTo(filepath.Join(cfgDir, n.Name+".cfg"), "",
+			func(w io.Writer) error { return WriteSRL(w, n, spec) })
 		srlNames = append(srlNames, n.Name+".cfg")
 	}
 	fmt.Printf("    %s\n", strings.Join(srlNames, " "))
 
 	fmt.Printf("==> Rendering FRR configs → %s/\n", cfgDir)
 	var frrNames []string
-	for _, n := range spec.Nodes {
+	for i := range spec.Nodes {
+		n := &spec.Nodes[i]
 		if n.Kind != "frr" {
 			continue
 		}
-		path := filepath.Join(cfgDir, n.Name+".frr")
-		f := mustCreate(path)
-		must(WriteFRR(f, &n, spec))
-		f.Close()
+		renderTo(filepath.Join(cfgDir, n.Name+".frr"), "",
+			func(w io.Writer) error { return WriteFRR(w, n, spec) })
 		frrNames = append(frrNames, n.Name+".frr")
 	}
 	fmt.Printf("    %s\n", strings.Join(frrNames, " "))
 
-	targetsPath := filepath.Join(gnmicDir, "targets.yaml")
-	fmt.Printf("==> Writing %s (%d targets)\n", targetsPath, srl)
-	f := mustCreate(targetsPath)
-	must(WriteGNMIC(f, spec))
-	f.Close()
-
-	seedPath := filepath.Join(netboxSeedDir, "seed.json")
-	fmt.Printf("==> Writing %s (%d devices, %d cables, %d tenants)\n",
-		seedPath, len(spec.Nodes), len(spec.Links), len(spec.Agencies))
-	f = mustCreate(seedPath)
-	must(WriteNetBox(f, spec))
-	f.Close()
-
-	topoDir := filepath.Join(*outDir, "workloads", "topology")
-	must(os.MkdirAll(topoDir, 0o755))
-
-	topoPath := filepath.Join(topoDir, "topology.yaml")
-	fmt.Printf("==> Writing %s (clabernetes Topology, %d nodes, %d links)\n",
-		topoPath, len(spec.Nodes), len(spec.Links))
-	f = mustCreate(topoPath)
-	must(WriteTopology(f, spec))
-	f.Close()
-
-	kustPath := filepath.Join(topoDir, "kustomization.yaml")
-	fmt.Printf("==> Writing %s\n", kustPath)
-	f = mustCreate(kustPath)
-	must(WriteTopologyKustomization(f, spec))
-	f.Close()
-
-	daemonsPath := filepath.Join(cfgDir, "daemons")
-	fmt.Printf("==> Writing %s (FRR daemons)\n", daemonsPath)
-	f = mustCreate(daemonsPath)
-	must(WriteFRRDaemons(f))
-	f.Close()
-
-	snmpdConfPath := filepath.Join(cfgDir, "snmpd.conf")
-	fmt.Printf("==> Writing %s (FRR cabinet snmpd.conf)\n", snmpdConfPath)
-	f = mustCreate(snmpdConfPath)
-	must(WriteSNMPDConf(f))
-	f.Close()
-
-	wrapperPath := filepath.Join(cfgDir, "wrapper.sh")
-	fmt.Printf("==> Writing %s (FRR cabinet entrypoint wrapper)\n", wrapperPath)
-	f = mustCreate(wrapperPath)
-	must(WriteFRRWrapper(f))
-	f.Close()
-
-	obsDir := filepath.Join(*outDir, "workloads", "observability")
-	must(os.MkdirAll(obsDir, 0o755))
-
-	lmPath := filepath.Join(obsDir, "link-membership.yaml")
-	fmt.Printf("==> Writing %s (%d link endpoints)\n", lmPath, len(spec.Links)*2)
-	f = mustCreate(lmPath)
-	must(WriteLinkMembership(f, spec))
-	f.Close()
-
-	domDir := filepath.Join(*outDir, "workloads", "dom-synth")
-	must(os.MkdirAll(domDir, 0o755))
-	domLinksPath := filepath.Join(domDir, "links.json")
-	fmt.Printf("==> Writing %s (DOM synth interface list)\n", domLinksPath)
-	f = mustCreate(domLinksPath)
-	must(WriteDOMLinks(f, spec))
-	f.Close()
+	renderTo(filepath.Join(gnmicDir, "targets.yaml"), fmt.Sprintf(" (%d targets)", srl),
+		func(w io.Writer) error { return WriteGNMIC(w, spec) })
+	renderTo(filepath.Join(netboxSeedDir, "seed.json"),
+		fmt.Sprintf(" (%d devices, %d cables, %d tenants)", len(spec.Nodes), len(spec.Links), len(spec.Agencies)),
+		func(w io.Writer) error { return WriteNetBox(w, spec) })
+	renderTo(filepath.Join(topoDir, "topology.yaml"),
+		fmt.Sprintf(" (clabernetes Topology, %d nodes, %d links)", len(spec.Nodes), len(spec.Links)),
+		func(w io.Writer) error { return WriteTopology(w, spec) })
+	renderTo(filepath.Join(topoDir, "kustomization.yaml"), "",
+		func(w io.Writer) error { return WriteTopologyKustomization(w, spec) })
+	renderTo(filepath.Join(cfgDir, "daemons"), " (FRR daemons)",
+		func(w io.Writer) error { return WriteFRRDaemons(w) })
+	renderTo(filepath.Join(cfgDir, "snmpd.conf"), " (FRR cabinet snmpd.conf)",
+		func(w io.Writer) error { return WriteSNMPDConf(w) })
+	renderTo(filepath.Join(cfgDir, "wrapper.sh"), " (FRR cabinet entrypoint wrapper)",
+		func(w io.Writer) error { return WriteFRRWrapper(w) })
+	renderTo(filepath.Join(obsDir, "link-membership.yaml"),
+		fmt.Sprintf(" (%d link endpoints)", len(spec.Links)*2),
+		func(w io.Writer) error { return WriteLinkMembership(w, spec) })
+	renderTo(filepath.Join(domDir, "links.json"), " (DOM synth interface list)",
+		func(w io.Writer) error { return WriteDOMLinks(w, spec) })
 
 	fmt.Println("==> Done.")
-}
-
-func must(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func mustCreate(path string) *os.File {
-	f, err := os.Create(path)
-	must(err)
-	return f
 }
