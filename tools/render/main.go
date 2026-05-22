@@ -96,5 +96,13 @@ func main() {
 	renderTo(filepath.Join(domDir, "links.json"), " (DOM synth interface list)",
 		func(w io.Writer) error { return WriteDOMLinks(w, spec) })
 
+	snmpDir := filepath.Join(*outDir, "workloads", "snmp")
+	if err := os.MkdirAll(snmpDir, 0o755); err != nil {
+		log.Fatal(err)
+	}
+	renderTo(filepath.Join(snmpDir, "probe.yaml"),
+		fmt.Sprintf(" (%d FRR cabinet probe targets)", len(FRRSNMPTargets(spec))),
+		func(w io.Writer) error { return WriteSNMPProbe(w, spec) })
+
 	fmt.Println("==> Done.")
 }
