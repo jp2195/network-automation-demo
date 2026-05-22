@@ -130,7 +130,7 @@
       "type": "stat",
       "targets": [
         {
-          "expr": "(srl_nokia_interfaces_interface_oper_state) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}",
+          "expr": "link:oper_state_with_meta{link_id=\"$link_id\"}",
           "legendFormat": "{{node}} {{interface}}",
           "refId": "A"
         }
@@ -241,7 +241,7 @@
       "type": "stat",
       "targets": [
         {
-          "expr": "sum(rate(srl_nokia_interfaces_interface_statistics_out_octets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}) * 8 / 2",
+          "expr": "sum(link:rate_out_bps:1m{link_id=\"$link_id\"}) / 2",
           "refId": "A",
           "legendFormat": "bps"
         }
@@ -368,7 +368,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}",
+          "expr": "link:oper_state_with_meta{link_id=\"$link_id\"}",
           "legendFormat": "{{node}} {{interface}}",
           "refId": "A"
         }
