@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	srlImage = "ghcr.io/nokia/srlinux:25.3.3"
-	frrImage = "quay.io/frrouting/frr:10.6.1"
+	srlImage = ImageSRLinux
+	frrImage = ImageFRR
 )
 
 // frrDaemons is the standard FRR daemons file with zebra+bgpd enabled.

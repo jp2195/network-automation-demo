@@ -113,5 +113,8 @@ func main() {
 	renderTo(filepath.Join(eventingDir, "wft-incident-collector.yaml"), "",
 		func(w io.Writer) error { return WriteWFTIncidentCollector(w, spec) })
 
+	renderTo(filepath.Join(*outDir, "workloads", "versions.yaml"), "",
+		func(w io.Writer) error { return WriteVersions(w) })
+
 	fmt.Println("==> Done.")
 }
