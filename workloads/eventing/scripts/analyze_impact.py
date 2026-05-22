@@ -28,45 +28,65 @@ def main():
     enrichment = json.loads(os.environ["ENRICHMENT_JSON"])
     affected_device = enrichment.get("device", {}).get("name")
 
-    # One batched query for every interface attached to the affected
-    # device, with cable expanded inline. NetBox 4.x supports `expand`
-    # to nest related objects in the response.
-    ifc_resp = get(
-        "/api/dcim/interfaces/",
-        device=affected_device, limit=100, expand="cable",
-    )
-    downstream = []
-    for iface in ifc_resp.get("results", []):
-        cable = iface.get("cable") or {}
-        if not cable:
-            continue
-        # Walk both sides of the cable's terminations; collect the
-        # device name on the side that is NOT the affected device.
+    # Step 1: all interfaces on the affected device.
+    ifc_resp = get("/api/dcim/interfaces/", device=affected_device, limit=100)
+    interfaces = ifc_resp.get("results", [])
+
+    # Step 2: collect cable IDs from interfaces that have one, batch-fetch.
+    cable_ids = sorted({
+        iface["cable"]["id"]
+        for iface in interfaces
+        if iface.get("cable") and iface["cable"].get("id")
+    })
+    cables_by_id = {}
+    if cable_ids:
+        ids_csv = ",".join(str(i) for i in cable_ids)
+        cables_resp = get("/api/dcim/cables/", **{"id__in": ids_csv}, limit=100)
+        cables_by_id = {c["id"]: c for c in cables_resp.get("results", [])}
+
+    # Step 3: collect peer-interface IDs (the side of each cable opposite
+    # the affected device) and batch-fetch them. Cable terminations are
+    # always (object_type, object_id) pairs; we filter for interfaces.
+    peer_iface_ids = set()
+    cable_for_iface_id = {}  # peer interface id -> cable.label
+    for cable in cables_by_id.values():
         for side in ("a_terminations", "b_terminations"):
             for t in cable.get(side, []):
                 if t.get("object_type") != "dcim.interface":
                     continue
-                # NetBox returns the device name inline on expanded
-                # terminations under `device.name`. Fall back to the
-                # interface name if device name is missing.
-                tiface = t.get("object") or {}
-                tdev = (tiface.get("device") or {}).get("name", "")
-                tname = tiface.get("name", "")
-                if tdev and tdev != affected_device:
-                    downstream.append({
-                        "device": tdev,
-                        "interface": tname,
-                        "cable_label": cable.get("label"),
-                    })
+                pid = t.get("object_id")
+                if pid is None:
+                    continue
+                # We'll filter out interfaces belonging to the affected
+                # device in step 4 once we have the device field.
+                peer_iface_ids.add(pid)
+                cable_for_iface_id[pid] = cable.get("label")
+
+    peer_ifaces = []
+    if peer_iface_ids:
+        ids_csv = ",".join(str(i) for i in sorted(peer_iface_ids))
+        peer_resp = get("/api/dcim/interfaces/", **{"id__in": ids_csv}, limit=200)
+        peer_ifaces = peer_resp.get("results", [])
+
+    downstream = []
+    for piface in peer_ifaces:
+        pdev = (piface.get("device") or {}).get("name", "")
+        if not pdev or pdev == affected_device:
+            continue
+        downstream.append({
+            "device": pdev,
+            "interface": piface.get("name", ""),
+            "cable_label": cable_for_iface_id.get(piface.get("id")),
+        })
 
     site_slug = enrichment.get("device", {}).get("site_slug")
 
-    # Batched tenant lookup for affected + downstream devices in one call.
+    # Step 5: batched tenant lookup for affected + downstream devices.
     affected_devices = sorted({affected_device, *(d["device"] for d in downstream)})
     agencies = set()
     if affected_devices:
-        names = ",".join(affected_devices)
-        dev_resp = get("/api/dcim/devices/", **{"name__in": names})
+        names_csv = ",".join(affected_devices)
+        dev_resp = get("/api/dcim/devices/", **{"name__in": names_csv})
         for d in dev_resp.get("results", []):
             tenant = d.get("tenant")
             if tenant:
