@@ -30,7 +30,7 @@ def main():
     labels = a["labels"]
 
     device_name = device_name_from_source(labels.get("source", ""))
-    iface_name = labels.get("interface_name", "")
+    iface_name = labels.get("interface") or labels.get("interface_name", "")
 
     devices = get("/api/dcim/devices/", name=device_name)
     if not devices.get("results"):
