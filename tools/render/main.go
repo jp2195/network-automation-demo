@@ -104,5 +104,14 @@ func main() {
 		fmt.Sprintf(" (%d FRR cabinet probe targets)", len(FRRSNMPTargets(spec))),
 		func(w io.Writer) error { return WriteSNMPProbe(w, spec) })
 
+	eventingDir := filepath.Join(*outDir, "workloads", "eventing")
+	if err := os.MkdirAll(eventingDir, 0o755); err != nil {
+		log.Fatal(err)
+	}
+	renderTo(filepath.Join(eventingDir, "wft-cut-fiber.yaml"), "",
+		func(w io.Writer) error { return WriteWFTCutFiber(w, spec) })
+	renderTo(filepath.Join(eventingDir, "wft-incident-collector.yaml"), "",
+		func(w io.Writer) error { return WriteWFTIncidentCollector(w, spec) })
+
 	fmt.Println("==> Done.")
 }
