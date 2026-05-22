@@ -108,7 +108,7 @@ def _resolved_blocks(enrichment, ledger, downtime_str):
     device = enrichment.get("device", {})
     iface = enrichment.get("interface", {})
     impact = ledger.get("impact", {})
-    severity = impact.get("severity_class", "low")
+    severity = impact.get("severity_class", SEVERITY_LOW)
 
     return [
         {"type": "header", "text": {
