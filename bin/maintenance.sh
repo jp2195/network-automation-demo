@@ -72,18 +72,21 @@ list() {
   local am
   am=$(kubectl -n monitoring get pods -l app.kubernetes.io/name=alertmanager -o jsonpath='{.items[0].metadata.name}')
   if [[ -z "$am" ]]; then echo "alertmanager pod not found" >&2; exit 1; fi
+  printf "%-10s  %-14s  %-26s  %s\n" "id" "node" "endsAt" "comment"
   kubectl -n monitoring exec "$am" -c alertmanager -- wget -qO- 'http://localhost:9093/api/v2/silences' \
-    | python3 -c '
-import sys, json
-data = json.load(sys.stdin)
-print("%-10s  %-14s  %-26s  %s" % ("id", "node", "endsAt", "comment"))
-for s in data:
-    if s.get("createdBy") != "atlas-maintenance": continue
-    if s.get("status",{}).get("state") != "active": continue
-    node = next((m["value"] for m in s["matchers"] if m["name"] == "node"), "-")
-    sid = s["id"][:10]
-    print("%-10s  %-14s  %-26s  %s" % (sid, node, s["endsAt"], s.get("comment","")))
-'
+    | jq -r '
+        .[]
+        | select(.createdBy == "atlas-maintenance")
+        | select(.status.state == "active")
+        | [
+            (.id[0:10]),
+            ((.matchers[] | select(.name == "node") | .value) // "-"),
+            .endsAt,
+            (.comment // "")
+          ]
+        | @tsv
+      ' \
+    | awk -F'\t' '{ printf "%-10s  %-14s  %-26s  %s\n", $1, $2, $3, $4 }'
 }
 
 cmd=${1:-}
