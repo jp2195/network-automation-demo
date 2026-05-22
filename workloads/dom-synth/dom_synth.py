@@ -45,15 +45,13 @@ from typing import Optional
 
 LINKS_FILE = os.environ.get("LINKS_FILE", "/data/links.json")
 PORT = int(os.environ.get("PORT", "8000"))
-DATA: dict = {}
 START_TIME = time.time()
 VALKEY_URL = os.environ.get("VALKEY_URL", "valkey://valkey.valkey.svc.cluster.local:6379/3")
 LOG = logging.getLogger("dom-synth")
 
-# Cumulative synthetic counter state, keyed by (node, interface).
-SYNTH_ERRORS_TOTAL: dict[tuple[str, str], float] = {}
-SYNTH_DISCARDS_TOTAL: dict[tuple[str, str], float] = {}
-LAST_SYNTH_TICK = time.time()
+# Module-level State holder. main() rebinds STATE after load_data();
+# tests create their own State and pass it explicitly to render_metrics.
+STATE: "State"  # populated in main()
 
 # Rate-limit Valkey-unreachable warnings to once per minute.
 _LAST_VALKEY_WARN = 0.0
@@ -66,6 +64,25 @@ class GrayFailure:
     duration_s: float
     peak_rx_offset_dbm: float
     peak_errors_per_sec: float
+
+
+@dataclass
+class State:
+    """Mutable module state. One instance lives at module load; tests
+    create their own fresh State and pass it explicitly to render_metrics."""
+    data: dict
+    last_synth_tick: float
+    errors_total: dict[tuple[str, str], float]
+    discards_total: dict[tuple[str, str], float]
+
+    @classmethod
+    def fresh(cls, data: dict) -> "State":
+        return cls(
+            data=data,
+            last_synth_tick=time.time(),
+            errors_total={},
+            discards_total={},
+        )
 
 
 def ramp(t_now: float, gf: GrayFailure) -> float:
@@ -169,13 +186,19 @@ def offset(*parts: str) -> float:
     return (int(h[:8], 16) % 1000) / 1000.0 * 2.0 * math.pi
 
 
-def render_metrics(gray_failures: Optional[dict[str, GrayFailure]] = None) -> str:
+def render_metrics(state: Optional["State"] = None,
+                   gray_failures: Optional[dict[str, GrayFailure]] = None) -> str:
+    """Render Prometheus exposition. If state is None, falls back to the
+    module-level STATE (set by main()). Tests pass an explicit state to
+    avoid pollution across tests."""
+    if state is None:
+        state = STATE
     now = time.time()
     if gray_failures is None:
         gray_failures = {}
     # {(node, interface): cumulative_rx_offset_dbm}
     rx_offset: dict[tuple[str, str], float] = {}
-    ports_by_link = _ports_by_link(DATA)
+    ports_by_link = _ports_by_link(state.data)
     for link_id, gf in gray_failures.items():
         amt = ramp(now, gf) * gf.peak_rx_offset_dbm
         for port in ports_by_link.get(link_id, []):
@@ -187,7 +210,7 @@ def render_metrics(gray_failures: Optional[dict[str, GrayFailure]] = None) -> st
         out.append(f"# TYPE {name} {kind}")
 
     # ── Optical / DOM ─────────────────────────────────────────────────
-    ports = DATA.get("ports", [])
+    ports = state.data.get("ports", [])
 
     hdr("dom_temperature_celsius", "Transceiver case temperature (synthetic)")
     for l in ports:
@@ -217,32 +240,31 @@ def render_metrics(gray_failures: Optional[dict[str, GrayFailure]] = None) -> st
         out.append(_metric("dom_bias_current_milliamps", l, v))
 
     # ── Synthetic gray-failure counters ──────────────────────────────
-    global LAST_SYNTH_TICK
-    dt = max(0.0, now - LAST_SYNTH_TICK)
-    LAST_SYNTH_TICK = now
+    dt = max(0.0, now - state.last_synth_tick)
+    state.last_synth_tick = now
     for link_id, gf in gray_failures.items():
         amt = ramp(now, gf) * gf.peak_errors_per_sec * dt
         if amt <= 0.0:
             continue
         for port in ports_by_link.get(link_id, []):
-            SYNTH_ERRORS_TOTAL[port] = SYNTH_ERRORS_TOTAL.get(port, 0.0) + amt
-            SYNTH_DISCARDS_TOTAL[port] = SYNTH_DISCARDS_TOTAL.get(port, 0.0) + amt * 0.30
+            state.errors_total[port] = state.errors_total.get(port, 0.0) + amt
+            state.discards_total[port] = state.discards_total.get(port, 0.0) + amt * 0.30
 
     hdr("synth_in_error_packets_total",
         "Synthetic ingress error packets (gray-failure scenario only)",
         kind="counter")
     for l in ports:
-        v = SYNTH_ERRORS_TOTAL.get((l["node"], l["interface"]), 0.0)
+        v = state.errors_total.get((l["node"], l["interface"]), 0.0)
         out.append(_metric("synth_in_error_packets_total", l, v))
     hdr("synth_in_discarded_packets_total",
         "Synthetic ingress discarded packets (gray-failure scenario only)",
         kind="counter")
     for l in ports:
-        v = SYNTH_DISCARDS_TOTAL.get((l["node"], l["interface"]), 0.0)
+        v = state.discards_total.get((l["node"], l["interface"]), 0.0)
         out.append(_metric("synth_in_discarded_packets_total", l, v))
 
     # ── Hardware health ──────────────────────────────────────────────
-    nodes = DATA.get("nodes", [])
+    nodes = state.data.get("nodes", [])
 
     hdr("chassis_temperature_celsius", "Chassis sensor temperature (synthetic)")
     for n in nodes:
@@ -272,8 +294,8 @@ def render_metrics(gray_failures: Optional[dict[str, GrayFailure]] = None) -> st
             out.append(f'psu_state{{node="{n["node"]}",psu="{pid}",chassis="{n["chassis"]}"}} 1')
 
     # ── Routing protocol ─────────────────────────────────────────────
-    isis = DATA.get("isis_adjacencies", [])
-    bgp = DATA.get("bgp_peers", [])
+    isis = state.data.get("isis_adjacencies", [])
+    bgp = state.data.get("bgp_peers", [])
     uptime = max(0.0, now - START_TIME)
 
     hdr("isis_adjacency_info", "Constant 1 per spec adjacency (join with oper-state)")
@@ -335,7 +357,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):  # noqa: N802
         if self.path == "/metrics":
-            body = render_metrics(gray_failures=_load_gray_failures()).encode()
+            body = render_metrics(state=STATE, gray_failures=_load_gray_failures()).encode()
             self.send_response(200)
             self.send_header("Content-Type", "text/plain; version=0.0.4")
             self.send_header("Content-Length", str(len(body)))
@@ -357,13 +379,13 @@ class ThreadingServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 
 def main() -> None:
-    global DATA
-    DATA = load_data()
+    global STATE
+    STATE = State.fresh(load_data())
     print(
-        f"dom-synth: ports={len(DATA.get('ports',[]))} "
-        f"nodes={len(DATA.get('nodes',[]))} "
-        f"isis={len(DATA.get('isis_adjacencies',[]))} "
-        f"bgp={len(DATA.get('bgp_peers',[]))}",
+        f"dom-synth: ports={len(STATE.data.get('ports',[]))} "
+        f"nodes={len(STATE.data.get('nodes',[]))} "
+        f"isis={len(STATE.data.get('isis_adjacencies',[]))} "
+        f"bgp={len(STATE.data.get('bgp_peers',[]))}",
         flush=True,
     )
     print(f"dom-synth: listening on :{PORT}", flush=True)
