@@ -582,6 +582,115 @@
       ],
       "title": "Per-interface oper-state history",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 25,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "spanNulls": true
+          },
+          "unit": "bps"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(ifHCOutOctets{node=\"$cabinet\", ifName!=\"lo\"}[1m]) * 8",
+          "legendFormat": "{{ifName}} OUT",
+          "refId": "A"
+        },
+        {
+          "expr": "-rate(ifHCInOctets{node=\"$cabinet\", ifName!=\"lo\"}[1m]) * 8",
+          "legendFormat": "{{ifName}} IN",
+          "refId": "B"
+        }
+      ],
+      "title": "Bidirectional traffic by interface",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineWidth": 1,
+            "spanNulls": true
+          },
+          "unit": "pps"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(ifInErrors{node=\"$cabinet\", ifName!=\"lo\"}[1m])",
+          "legendFormat": "{{ifName}} in-err",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(ifOutErrors{node=\"$cabinet\", ifName!=\"lo\"}[1m])",
+          "legendFormat": "{{ifName}} out-err",
+          "refId": "B"
+        },
+        {
+          "expr": "rate(ifInDiscards{node=\"$cabinet\", ifName!=\"lo\"}[1m])",
+          "legendFormat": "{{ifName}} in-disc",
+          "refId": "C"
+        },
+        {
+          "expr": "rate(ifOutDiscards{node=\"$cabinet\", ifName!=\"lo\"}[1m])",
+          "legendFormat": "{{ifName}} out-disc",
+          "refId": "D"
+        }
+      ],
+      "title": "Errors and discards by interface",
+      "type": "timeseries"
     }
   ],
   "refresh": "10s",
