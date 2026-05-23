@@ -8,7 +8,7 @@ TOPO_NS      ?= clabernetes
 
 help:
 	@echo "Targets:"
-	@echo "  up           Create k3d cluster + bootstrap ArgoCD + apply root Application"
+	@echo "  up           Create k3d cluster + build images + bootstrap ArgoCD + apply root Application"
 	@echo "  down         Delete the k3d cluster"
 	@echo "  status       Show node + ArgoCD application state, print URL and admin password"
 	@echo "  render       Re-render workloads/* outputs from spec/atlanta.yaml"
@@ -32,6 +32,8 @@ help:
 up:
 	@echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"
 	k3d cluster create -c k3d/config.yaml
+	@echo "==> Building + pushing pre-baked images"
+	@$(MAKE) --no-print-directory build
 	@echo "==> Installing ArgoCD"
 	bash bootstrap/argocd-install.sh
 	@echo "==> Applying root Application (App-of-Apps)"
