@@ -19,7 +19,12 @@ const (
 // all reference one source.
 const (
 	ImageSRLinux = "ghcr.io/nokia/srlinux:25.3.3"
-	ImageFRR     = "atlas-demo-registry:5001/frr-snmpd:latest"
-	ImagePython  = "python:3.12-slim"
-	ImageGNMIC   = "ghcr.io/openconfig/gnmic:0.44.1"
+	// FRR stays on the public image — clabernetes' containerlab can't
+	// resolve atlas-demo-registry:5001/... refs from inside the nested
+	// docker (it prepends `docker.io/` and the ref becomes invalid).
+	// The pre-baked frr-snmpd Dockerfile + `make build` slot remain in
+	// place for a future imagePullThrough fix.
+	ImageFRR    = "quay.io/frrouting/frr:10.6.1"
+	ImagePython = "python:3.12-slim"
+	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.44.1"
 )
