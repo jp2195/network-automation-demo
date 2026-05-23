@@ -19,7 +19,7 @@ const (
 // all reference one source.
 const (
 	ImageSRLinux = "ghcr.io/nokia/srlinux:25.3.3"
-	ImageFRR     = "quay.io/frrouting/frr:10.6.1"
+	ImageFRR     = "atlas-demo-registry:5001/frr-snmpd:latest"
 	ImagePython  = "python:3.12-slim"
 	ImageGNMIC   = "ghcr.io/openconfig/gnmic:0.44.1"
 )

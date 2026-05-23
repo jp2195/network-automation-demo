@@ -15,7 +15,7 @@ spec:
             image: ghcr.io/nokia/srlinux:25.3.3
             type: ixr-d3
           linux:
-            image: quay.io/frrouting/frr:10.6.1
+            image: atlas-demo-registry:5001/frr-snmpd:latest
             binds:
               - configs/daemons:/etc/frr/daemons
               - configs/snmpd.conf:/etc/snmp/snmpd.conf
