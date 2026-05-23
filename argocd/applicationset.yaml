@@ -1,0 +1,82 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: atlas-demo
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=zero"]
+  generators:
+    - git:
+        repoURL: https://github.com/jp2195/network-automation-demo.git
+        revision: main
+        files:
+          - path: argocd/manifests/platform/*.yaml
+          - path: argocd/manifests/workloads/*.yaml
+  template:
+    metadata:
+      name: '{{ .name }}'
+      namespace: argocd
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{ .syncWave }}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{ .namespace }}'
+      {{- if .chart }}
+      sources:
+        - repoURL: '{{ .chart.repo }}'
+          {{- if .chart.fromGit }}
+          targetRevision: '{{ .chart.version }}'
+          path: '{{ .chart.name }}'
+          {{- else }}
+          chart: '{{ .chart.name }}'
+          targetRevision: '{{ .chart.version }}'
+          {{- end }}
+          helm:
+            releaseName: '{{ .chart.releaseName }}'
+            valueFiles:
+              - '$values/{{ .chart.values }}'
+            {{- if .chart.skipCrds }}
+            skipCrds: {{ .chart.skipCrds }}
+            {{- end }}
+        - repoURL: https://github.com/jp2195/network-automation-demo.git
+          targetRevision: main
+          ref: values
+      {{- else }}
+      source:
+        repoURL: https://github.com/jp2195/network-automation-demo.git
+        targetRevision: main
+        path: '{{ .path }}'
+      {{- end }}
+      syncPolicy:
+        {{- if ne .automated false }}
+        automated:
+          prune: true
+          selfHeal: true
+        {{- end }}
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+      {{- if .ignoreDifferences }}
+      ignoreDifferences:
+        {{- range .ignoreDifferences }}
+        - group: '{{ .group }}'
+          kind: '{{ .kind }}'
+          {{- if .jqPathExpressions }}
+          jqPathExpressions:
+            {{- range .jqPathExpressions }}
+            - {{ . | toYaml }}
+            {{- end }}
+          {{- end }}
+          {{- if .jsonPointers }}
+          jsonPointers:
+            {{- range .jsonPointers }}
+            - {{ . | toYaml }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
