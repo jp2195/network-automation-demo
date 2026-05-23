@@ -70,12 +70,16 @@ alloy:
           }
           label_structured_data = true
         }
-        forward_to = [loki.relabel.syslog.receiver]
+        // loki.source.syslog only attaches the __syslog_* labels that
+        // appear in its relabel_rules argument. A downstream loki.relabel
+        // would receive entries with those labels already stripped, so
+        // the rules must live here.
+        relabel_rules = loki.relabel.syslog.rules
+        forward_to    = [loki.write.default.receiver]
       }
 
-      // Promote __syslog_message_* internal labels (loki.source.syslog
-      // emits them as entry labels with the __ prefix, which Loki strips
-      // before storage) into user-visible labels so dashboards can filter.
+      // Owned only for its `.rules` export; the receiver/forward_to are
+      // unused but required by the schema.
       loki.relabel "syslog" {
         forward_to = [loki.write.default.receiver]
         rule {
