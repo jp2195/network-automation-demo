@@ -54,6 +54,12 @@
     },
     {
       "icon": "external link",
+      "title": "Cabinet detail",
+      "type": "link",
+      "url": "/d/cabinet-detail/cabinet-detail"
+    },
+    {
+      "icon": "external link",
       "title": "Audit feed",
       "type": "link",
       "url": "/d/audit-feed/audit-feed"
