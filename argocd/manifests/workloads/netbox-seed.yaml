@@ -1,4 +1,4 @@
 name: netbox-seed
 namespace: netbox
 syncWave: "4"
-path: workloads/netbox/seed
+appPath: workloads/netbox/seed

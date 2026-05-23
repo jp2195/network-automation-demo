@@ -1,7 +1,7 @@
 name: dom-synth
 namespace: monitoring
 syncWave: "2"
-path: workloads/dom-synth
+appPath: workloads/dom-synth
 automated: false
 ignoreDifferences:
   - group: monitoring.coreos.com

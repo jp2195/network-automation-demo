@@ -1,4 +1,4 @@
 name: eventing
 namespace: argo-events
 syncWave: "3"
-path: workloads/eventing
+appPath: workloads/eventing

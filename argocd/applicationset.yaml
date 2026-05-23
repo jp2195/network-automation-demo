@@ -63,7 +63,7 @@ spec:
       source:
         repoURL: https://github.com/jp2195/network-automation-demo.git
         targetRevision: main
-        path: '{{ .path }}'
+        path: '{{ .appPath }}'
       {{- end }}
       {{- if ne .automated false }}
       syncPolicy:
