@@ -19,7 +19,7 @@ spec:
         - alert: SRLInterfaceOperDown
           expr: |
             (srl_nokia_interfaces_interface_oper_state == 2)
-              * on(node, interface) group_left(link_id, link_kind, site, city, role)
+              * on(node, interface) group_left(link_id, link_kind, site, city, role, corridor)
             link_membership_info
           for: 0s
           labels:
@@ -34,7 +34,7 @@ spec:
         - alert: SRLInterfaceFlapping
           expr: |
             (changes(srl_nokia_interfaces_interface_oper_state[5m]) > 4)
-              * on(node, interface) group_left(link_id, link_kind)
+              * on(node, interface) group_left(link_id, link_kind, corridor)
             link_membership_info
           for: 1m
           labels:
