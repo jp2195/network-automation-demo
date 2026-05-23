@@ -1,0 +1,10 @@
+name: valkey
+namespace: valkey
+syncWave: "1"
+chart:
+  repo: https://github.com/valkey-io/valkey-helm.git
+  name: valkey
+  version: valkey-0.9.4
+  releaseName: valkey
+  values: platform/values/valkey.yaml
+  fromGit: true

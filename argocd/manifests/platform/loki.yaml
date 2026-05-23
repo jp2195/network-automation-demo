@@ -1,0 +1,9 @@
+name: loki
+namespace: monitoring
+syncWave: "0"
+chart:
+  repo: https://grafana.github.io/helm-charts
+  name: loki
+  version: 7.0.0
+  releaseName: loki
+  values: platform/values/loki.yaml
