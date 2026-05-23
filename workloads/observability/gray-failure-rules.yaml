@@ -11,7 +11,7 @@ spec:
         - alert: SRLOpticalDegrading
           expr: |
             (dom_rx_power_dbm < -12) * on(node, interface)
-              group_left(link_id, link_kind) link_membership_info
+              group_left(link_id, link_kind, corridor) link_membership_info
           for: 2m
           labels:
             severity: warning
@@ -23,7 +23,7 @@ spec:
         - alert: SRLInterfaceErrorsHigh
           expr: |
             (rate(synth_in_error_packets_total[1m]) > 50) * on(node, interface)
-              group_left(link_id, link_kind) link_membership_info
+              group_left(link_id, link_kind, corridor) link_membership_info
           for: 1m
           labels:
             severity: warning
