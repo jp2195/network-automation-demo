@@ -1,7 +1,7 @@
 name: topology
 namespace: clabernetes
 syncWave: "1"
-path: workloads/topology
+appPath: workloads/topology
 ignoreDifferences:
   - group: clabernetes.containerlab.dev
     kind: Topology

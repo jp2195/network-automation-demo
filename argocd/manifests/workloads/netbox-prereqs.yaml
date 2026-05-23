@@ -1,4 +1,4 @@
 name: netbox-prereqs
 namespace: netbox
 syncWave: "2"
-path: workloads/netbox/prereqs
+appPath: workloads/netbox/prereqs

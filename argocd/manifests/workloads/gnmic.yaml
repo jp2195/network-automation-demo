@@ -1,7 +1,7 @@
 name: gnmic
 namespace: monitoring
 syncWave: "2"
-path: workloads/gnmic
+appPath: workloads/gnmic
 ignoreDifferences:
   - group: monitoring.coreos.com
     kind: ServiceMonitor
