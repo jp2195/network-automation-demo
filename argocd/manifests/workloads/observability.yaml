@@ -1,0 +1,4 @@
+name: observability
+namespace: monitoring
+syncWave: "2"
+path: workloads/observability

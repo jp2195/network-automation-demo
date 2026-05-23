@@ -1,0 +1,16 @@
+name: topology
+namespace: clabernetes
+syncWave: "1"
+path: workloads/topology
+ignoreDifferences:
+  - group: clabernetes.containerlab.dev
+    kind: Topology
+    jsonPointers:
+      - /spec/imagePull
+      - /spec/expose
+      - /spec/statusProbes
+      - /spec/connectivity
+      - /spec/naming
+      - /spec/deployment/containerlabTimeout
+      - /spec/deployment/persistence
+      - /spec/deployment/scheduling
