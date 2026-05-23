@@ -16,12 +16,10 @@ spec:
     spec:
       containers:
         - name: dom-synth
-          image: python:3.12-slim
-          command: ["sh", "-c"]
-          args:
-            - |
-              pip install --quiet --no-cache-dir valkey &&
-              exec python3 /app/dom_synth.py
+          image: atlas-demo-registry:5001/dom-synth:latest
+          # Image's CMD already runs python3 /app/dom_synth.py.
+          # The /app mount from the ConfigMap overrides the baked copy
+          # at runtime so script iteration doesn't require a rebuild.
           env:
             - name: LINKS_FILE
               value: /data/links.json
