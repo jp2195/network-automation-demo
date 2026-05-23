@@ -1,0 +1,4 @@
+name: eventing
+namespace: argo-events
+syncWave: "3"
+path: workloads/eventing

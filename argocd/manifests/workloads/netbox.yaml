@@ -1,0 +1,9 @@
+name: netbox
+namespace: netbox
+syncWave: "3"
+chart:
+  repo: ghcr.io/netbox-community/netbox-chart
+  name: netbox
+  version: 8.2.9
+  releaseName: netbox
+  values: workloads/netbox/chart-values.yaml
