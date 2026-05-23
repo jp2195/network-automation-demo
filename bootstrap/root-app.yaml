@@ -1,3 +1,6 @@
+# Root Application: applies the ApplicationSet that generates one
+# Application per stub under argocd/manifests/{platform,workloads}/*.yaml.
+# Replaces the previous recurse-into-argocd App-of-Apps pattern.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -12,8 +15,7 @@ spec:
     targetRevision: main
     path: argocd
     directory:
-      recurse: true
-      include: '{platform/*.yaml,workloads/*.yaml}'
+      include: 'applicationset.yaml'
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
