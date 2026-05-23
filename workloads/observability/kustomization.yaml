@@ -6,6 +6,7 @@ namespace: monitoring
 resources:
   - prometheusrules.yaml
   - link-membership.yaml
+  - link-rate-rules.yaml
   - alertmanagerconfig.yaml
   - gray-failure-rules.yaml
 
