@@ -41,7 +41,7 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 		p("set / interface %s subinterface 0 ipv4 admin-state enable", ifc.Name)
 		p("set / interface %s subinterface 0 ipv4 address %s/30", ifc.Name, ifc.LocalV4)
 		p("")
-		if ifc.LinkKind == "cabinet" {
+		if ifc.LinkKind == LinkKindCabinet {
 			hasCabinet = true
 		}
 	}
@@ -68,7 +68,7 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	p("set / network-instance default protocols isis instance atlas interface lo0.0 passive true")
 	p("set / network-instance default protocols isis instance atlas interface lo0.0 ipv4-unicast admin-state enable")
 	for _, ifc := range ifaces {
-		if ifc.LinkKind != "backbone" {
+		if ifc.LinkKind != LinkKindBackbone {
 			continue
 		}
 		p("set / network-instance default protocols isis instance atlas interface %s.0 admin-state enable", ifc.Name)
@@ -80,7 +80,7 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	// SR-MPLS config intentionally absent — public srlinux image lacks the feature flag. See docs/architecture.md.
 
 
-	isTMC := n.Role == "tmc"
+	isTMC := n.Role == RoleTMC
 	if hasCabinet || isTMC {
 		p("set / network-instance default protocols bgp admin-state enable")
 		p("set / network-instance default protocols bgp autonomous-system %d", s.Metadata.ASN.Backbone)
@@ -96,7 +96,7 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 		p("set / network-instance default protocols bgp group cabinets export-policy [export-cabinet-routes]")
 		p("")
 		for _, ifc := range ifaces {
-			if ifc.LinkKind != "cabinet" {
+			if ifc.LinkKind != LinkKindCabinet {
 				continue
 			}
 			peerNode := s.NodeByName(ifc.PeerNode)
@@ -117,7 +117,7 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	if isTMC {
 		p("set / network-instance default protocols bgp group tmc-ibgp afi-safi ipv4-unicast admin-state enable")
 		for _, peer := range s.Nodes {
-			if peer.Role != "tmc" || peer.Name == n.Name {
+			if peer.Role != RoleTMC || peer.Name == n.Name {
 				continue
 			}
 			p("set / network-instance default protocols bgp neighbor %s admin-state enable", peer.LoopbackV4)

@@ -19,7 +19,7 @@ func WriteGNMIC(w io.Writer, s *Spec) error {
 	p("targets:")
 
 	for _, n := range s.Nodes {
-		if n.Kind != "srlinux" {
+		if n.Kind != KindSRLinux {
 			continue
 		}
 		// Clabernetes default `naming: prefixed` exposes each topology node as a

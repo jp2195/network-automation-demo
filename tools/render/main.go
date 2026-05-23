@@ -26,9 +26,9 @@ func main() {
 	var srl, frr int
 	for _, n := range spec.Nodes {
 		switch n.Kind {
-		case "srlinux":
+		case KindSRLinux:
 			srl++
-		case "frr":
+		case KindFRR:
 			frr++
 		}
 	}
@@ -52,7 +52,7 @@ func main() {
 	var srlNames []string
 	for i := range spec.Nodes {
 		n := &spec.Nodes[i]
-		if n.Kind != "srlinux" {
+		if n.Kind != KindSRLinux {
 			continue
 		}
 		renderTo(filepath.Join(cfgDir, n.Name+".cfg"), "",
@@ -65,7 +65,7 @@ func main() {
 	var frrNames []string
 	for i := range spec.Nodes {
 		n := &spec.Nodes[i]
-		if n.Kind != "frr" {
+		if n.Kind != KindFRR {
 			continue
 		}
 		renderTo(filepath.Join(cfgDir, n.Name+".frr"), "",

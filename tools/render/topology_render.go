@@ -49,7 +49,7 @@ frr_group="root"
 // SR Linux uses "ethernet-1/N" internally but containerlab expects "e1-N".
 // Linux kinds (FRR cabinets) keep their native "ethN" form.
 func clabIntf(kind, intf string) string {
-	if kind == "srlinux" && strings.HasPrefix(intf, "ethernet-") {
+	if kind == KindSRLinux && strings.HasPrefix(intf, "ethernet-") {
 		// ethernet-1/3 -> e1-3 (containerlab expects hyphens, not slashes)
 		short := strings.TrimPrefix(intf, "ethernet-")
 		return "e" + strings.ReplaceAll(short, "/", "-")
@@ -59,7 +59,7 @@ func clabIntf(kind, intf string) string {
 
 // configFilename returns the renderer-emitted startup-config filename for a node.
 func configFilename(n Node) string {
-	if n.Kind == "frr" {
+	if n.Kind == KindFRR {
 		return n.Name + ".frr"
 	}
 	return n.Name + ".cfg"
@@ -99,10 +99,10 @@ func WriteContainerlab(w io.Writer, spec *Spec) error {
 	for _, n := range spec.Nodes {
 		fmt.Fprintf(w, "    %s:\n", n.Name)
 		switch n.Kind {
-		case "srlinux":
+		case KindSRLinux:
 			fmt.Fprintln(w, "      kind: nokia_srlinux")
 			fmt.Fprintf(w, "      startup-config: configs/%s\n", configFilename(n))
-		case "frr":
+		case KindFRR:
 			fmt.Fprintln(w, "      kind: linux")
 			fmt.Fprintln(w, "      binds:")
 			fmt.Fprintf(w, "        - configs/%s:/etc/frr/frr.conf\n", configFilename(n))
@@ -157,7 +157,7 @@ func WriteTopology(w io.Writer, spec *Spec) error {
 		p("          configMapName: topology-startup-configs")
 		p("          configMapPath: %s", configFilename(n))
 		p("          mode: read")
-		if n.Kind == "frr" {
+		if n.Kind == KindFRR {
 			p("        - filePath: configs/daemons")
 			p("          configMapName: topology-startup-configs")
 			p("          configMapPath: daemons")

@@ -197,7 +197,7 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 
 	// One ASN object per FRR cabinet, each assigned to the cabinet's site.
 	for _, n := range s.Nodes {
-		if n.Kind != "frr" || n.ASN == 0 {
+		if n.Kind != KindFRR || n.ASN == 0 {
 			continue
 		}
 		out.ASNs = append(out.ASNs, nbASN{
@@ -247,17 +247,17 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 		{Slug: "atlas-traffic", Name: "Atlas Traffic Systems"},
 	}
 	out.DeviceTypes = []nbDeviceType{
-		{Manufacturer: "nokia", Model: "SR Linux", Slug: "srlinux"},
-		{Manufacturer: "frrouting", Model: "FRR Routing Stack", Slug: "frr"},
+		{Manufacturer: "nokia", Model: "SR Linux", Slug: KindSRLinux},
+		{Manufacturer: "frrouting", Model: "FRR Routing Stack", Slug: KindFRR},
 		{Manufacturer: "atlas-vision", Model: "AV-CCTV-HD", Slug: "av-cctv-hd"},
 		{Manufacturer: "atlas-traffic", Model: "AT-SIG-2070", Slug: "at-sig-2070"},
 		{Manufacturer: "atlas-traffic", Model: "AT-DMS-VMS16", Slug: "at-dms-vms16"},
 		{Manufacturer: "atlas-traffic", Model: "AT-RAMP-MID", Slug: "at-ramp-mid"},
 	}
 	out.DeviceRoles = []nbDeviceRole{
-		{Slug: "tmc", Name: "TMC", Color: "ff0000"},
-		{Slug: "corridor-hub", Name: "Corridor Hub", Color: "0066ff"},
-		{Slug: "field-cabinet", Name: "Field Cabinet", Color: "00aa00"},
+		{Slug: RoleTMC, Name: "TMC", Color: "ff0000"},
+		{Slug: RoleCorridorHub, Name: "Corridor Hub", Color: "0066ff"},
+		{Slug: RoleFieldCabinet, Name: "Field Cabinet", Color: "00aa00"},
 		{Slug: "cctv-camera", Name: "CCTV Camera", Color: "9c27b0"},
 		{Slug: "signal-controller", Name: "Signal Controller", Color: "ff9800"},
 		{Slug: "dms", Name: "DMS", Color: "795548"},
@@ -266,9 +266,9 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 
 	// Routers (SR Linux + FRR cabinets).
 	for _, n := range s.Nodes {
-		deviceType := "srlinux"
-		if n.Kind == "frr" {
-			deviceType = "frr"
+		deviceType := KindSRLinux
+		if n.Kind == KindFRR {
+			deviceType = KindFRR
 		}
 		out.Devices = append(out.Devices, nbDevice{
 			Name:         n.Name,
@@ -286,7 +286,7 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 	// Each gets its own NetBox device record at the cabinet's site so the
 	// cabinet's roster is observable via Site → Devices instead of a CF count.
 	for _, n := range s.Nodes {
-		if n.Kind != "frr" {
+		if n.Kind != KindFRR {
 			continue
 		}
 		out.Devices = append(out.Devices, itsDevices(n)...)
@@ -294,7 +294,7 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 
 	for _, n := range s.Nodes {
 		loName := "lo0"
-		if n.Kind == "frr" {
+		if n.Kind == KindFRR {
 			loName = "lo"
 		}
 		out.Interfaces = append(out.Interfaces, nbInterface{
@@ -305,7 +305,7 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 		})
 		for _, ifc := range s.InterfacesOf(n.Name) {
 			ifaceType := "10gbase-x-sfpp"
-			if n.Kind == "frr" {
+			if n.Kind == KindFRR {
 				// Cabinet drops are GigE copper; "1000base-t" keeps the type
 				// physical so NetBox 4.x accepts cable terminations on it.
 				ifaceType = "1000base-t"
@@ -322,7 +322,7 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 
 	for _, n := range s.Nodes {
 		loName := "lo0"
-		if n.Kind == "frr" {
+		if n.Kind == KindFRR {
 			loName = "lo"
 		}
 		out.IPAddresses = append(out.IPAddresses, nbIPAddress{
