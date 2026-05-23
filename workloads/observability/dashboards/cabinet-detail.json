@@ -691,6 +691,136 @@
       ],
       "title": "Errors and discards by interface",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 10,
+      "options": {
+        "dedupStrategy": "none",
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{namespace=\"clabernetes\"} |~ \"$cabinet\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Pod logs for $cabinet (Loki)",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Per-peer BGP session uptime in seconds. Series drops to 0 (or vanishes) when a session goes down — the closest proxy to BGP peer state available from the dom-synth exporter. Real bgpPeerState (Idle/Active/Established/...) would require BGP4-MIB via snmp_exporter, currently out of scope.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "spanNulls": false
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 33
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        }
+      },
+      "targets": [
+        {
+          "expr": "bgp_peer_uptime_seconds{node=\"$cabinet\"}",
+          "legendFormat": "{{neighbor_node}} ({{peer_group}})",
+          "refId": "A"
+        }
+      ],
+      "title": "BGP session uptime (per peer)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "sysUpTime is reported by SNMP in TimeTicks (1/100 seconds); divide by 100 for seconds, then Grafana renders the duration via the s unit.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "expr": "sysUpTime{node=\"$cabinet\"} / 100",
+          "refId": "A"
+        }
+      ],
+      "title": "Cabinet uptime",
+      "type": "stat"
     }
   ],
   "refresh": "10s",
