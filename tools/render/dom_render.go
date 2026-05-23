@@ -63,7 +63,7 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 	for _, l := range s.Links {
 		for _, ep := range []Endpoint{l.A, l.B} {
 			n := s.NodeByName(ep.Node)
-			if n == nil || n.Kind != "srlinux" {
+			if n == nil || n.Kind != KindSRLinux {
 				continue
 			}
 			out.Ports = append(out.Ports, port{
@@ -86,12 +86,12 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 			Site: n.Site.Label,
 		}
 		switch n.Kind {
-		case "srlinux":
+		case KindSRLinux:
 			entry.Chassis = "7220 IXR-D3"
 			entry.FanIDs = []string{"fan1", "fan2", "fan3", "fan4"}
 			entry.PSUIDs = []string{"psu1", "psu2"}
 			entry.TempIDs = []string{"intake", "exhaust", "linecard", "cpu"}
-		case "frr":
+		case KindFRR:
 			entry.Chassis = "ATSP-FC-1U"
 			entry.FanIDs = []string{"fan1"}
 			entry.PSUIDs = []string{"psu1"}
@@ -104,7 +104,7 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 	// a link between A and B yields two rows (A's view of B, B's view
 	// of A). Cabinet links use eBGP, not IS-IS.
 	for _, l := range s.Links {
-		if l.Kind != "backbone" {
+		if l.Kind != LinkKindBackbone {
 			continue
 		}
 		na := s.NodeByName(l.A.Node)
@@ -133,7 +133,7 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 	// BGP peers: each cabinet link is a corridor-hub → cabinet eBGP
 	// session. Backbone iBGP between TMCs is also represented.
 	for _, l := range s.Links {
-		if l.Kind != "cabinet" {
+		if l.Kind != LinkKindCabinet {
 			continue
 		}
 		na := s.NodeByName(l.A.Node)
@@ -144,7 +144,7 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 		// hub-to-cabinet from the hub's perspective
 		hubSide := l.A
 		hubNode, cabNode := na, nb
-		if cabNode.Kind == "srlinux" {
+		if cabNode.Kind == KindSRLinux {
 			hubSide = l.B
 			hubNode, cabNode = nb, na
 		}
@@ -180,7 +180,7 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 	// TMC iBGP mesh: each TMC peers with every other TMC over loopbacks.
 	tmcs := []*Node{}
 	for i := range s.Nodes {
-		if s.Nodes[i].Role == "tmc" {
+		if s.Nodes[i].Role == RoleTMC {
 			tmcs = append(tmcs, &s.Nodes[i])
 		}
 	}

@@ -68,7 +68,7 @@ func WriteFRRWrapper(w io.Writer) error {
 func FRRSNMPTargets(s *Spec) []string {
 	var out []string
 	for _, n := range s.Nodes {
-		if n.Kind != "frr" {
+		if n.Kind != KindFRR {
 			continue
 		}
 		out = append(out, fmt.Sprintf("%s-%s.clabernetes.svc.cluster.local", s.Metadata.Name, n.Name))
