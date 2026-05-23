@@ -1,4 +1,4 @@
-.PHONY: up down status render render-check demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet \
+.PHONY: up down status render render-check build demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet \
         scenario scenario-list scenario-hurricane scenario-backhoe scenario-cabinet scenario-flap \
         scenario-gray-failure scenario-gray-failure-end \
         maintenance-start maintenance-end maintenance-list help
@@ -13,6 +13,7 @@ help:
 	@echo "  status       Show node + ArgoCD application state, print URL and admin password"
 	@echo "  render       Re-render workloads/* outputs from spec/atlanta.yaml"
 	@echo "  render-check Re-render to /tmp/render-check and verify no drift vs the committed outputs"
+	@echo "  build        Build + push the three pre-baked images to the k3d registry (localhost:5001)"
 	@echo "  demo-cut             Disable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-restore         Re-enable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-cut-cabinet     Disable an interface on an FRR cabinet via vtysh (NODE=, INTERFACE= required)"
@@ -85,6 +86,21 @@ render-check:
 	done; \
 	if [ $$drift -eq 1 ]; then exit 1; fi; \
 	echo "==> render-check OK"
+
+build:
+	@echo "==> Building + pushing pre-baked demo images to localhost:5001"
+	@if ! command -v docker >/dev/null 2>&1; then \
+	  echo "docker not found on host — required for 'make build'" >&2; \
+	  exit 1; \
+	fi
+	@if ! docker buildx ls >/dev/null 2>&1; then \
+	  echo "docker buildx not available — required for 'make build'" >&2; \
+	  exit 1; \
+	fi
+	docker buildx build -t localhost:5001/eventing-py:latest -f images/eventing-py/Dockerfile workloads/eventing/ --push
+	docker buildx build -t localhost:5001/dom-synth:latest   -f images/dom-synth/Dockerfile   workloads/dom-synth/ --push
+	docker buildx build -t localhost:5001/frr-snmpd:latest   -f images/frr-snmpd/Dockerfile   images/frr-snmpd/    --push
+	@echo "==> All images pushed. Verify with: curl -s localhost:5001/v2/_catalog"
 
 status:
 	@echo "==> Nodes"
