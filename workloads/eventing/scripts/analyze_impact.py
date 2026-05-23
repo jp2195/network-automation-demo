@@ -28,65 +28,43 @@ def main():
     enrichment = json.loads(os.environ["ENRICHMENT_JSON"])
     affected_device = enrichment.get("device", {}).get("name")
 
-    # Step 1: all interfaces on the affected device.
-    ifc_resp = get("/api/dcim/interfaces/", device=affected_device, limit=100)
-    interfaces = ifc_resp.get("results", [])
+    # One call: all cables touching this device. NetBox 4.x's cable
+    # endpoint supports the `device=<name>` filter; the `id__in` and
+    # `name__in` lookups are silently ignored on this serializer.
+    # Each cable's terminations include the peer interface inline
+    # (object.device.name, object.name), so we don't need a second fetch.
+    cables = get(
+        "/api/dcim/cables/", device=affected_device, limit=100,
+    ).get("results", [])
 
-    # Step 2: collect cable IDs from interfaces that have one, batch-fetch.
-    cable_ids = sorted({
-        iface["cable"]["id"]
-        for iface in interfaces
-        if iface.get("cable") and iface["cable"].get("id")
-    })
-    cables_by_id = {}
-    if cable_ids:
-        ids_csv = ",".join(str(i) for i in cable_ids)
-        cables_resp = get("/api/dcim/cables/", **{"id__in": ids_csv}, limit=100)
-        cables_by_id = {c["id"]: c for c in cables_resp.get("results", [])}
-
-    # Step 3: collect peer-interface IDs (the side of each cable opposite
-    # the affected device) and batch-fetch them. Cable terminations are
-    # always (object_type, object_id) pairs; we filter for interfaces.
-    peer_iface_ids = set()
-    cable_for_iface_id = {}  # peer interface id -> cable.label
-    for cable in cables_by_id.values():
+    downstream = []
+    for cable in cables:
         for side in ("a_terminations", "b_terminations"):
             for t in cable.get(side, []):
                 if t.get("object_type") != "dcim.interface":
                     continue
-                pid = t.get("object_id")
-                if pid is None:
+                obj = t.get("object") or {}
+                pdev = (obj.get("device") or {}).get("name", "")
+                if not pdev or pdev == affected_device:
+                    # Skip the affected device's own termination — the
+                    # peer is on the OTHER side of the cable.
                     continue
-                # We'll filter out interfaces belonging to the affected
-                # device in step 4 once we have the device field.
-                peer_iface_ids.add(pid)
-                cable_for_iface_id[pid] = cable.get("label")
-
-    peer_ifaces = []
-    if peer_iface_ids:
-        ids_csv = ",".join(str(i) for i in sorted(peer_iface_ids))
-        peer_resp = get("/api/dcim/interfaces/", **{"id__in": ids_csv}, limit=200)
-        peer_ifaces = peer_resp.get("results", [])
-
-    downstream = []
-    for piface in peer_ifaces:
-        pdev = (piface.get("device") or {}).get("name", "")
-        if not pdev or pdev == affected_device:
-            continue
-        downstream.append({
-            "device": pdev,
-            "interface": piface.get("name", ""),
-            "cable_label": cable_for_iface_id.get(piface.get("id")),
-        })
+                downstream.append({
+                    "device": pdev,
+                    "interface": obj.get("name", ""),
+                    "cable_label": cable.get("label"),
+                })
 
     site_slug = enrichment.get("device", {}).get("site_slug")
 
-    # Step 5: batched tenant lookup for affected + downstream devices.
+    # One call: tenant lookup for affected + all downstream devices.
+    # NetBox accepts repeated `?name=A&name=B&name=C` for OR-filtering;
+    # `name__in=A,B,C` is silently ignored. netbox_client.Client encodes
+    # a list value as repeated query params via urlencode(doseq=True).
     affected_devices = sorted({affected_device, *(d["device"] for d in downstream)})
     agencies = set()
     if affected_devices:
-        names_csv = ",".join(affected_devices)
-        dev_resp = get("/api/dcim/devices/", **{"name__in": names_csv})
+        dev_resp = get("/api/dcim/devices/", name=affected_devices, limit=200)
         for d in dev_resp.get("results", []):
             tenant = d.get("tenant")
             if tenant:
