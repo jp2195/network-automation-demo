@@ -13,12 +13,16 @@ spec:
         files:
           - path: argocd/manifests/platform/*.yaml
           - path: argocd/manifests/workloads/*.yaml
+  # Minimal structured template: just the always-required fields. The
+  # conditional logic (chart vs path source, ignoreDifferences, manual-
+  # sync override for dom-synth) lives in templatePatch below — that's
+  # the only way to do structural conditionals in an ApplicationSet,
+  # because `spec.template` must be valid YAML BEFORE Go-template
+  # rendering.
   template:
     metadata:
       name: '{{ .name }}'
       namespace: argocd
-      annotations:
-        argocd.argoproj.io/sync-wave: '{{ .syncWave }}'
       finalizers:
         - resources-finalizer.argocd.argoproj.io
     spec:
@@ -26,6 +30,15 @@ spec:
       destination:
         server: https://kubernetes.default.svc
         namespace: '{{ .namespace }}'
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+  templatePatch: |
+    metadata:
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{ .syncWave }}'
+    spec:
       {{- if .chart }}
       sources:
         - repoURL: '{{ .chart.repo }}'
@@ -52,15 +65,15 @@ spec:
         targetRevision: main
         path: '{{ .path }}'
       {{- end }}
+      {{- if ne .automated false }}
       syncPolicy:
-        {{- if ne .automated false }}
         automated:
           prune: true
           selfHeal: true
-        {{- end }}
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+      {{- end }}
       {{- if .ignoreDifferences }}
       ignoreDifferences:
         {{- range .ignoreDifferences }}
