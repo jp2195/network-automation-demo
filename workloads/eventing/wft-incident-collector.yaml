@@ -116,7 +116,8 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import runpy
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
           runpy.run_path("/scripts/identify_targets.py", run_name="__main__")
         volumeMounts:
           - name: scripts
@@ -201,7 +202,8 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import runpy
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
           runpy.run_path("/scripts/gather_dom.py", run_name="__main__")
         volumeMounts:
           - name: scripts
@@ -242,7 +244,8 @@ spec:
         image: atlas-demo-registry:5001/eventing-py:latest
         command: [python3]
         source: |
-          import runpy
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
           runpy.run_path("/scripts/incident_bundle.py", run_name="__main__")
         env:
           - name: AFFECTED

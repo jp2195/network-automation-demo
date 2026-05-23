@@ -50,7 +50,8 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import runpy
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
           runpy.run_path("/scripts/enrich.py", run_name="__main__")
         env:
           # Inject the alert payload via env value rather than a triple-quoted
@@ -88,7 +89,8 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import runpy
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
           runpy.run_path("/scripts/analyze_impact.py", run_name="__main__")
         env:
           - name: ENRICHMENT_JSON
@@ -122,7 +124,8 @@ spec:
         image: atlas-demo-registry:5001/eventing-py:latest
         command: [python3]
         source: |
-          import runpy
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
           runpy.run_path("/scripts/notify.py", run_name="__main__")
         env:
           - name: ENRICHMENT_JSON
