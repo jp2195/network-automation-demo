@@ -1,0 +1,9 @@
+name: alloy
+namespace: monitoring
+syncWave: "1"
+chart:
+  repo: https://grafana.github.io/helm-charts
+  name: alloy
+  version: 1.8.1
+  releaseName: alloy
+  values: platform/values/alloy.yaml

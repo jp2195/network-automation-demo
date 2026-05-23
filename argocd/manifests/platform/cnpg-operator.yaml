@@ -1,0 +1,9 @@
+name: cnpg-operator
+namespace: cnpg-system
+syncWave: "0"
+chart:
+  repo: https://cloudnative-pg.github.io/charts
+  name: cloudnative-pg
+  version: 0.28.0
+  releaseName: cnpg-operator
+  values: platform/values/cnpg-operator.yaml

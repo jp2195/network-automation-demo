@@ -1,0 +1,9 @@
+name: argo-workflows
+namespace: argo
+syncWave: "0"
+chart:
+  repo: https://argoproj.github.io/argo-helm
+  name: argo-workflows
+  version: 1.0.13
+  releaseName: argo-workflows
+  values: platform/values/argo-workflows.yaml

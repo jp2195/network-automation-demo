@@ -1,0 +1,9 @@
+name: argo-events
+namespace: argo-events
+syncWave: "0"
+chart:
+  repo: https://argoproj.github.io/argo-helm
+  name: argo-events
+  version: 2.4.21
+  releaseName: argo-events
+  values: platform/values/argo-events.yaml
