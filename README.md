@@ -101,6 +101,29 @@ UIs after sync settles:
 | <https://workflows.127-0-0-1.nip.io:8443> | server-mode, no auth |
 | <https://clabernetes.127-0-0-1.nip.io:8443> | clabernetes UI |
 
+### Pre-baked images
+
+`make up` (and `make build` standalone) builds and pushes three pre-baked
+images into the k3d-bundled distribution registry:
+
+- `localhost:5001/eventing-py:latest` — Python + slack-sdk + valkey + eventing scripts.
+- `localhost:5001/dom-synth:latest` — Python + valkey + dom_synth.py.
+- `localhost:5001/frr-snmpd:latest` — FRR + net-snmp.
+
+Note the two endpoints for the SAME registry:
+
+- **`localhost:5001`** — used by `docker buildx … --push` from the host.
+- **`atlas-demo-registry:5001`** — used by every workload manifest's
+  `image:` field, because that's how the registry resolves from inside
+  the cluster.
+
+This is configured by `k3d/config.yaml` (registry name + host port mapping).
+Verify images are pushed with:
+
+```bash
+curl -s localhost:5001/v2/_catalog
+```
+
 ## Demo flow
 
 Once IS-IS has converged across the 8 SR Linux backbone nodes and
