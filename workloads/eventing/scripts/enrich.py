@@ -29,9 +29,14 @@ def main():
     a = alert["alerts"][0]
     labels = a["labels"]
 
-    device_name = device_name_from_source(labels.get("source", ""))
+    # Prefer the `node` label (canonical post-ServiceMonitor relabel for
+    # gNMIc-derived SRL alerts AND native on dom-synth metrics). Fall back
+    # to deriving from the gNMIc `source` FQDN for older alert pipelines.
+    device_name = labels.get("node") or device_name_from_source(labels.get("source", ""))
     iface_name = labels.get("interface") or labels.get("interface_name", "")
 
+    if not device_name:
+        sys.exit("no node/source label on alert")
     devices = get("/api/dcim/devices/", name=device_name)
     if not devices.get("results"):
         sys.exit(f"device {device_name} not found")
