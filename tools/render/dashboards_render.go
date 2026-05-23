@@ -27,6 +27,7 @@ func canonicalNav(currentUID string) []dashboardLink {
 		{"Corridor status", "/d/corridor-status/corridor-status", "corridor-status"},
 		{"Link detail", "/d/link-detail/link-detail", "link-detail"},
 		{"Device detail", "/d/device-detail/device-detail", "device-detail"},
+		{"Cabinet detail", "/d/cabinet-detail/cabinet-detail", "cabinet-detail"},
 		{"Alert console", "/d/alert-console/alert-console", "alert-console"},
 		{"Audit feed", "/d/audit-feed/audit-feed", "audit-feed"},
 		{"Hardware health", "/d/hardware-health/hardware-health", "hardware-health"},

@@ -49,6 +49,12 @@
     },
     {
       "icon": "external link",
+      "title": "Cabinet detail",
+      "type": "link",
+      "url": "/d/cabinet-detail/cabinet-detail"
+    },
+    {
+      "icon": "external link",
       "title": "Alert console",
       "type": "link",
       "url": "/d/alert-console/alert-console"
