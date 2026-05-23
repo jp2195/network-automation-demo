@@ -35,7 +35,7 @@ Topology CR (`mode: read` on every `filesFromConfigMap` entry,
 `expose.disableExpose: false`, etc.) or the Prometheus operator storing
 the implicit `action: replace` on relabeling configs.
 
-These should already be ignored — `argocd/workloads/{topology,snmp,gnmic}.yaml`
+These should already be ignored — `argocd/manifests/workloads/{topology,snmp,gnmic}.yaml`
 all carry `ignoreDifferences` blocks. If you've added a new app and
 hit drift on a Probe / ServiceMonitor / Topology, that's the pattern
 to copy.

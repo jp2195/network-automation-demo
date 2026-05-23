@@ -98,10 +98,10 @@ controller can decrypt them. Safe in a public repo.
 
 This isn't deployed by default. To add it:
 
-1. Drop a platform Application in `argocd/platform/`:
+1. Add an entry to `argocd/manifests/platform/sealed-secrets.yaml`:
 
    ```yaml
-   # argocd/platform/sealed-secrets.yaml
+   # argocd/manifests/platform/sealed-secrets.yaml
    apiVersion: argoproj.io/v1alpha1
    kind: Application
    metadata:
