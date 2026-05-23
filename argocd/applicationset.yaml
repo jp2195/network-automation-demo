@@ -40,7 +40,7 @@ spec:
             releaseName: '{{ .chart.releaseName }}'
             valueFiles:
               - '$values/{{ .chart.values }}'
-            {{- if .chart.skipCrds }}
+            {{- if hasKey .chart "skipCrds" }}
             skipCrds: {{ .chart.skipCrds }}
             {{- end }}
         - repoURL: https://github.com/jp2195/network-automation-demo.git
