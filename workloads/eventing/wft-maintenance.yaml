@@ -27,7 +27,8 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import runpy
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
           runpy.run_path("/scripts/maintenance_on.py", run_name="__main__")
         volumeMounts:
           - name: scripts
@@ -76,7 +77,8 @@ spec:
         image: python:3.12-slim
         command: [python3]
         source: |
-          import runpy
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
           runpy.run_path("/scripts/maintenance_off.py", run_name="__main__")
         volumeMounts:
           - name: scripts
