@@ -38,7 +38,9 @@ GRAY_QUEUE=()
 
 push_restore() { RESTORE_QUEUE+=("$1:$2"); }
 push_gray()    { GRAY_QUEUE+=("$1"); }
-delete_gray()  { kubectl -n valkey exec valkey-0 -- valkey-cli -n 3 DEL "gray:$1" >/dev/null 2>&1 || true; }
+# valkey-io/valkey-helm deploys as a Deployment; pod name has a hash suffix.
+valkey_pod()   { kubectl -n valkey get pods -l app.kubernetes.io/name=valkey -o jsonpath='{.items[0].metadata.name}' 2>/dev/null; }
+delete_gray()  { local p; p=$(valkey_pod) && [ -n "$p" ] && kubectl -n valkey exec "$p" -- valkey-cli -n 3 DEL "gray:$1" >/dev/null 2>&1 || true; }
 
 cut() {
   local node=$1 intf=$2
@@ -207,7 +209,12 @@ gray_failure() {
     "$now" "$duration" "$rx_offset" "$err_rate")
   banner "gray-failure on link ${BOLD}${link}${CLR} for ${duration}s"
   warn "Rx power will dip up to ${rx_offset} dBm; synth errors up to ${err_rate}/s"
-  kubectl -n valkey exec valkey-0 -- \
+  local p; p=$(valkey_pod)
+  if [ -z "$p" ]; then
+    echo "valkey pod not found in namespace 'valkey'" >&2
+    return 1
+  fi
+  kubectl -n valkey exec "$p" -- \
     valkey-cli -n 3 SET "gray:$link" "$json" EX "$ttl" >/dev/null
   push_gray "$link"
   ok "Key gray:$link written; will auto-clear at $(date -d @$((now+ttl)))"
