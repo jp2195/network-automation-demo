@@ -3,6 +3,12 @@ alloy:
     varlog: true
     dockercontainers: false
 
+  extraPorts:
+    - name: syslog-tcp
+      port: 5514
+      targetPort: 5514
+      protocol: TCP
+
   resources:
     requests:
       cpu: 30m
@@ -51,6 +57,30 @@ alloy:
 
       loki.source.file "pod_logs" {
         targets    = local.file_match.pod_logs.targets
+        forward_to = [loki.write.default.receiver]
+      }
+
+      loki.source.syslog "node_syslog" {
+        listener {
+          address               = "0.0.0.0:5514"
+          protocol              = "tcp"
+          labels                = {
+            source_type = "syslog",
+            namespace   = "clabernetes",
+          }
+          label_structured_data = true
+        }
+        forward_to = [loki.process.syslog.receiver]
+      }
+
+      loki.process "syslog" {
+        stage.labels {
+          values = {
+            host     = "__syslog_message_hostname",
+            app      = "__syslog_message_app_name",
+            severity = "__syslog_message_severity",
+          }
+        }
         forward_to = [loki.write.default.receiver]
       }
 

@@ -1,0 +1,20 @@
+# ClusterIP fronting the Alloy DaemonSet's syslog listener.
+# SRL `system logging remote-server` and FRR's in-container rsyslog
+# both target this Service's FQDN so clab pods don't need to know
+# which k8s node their Alloy peer is scheduled on.
+apiVersion: v1
+kind: Service
+metadata:
+  name: alloy-syslog
+  labels:
+    app.kubernetes.io/part-of: alloy
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: alloy
+    app.kubernetes.io/instance: alloy
+  ports:
+    - name: syslog-tcp
+      port: 5514
+      protocol: TCP
+      targetPort: 5514

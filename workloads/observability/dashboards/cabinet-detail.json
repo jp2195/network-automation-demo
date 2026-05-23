@@ -718,7 +718,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"clabernetes\"} |~ \"$cabinet\"",
+          "expr": "{namespace=\"clabernetes\", host=\"$cabinet\"}",
           "refId": "A"
         }
       ],
