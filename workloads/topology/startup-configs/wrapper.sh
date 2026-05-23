@@ -7,6 +7,30 @@ if ! command -v snmpd >/dev/null 2>&1; then
   apk add --no-cache --quiet net-snmp >/dev/null 2>&1 || true
 fi
 
+# Install rsyslog so FRR daemons' "log syslog informational" output
+# (currently writing to /dev/log via libc syslog(3)) reaches the
+# alloy-syslog Service. imuxsock listens on /dev/log; the action line
+# forwards every message over TCP/5514 in RFC5424.
+if ! command -v rsyslogd >/dev/null 2>&1; then
+  apk add --no-cache --quiet rsyslog >/dev/null 2>&1 || true
+fi
+
+if command -v rsyslogd >/dev/null 2>&1; then
+  cat >/etc/rsyslog.d/50-alloy.conf <<'RSYSLOG'
+# imuxsock + imklog are already loaded by /etc/rsyslog.conf (alpine default);
+# we only add the forward action here. *.* duplicates the default
+# /var/log/messages destination harmlessly.
+*.* action(type="omfwd"
+          target="alloy-syslog.monitoring.svc.cluster.local"
+          port="5514"
+          protocol="tcp"
+          template="RSYSLOG_SyslogProtocol23Format")
+RSYSLOG
+  # rsyslogd daemonizes by default (no -n), so the trailing & is belt
+  # and suspenders; redirect output so a syslog hiccup never wedges FRR.
+  rsyslogd >/tmp/rsyslogd.log 2>&1 &
+fi
+
 if command -v snmpd >/dev/null 2>&1; then
   # Don't pass -c: net-snmp's default search already includes
   # /etc/snmp/snmpd.conf, and adding it via -c reads the same file twice,

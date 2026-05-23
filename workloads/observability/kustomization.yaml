@@ -9,6 +9,7 @@ resources:
   - link-rate-rules.yaml
   - alertmanagerconfig.yaml
   - gray-failure-rules.yaml
+  - alloy-syslog-svc.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
