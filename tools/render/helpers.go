@@ -31,8 +31,12 @@ func renderTo(path, label string, emit func(io.Writer) error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
 	if err := emit(f); err != nil {
+		f.Close()
+		os.Remove(path)
+		log.Fatal(err)
+	}
+	if err := f.Close(); err != nil {
 		log.Fatal(err)
 	}
 }
