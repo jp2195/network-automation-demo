@@ -70,18 +70,26 @@ alloy:
           }
           label_structured_data = true
         }
-        forward_to = [loki.process.syslog.receiver]
+        forward_to = [loki.relabel.syslog.receiver]
       }
 
-      loki.process "syslog" {
-        stage.labels {
-          values = {
-            host     = "__syslog_message_hostname",
-            app      = "__syslog_message_app_name",
-            severity = "__syslog_message_severity",
-          }
-        }
+      // Promote __syslog_message_* internal labels (loki.source.syslog
+      // emits them as entry labels with the __ prefix, which Loki strips
+      // before storage) into user-visible labels so dashboards can filter.
+      loki.relabel "syslog" {
         forward_to = [loki.write.default.receiver]
+        rule {
+          source_labels = ["__syslog_message_hostname"]
+          target_label  = "host"
+        }
+        rule {
+          source_labels = ["__syslog_message_app_name"]
+          target_label  = "app"
+        }
+        rule {
+          source_labels = ["__syslog_message_severity"]
+          target_label  = "severity"
+        }
       }
 
       loki.write "default" {
