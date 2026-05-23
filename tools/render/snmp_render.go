@@ -56,6 +56,10 @@ if ! command -v rsyslogd >/dev/null 2>&1; then
 fi
 
 if command -v rsyslogd >/dev/null 2>&1; then
+  # Alpine's rsyslog package doesn't create /etc/rsyslog.d itself; ensure
+  # it exists so the heredoc write below doesn't trip set -e and wedge
+  # the wrapper before it can exec FRR's docker-start.
+  mkdir -p /etc/rsyslog.d
   cat >/etc/rsyslog.d/50-alloy.conf <<'RSYSLOG'
 # imuxsock + imklog are already loaded by /etc/rsyslog.conf (alpine default);
 # we only add the forward action here. *.* duplicates the default
