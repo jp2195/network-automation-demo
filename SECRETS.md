@@ -102,25 +102,15 @@ This isn't deployed by default. To add it:
 
    ```yaml
    # argocd/manifests/platform/sealed-secrets.yaml
-   apiVersion: argoproj.io/v1alpha1
-   kind: Application
-   metadata:
+   name: sealed-secrets
+   namespace: kube-system
+   syncWave: "-1"
+   chart:
+     repo: https://bitnami-labs.github.io/sealed-secrets
      name: sealed-secrets
-     namespace: argocd
-     annotations:
-       argocd.argoproj.io/sync-wave: "-1"
-   spec:
-     project: default
-     source:
-       repoURL: https://bitnami-labs.github.io/sealed-secrets
-       chart: sealed-secrets
-       targetRevision: 2.16.2
-     destination:
-       server: https://kubernetes.default.svc
-       namespace: kube-system
-     syncPolicy:
-       automated: { prune: true, selfHeal: true }
-       syncOptions: [ServerSideApply=true]
+     version: 2.16.2
+     releaseName: sealed-secrets
+     values: platform/values/sealed-secrets.yaml
    ```
 
 2. After the controller is running, fetch its public cert:
