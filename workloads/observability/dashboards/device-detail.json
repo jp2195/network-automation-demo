@@ -156,7 +156,7 @@
       },
       "targets": [
         {
-          "expr": "max(srl_nokia_interfaces_interface_oper_state{node=\"$node\"} * on(node, interface) group_left link_membership_info) or (2 - max(up{job=\"snmp-frr-cabinets\", node=\"$node\"}))",
+          "expr": "max(srl_nokia_interfaces_interface_oper_state{node=\"$node\"} * on(node, interface) group_left link_membership_info)",
           "refId": "A"
         }
       ],
@@ -868,13 +868,13 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(device_geo_info, node)",
+        "definition": "label_values(srl_nokia_interfaces_interface_oper_state, node)",
         "includeAll": false,
         "label": "Device",
         "multi": false,
         "name": "node",
         "query": {
-          "query": "label_values(device_geo_info, node)",
+          "query": "label_values(srl_nokia_interfaces_interface_oper_state, node)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
