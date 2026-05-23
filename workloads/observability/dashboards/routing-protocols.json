@@ -191,7 +191,7 @@
       },
       "targets": [
         {
-          "expr": "count(bgp_peer_info{peer_group=\"cabinets\"} * on(neighbor_node) group_left() (up{job=\"snmp-frr-cabinets\"} == 1))",
+          "expr": "count(bgp_peer_info{peer_group=\"cabinets\"} * on(neighbor_node) group_left() label_replace(up{job=\"snmp-frr-cabinets\"} == 1, \"neighbor_node\", \"$1\", \"node\", \"(.+)\"))",
           "legendFormat": "/4 expected",
           "refId": "A"
         }
