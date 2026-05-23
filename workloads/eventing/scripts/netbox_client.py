@@ -23,7 +23,12 @@ class Client:
         }
 
     def _req(self, method, path, data=None, **params):
-        qs = ("?" + urllib.parse.urlencode(params)) if params else ""
+        # doseq=True so list values become repeated query params:
+        # name=["a","b"] → name=a&name=b. NetBox's filter endpoints accept
+        # the comma-separated `?name__in=a,b` form only on some serializers
+        # (cables in 4.x ignore it), but repeated query params work
+        # universally because they hit the standard `name` filter's OR mode.
+        qs = ("?" + urllib.parse.urlencode(params, doseq=True)) if params else ""
         req = urllib.request.Request(
             self.base + path + qs,
             method=method,

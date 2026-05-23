@@ -55,6 +55,13 @@ restore() {
   make -s demo-restore NODE="$node" INTERFACE="$intf" >/dev/null || true
 }
 
+# Track whether we exited via a signal (Ctrl-C / TERM) vs. normally.
+# Normal exit from the async gray-failure subcommand must NOT clear the
+# Valkey key — TTL handles that. Cuts in RESTORE_QUEUE always run, since
+# leaving a cut applied on script exit would break the next demo.
+INTERRUPTED=0
+on_signal() { INTERRUPTED=1; }
+
 cleanup() {
   if (( ${#RESTORE_QUEUE[@]} > 0 )); then
     banner "scenario cleanup — restoring ${#RESTORE_QUEUE[@]} cuts"
@@ -65,7 +72,10 @@ cleanup() {
       restore "$n" "$iface"
     done
   fi
-  if (( ${#GRAY_QUEUE[@]} > 0 )); then
+  # Only clear gray-failure keys if interrupted by signal. On a clean
+  # exit of `gray-failure`, the Valkey TTL handles cleanup so the
+  # scenario actually runs for its full duration.
+  if (( INTERRUPTED == 1 && ${#GRAY_QUEUE[@]} > 0 )); then
     banner "scenario cleanup — clearing ${#GRAY_QUEUE[@]} gray-failure keys"
     for link in "${GRAY_QUEUE[@]}"; do
       ok "cleared gray:$link"
@@ -73,7 +83,8 @@ cleanup() {
     done
   fi
 }
-trap cleanup EXIT INT TERM
+trap on_signal INT TERM
+trap cleanup EXIT
 
 # ────────────────────────────────────────────────────────────────────────
 # scenario: hurricane
