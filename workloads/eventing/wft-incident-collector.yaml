@@ -239,22 +239,10 @@ spec:
           - name: ring_b_report
           - name: dom_report
       script:
-        image: python:3.12-slim
+        image: atlas-demo-registry:5001/eventing-py:latest
         command: [python3]
         source: |
-          import os, subprocess, sys, runpy
-          # slack-sdk + valkey are only needed if Slack is wired up; if
-          # they fail to install, notify_bundle.py degrades to stderr.
-          with open(os.devnull, "w") as devnull:
-              try:
-                  subprocess.check_call(
-                      [sys.executable, "-m", "pip", "install", "--quiet",
-                       "--no-cache-dir", "slack-sdk", "valkey"],
-                      stdout=devnull,
-                  )
-              except Exception as e:
-                  print(f"pip install failed (degrading to stderr): {e}",
-                        file=sys.stderr, flush=True)
+          import runpy
           runpy.run_path("/scripts/incident_bundle.py", run_name="__main__")
         env:
           - name: AFFECTED

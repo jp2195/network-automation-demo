@@ -119,16 +119,10 @@ spec:
           - name: enrichment
           - name: impact
       script:
-        image: python:3.12-slim
+        image: atlas-demo-registry:5001/eventing-py:latest
         command: [python3]
         source: |
-          import os, subprocess, sys, runpy
-          with open(os.devnull, "w") as devnull:
-              subprocess.check_call(
-                  [sys.executable, "-m", "pip", "install", "--quiet",
-                   "--no-cache-dir", "slack-sdk", "valkey"],
-                  stdout=devnull,
-              )
+          import runpy
           runpy.run_path("/scripts/notify.py", run_name="__main__")
         env:
           - name: ENRICHMENT_JSON
