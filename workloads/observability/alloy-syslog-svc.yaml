@@ -18,3 +18,8 @@ spec:
       port: 5514
       protocol: TCP
       targetPort: 5514
+    # UDP is required for SRL — see platform/values/alloy.yaml for context.
+    - name: syslog-udp
+      port: 5514
+      protocol: UDP
+      targetPort: 5514

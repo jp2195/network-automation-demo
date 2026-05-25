@@ -15,9 +15,15 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	p("set / system name host-name %s", n.Name)
 	p("")
 
+	// Syslog goes out via the mgmt network-instance — the only VRF on
+	// these nodes with an IPv4 address (172.20.20.2/24) and a default
+	// route (172.20.20.1, the clabernetes launcher bridge). UDP is the
+	// only viable transport: TCP from inside srbase-mgmt netns can't
+	// receive a SYN-ACK because SRL doesn't reclassify arriving replies
+	// back into the VRF netns. UDP needs no return packet.
 	syslog := "alloy-syslog.monitoring.svc.cluster.local"
-	p("set / system logging network-instance default")
-	p("set / system logging remote-server %s transport tcp", syslog)
+	p("set / system logging network-instance mgmt")
+	p("set / system logging remote-server %s transport udp", syslog)
 	p("set / system logging remote-server %s remote-port 5514", syslog)
 	p("")
 
