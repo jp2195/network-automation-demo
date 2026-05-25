@@ -8,6 +8,13 @@ alloy:
       port: 5514
       targetPort: 5514
       protocol: TCP
+    # SRL nodes cannot complete a TCP handshake out of their srbase-mgmt
+    # netns because the SYN-ACK never reaches the originating socket in
+    # the VRF namespace. UDP avoids the issue (no return packet needed).
+    - name: syslog-udp
+      port: 5514
+      targetPort: 5514
+      protocol: UDP
 
   resources:
     requests:
@@ -61,9 +68,21 @@ alloy:
       }
 
       loki.source.syslog "node_syslog" {
+        // FRR uses TCP (works); SRL uses UDP (only path that survives
+        // clabernetes' nested-netns return-path gap for outbound traffic
+        // initiated from a network-instance VRF).
         listener {
           address               = "0.0.0.0:5514"
           protocol              = "tcp"
+          labels                = {
+            source_type = "syslog",
+            namespace   = "clabernetes",
+          }
+          label_structured_data = true
+        }
+        listener {
+          address               = "0.0.0.0:5514"
+          protocol              = "udp"
           labels                = {
             source_type = "syslog",
             namespace   = "clabernetes",
