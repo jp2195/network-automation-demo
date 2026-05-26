@@ -25,6 +25,11 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	p("set / system logging network-instance mgmt")
 	p("set / system logging remote-server %s transport udp", syslog)
 	p("set / system logging remote-server %s remote-port 5514", syslog)
+	// SRL parses the remote-server block but won't actually forward
+	// anything unless at least one facility/priority filter is wired up.
+	// Forwarding "all" facilities at info+ matches the file/buffer
+	// pipelines SRL ships by default.
+	p("set / system logging remote-server %s facility all priority match-above informational", syslog)
 	p("")
 
 	p("set / interface lo0 admin-state enable")
