@@ -743,7 +743,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"clabernetes\"} |~ \"$node\"",
+          "expr": "{namespace=\"clabernetes\", host=\"$node\"}",
           "refId": "A"
         }
       ],
