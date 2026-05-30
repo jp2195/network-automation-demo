@@ -3,8 +3,3 @@ namespace: monitoring
 syncWave: "2"
 appPath: workloads/dom-synth
 automated: false
-ignoreDifferences:
-  - group: monitoring.coreos.com
-    kind: ServiceMonitor
-    jqPathExpressions:
-      - .spec.endpoints[].metricRelabelings[].action
