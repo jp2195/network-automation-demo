@@ -90,7 +90,6 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 
 	// SR-MPLS config intentionally absent — public srlinux image lacks the feature flag. See docs/architecture.md.
 
-
 	isTMC := n.Role == RoleTMC
 	if hasCabinet || isTMC {
 		p("set / network-instance default protocols bgp admin-state enable")

@@ -27,11 +27,11 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 		LinkKind  string `json:"link_kind"`
 	}
 	type node struct {
-		Name    string `json:"node"`
-		Kind    string `json:"kind"`
-		Role    string `json:"role"`
-		Site    string `json:"site"`
-		Chassis string `json:"chassis"`
+		Name    string   `json:"node"`
+		Kind    string   `json:"kind"`
+		Role    string   `json:"role"`
+		Site    string   `json:"site"`
+		Chassis string   `json:"chassis"`
 		FanIDs  []string `json:"fan_ids"`
 		PSUIDs  []string `json:"psu_ids"`
 		TempIDs []string `json:"temp_ids"`
@@ -53,10 +53,10 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 	}
 
 	out := struct {
-		Ports     []port    `json:"ports"`
-		Nodes     []node    `json:"nodes"`
-		ISIS      []isisAdj `json:"isis_adjacencies"`
-		BGPPeers  []bgpPeer `json:"bgp_peers"`
+		Ports    []port    `json:"ports"`
+		Nodes    []node    `json:"nodes"`
+		ISIS     []isisAdj `json:"isis_adjacencies"`
+		BGPPeers []bgpPeer `json:"bgp_peers"`
 	}{}
 
 	for _, l := range s.Links {

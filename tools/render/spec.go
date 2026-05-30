@@ -18,8 +18,8 @@ type Spec struct {
 
 	// Indexed views of Nodes / Links, populated by LoadSpec. Use these
 	// in hot paths instead of NodeByName / InterfacesOf, which are O(N).
-	nodesByName       map[string]*Node
-	interfacesByNode  map[string][]IfaceOnNode
+	nodesByName      map[string]*Node
+	interfacesByNode map[string][]IfaceOnNode
 }
 
 type Metadata struct {
@@ -166,15 +166,6 @@ func (s *Spec) NodeByName(name string) *Node {
 	for i := range s.Nodes {
 		if s.Nodes[i].Name == name {
 			return &s.Nodes[i]
-		}
-	}
-	return nil
-}
-
-func (s *Spec) AgencyBySlug(slug string) *Agency {
-	for i := range s.Agencies {
-		if s.Agencies[i].Slug == slug {
-			return &s.Agencies[i]
 		}
 	}
 	return nil
