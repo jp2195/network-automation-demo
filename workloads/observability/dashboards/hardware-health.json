@@ -102,6 +102,8 @@
             "mode": "thresholds"
           },
           "decimals": 1,
+          "max": 90,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -135,9 +137,9 @@
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
-            "max"
+            "lastNotNull"
           ],
-          "fields": "/.*/",
+          "fields": "",
           "values": false
         },
         "showThresholdLabels": false,
@@ -212,6 +214,8 @@
             "mode": "thresholds"
           },
           "decimals": 0,
+          "max": 12000,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -258,7 +262,7 @@
       },
       "targets": [
         {
-          "expr": "fan_speed_rpm",
+          "expr": "min by (node) (fan_speed_rpm)",
           "legendFormat": "{{node}}/{{fan}}",
           "refId": "A"
         }
@@ -277,6 +281,8 @@
             "mode": "thresholds"
           },
           "decimals": 1,
+          "max": 250,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -327,7 +333,7 @@
       },
       "targets": [
         {
-          "expr": "psu_input_voltage_volts",
+          "expr": "min by (node) (psu_input_voltage_volts)",
           "legendFormat": "{{node}}/{{psu}}",
           "refId": "A"
         }
@@ -388,7 +394,7 @@
       },
       "targets": [
         {
-          "expr": "max by (source) (srl_nokia_platform_platform_srl_nokia_platform_control_control_srl_nokia_platform_cpu_cpu_total_average_1)",
+          "expr": "max by (node) (srl_nokia_platform_platform_srl_nokia_platform_control_control_srl_nokia_platform_cpu_cpu_total_average_1)",
           "legendFormat": "{{source}}",
           "refId": "A"
         }
@@ -449,7 +455,7 @@
       },
       "targets": [
         {
-          "expr": "max by (source) (srl_nokia_platform_platform_srl_nokia_platform_control_control_srl_nokia_platform_memory_memory_utilization)",
+          "expr": "max by (node) (srl_nokia_platform_platform_srl_nokia_platform_control_control_srl_nokia_platform_memory_memory_utilization)",
           "legendFormat": "{{source}}",
           "refId": "A"
         }
