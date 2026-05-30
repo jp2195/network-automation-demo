@@ -305,7 +305,7 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(workflows_processed_total[1h])) or vector(0)",
+          "expr": "sum(argo_workflows_gauge) or vector(0)",
           "legendFormat": "runs",
           "refId": "A"
         }
