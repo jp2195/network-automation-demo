@@ -195,9 +195,9 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": ""
+          "fields": "/^role$/"
         },
-        "textMode": "value_and_name"
+        "textMode": "value"
       },
       "targets": [
         {
@@ -209,6 +209,10 @@
       ],
       "title": "Role",
       "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {}
+        },
         {
           "id": "filterFieldsByName",
           "options": {
@@ -257,9 +261,9 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": ""
+          "fields": "/^city$/"
         },
-        "textMode": "value_and_name"
+        "textMode": "value"
       },
       "targets": [
         {
@@ -271,6 +275,10 @@
       ],
       "title": "Site",
       "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {}
+        },
         {
           "id": "filterFieldsByName",
           "options": {
