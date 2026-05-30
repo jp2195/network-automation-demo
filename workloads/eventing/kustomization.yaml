@@ -22,6 +22,7 @@ configMapGenerator:
     files:
       - scripts/constants.py
       - scripts/netbox_client.py
+      - scripts/prom.py
       - scripts/enrich.py
       - scripts/analyze_impact.py
       - scripts/notify.py

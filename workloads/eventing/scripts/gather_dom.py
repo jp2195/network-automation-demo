@@ -2,21 +2,14 @@
 emit a markdown table. Extracted from wft-incident-collector.yaml's
 gather-dom inline block."""
 
-import json
 import math
 import os
-import urllib.parse
-import urllib.request
 
-
-def query(prom_url, q):
-    url = prom_url + "/api/v1/query?query=" + urllib.parse.quote(q)
-    with urllib.request.urlopen(url, timeout=10) as r:
-        return json.loads(r.read())["data"]["result"]
+from prom import prom_query
 
 
 def _latest(prom, metric, link):
-    rows = query(prom, f'{metric}{{link_id="{link}"}}')
+    rows = prom_query(prom, f'{metric}{{link_id="{link}"}}')
     return {
         (r["metric"]["node"], r["metric"]["interface"]): float(r["value"][1])
         for r in rows
