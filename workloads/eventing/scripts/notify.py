@@ -153,7 +153,6 @@ def main():
 
     if not unconfigured:
         from slack_sdk import WebClient
-        from slack_sdk.errors import SlackApiError
         slack = WebClient(token=token)
 
     import valkey
@@ -181,13 +180,22 @@ def main():
             )
             record["ts"] = resp["ts"]
 
-        ledger_db.set(ledger_key, json.dumps(record), ex=86400)
+        try:
+            ledger_db.set(ledger_key, json.dumps(record), ex=86400)
+        except Exception as e:
+            # A Valkey hiccup must not crash the step after we've already
+            # posted; resolve will fall back to a fresh top-level post.
+            print(f"warning: failed to persist incident ledger: {e}", file=sys.stderr)
         json.dump({"posted": not unconfigured, "status": "firing",
                    "ts": record["ts"], "fingerprint": fingerprint}, sys.stdout)
         return
 
     # resolved
-    raw = ledger_db.get(ledger_key)
+    try:
+        raw = ledger_db.get(ledger_key)
+    except Exception as e:
+        print(f"warning: ledger read failed, posting fresh resolved notice: {e}", file=sys.stderr)
+        raw = None
     if not raw:
         # No ledger record (e.g. demo restart between firing and resolve).
         # Fall back to a fresh top-level resolved post.
@@ -232,7 +240,10 @@ def main():
                 blocks=blocks,
             )
 
-    ledger_db.delete(ledger_key)
+    try:
+        ledger_db.delete(ledger_key)
+    except Exception as e:
+        print(f"warning: ledger delete failed (24h TTL will reap it): {e}", file=sys.stderr)
     json.dump({"posted": not unconfigured, "status": "resolved",
                "downtime_seconds": int(downtime_secs),
                "fingerprint": fingerprint}, sys.stdout)
