@@ -35,3 +35,14 @@ configMapGenerator:
         grafana_dashboard: "1"
       annotations:
         grafana_folder: Atlas Demo
+  # Upstream Argo Workflows controller dashboard (adapted for v4 metric names
+  # + our prometheus datasource). Kept out of dashboards/ so the renderer's
+  # cross-nav rewrite never touches it; lands in its own "Argo" folder.
+  - name: grafana-dashboards-argo
+    files:
+      - prebuilt/argo-workflows.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: Argo
