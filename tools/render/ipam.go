@@ -29,10 +29,17 @@ func LastOctet(ipStr string) int {
 	return int(ip[3])
 }
 
+// ISISSystemID derives the IS-IS system-id (0000.0000.<last_octet_4d>) from a
+// node loopback. This is the single source of truth for the system-id — both
+// the real SR Linux NET (ISISNet) and the synthetic DOM-synth adjacency rows
+// must use it so they agree. Unique within our /24 loopback range.
+func ISISSystemID(loopback string) string {
+	return fmt.Sprintf("0000.0000.%04d", LastOctet(loopback))
+}
+
 // ISISNet builds an SR Linux NET (Network Entity Title) for a node loopback.
-// Layout: <area>.0000.0000.<last_octet_4d>.00 — area is the AFI+area prefix
-// (e.g. "49.0001"), NSEL=00, system-id derived from the loopback's last octet
-// as 4 zero-padded decimal digits. Unique within our /24 loopback range.
+// Layout: <area>.<system-id>.00 — area is the AFI+area prefix (e.g. "49.0001"),
+// NSEL=00, system-id from ISISSystemID.
 func ISISNet(area, loopback string) string {
-	return fmt.Sprintf("%s.0000.0000.%04d.00", area, LastOctet(loopback))
+	return fmt.Sprintf("%s.%s.00", area, ISISSystemID(loopback))
 }

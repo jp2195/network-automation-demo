@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 )
 
@@ -116,7 +115,7 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 			Node:      l.A.Node,
 			Interface: l.A.Intf,
 			Neighbor:  l.B.Node,
-			SystemID:  systemIDFor(nb.ISISSID),
+			SystemID:  ISISSystemID(nb.LoopbackV4),
 			LinkID:    l.ID,
 			Level:     "L2",
 		})
@@ -124,7 +123,7 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 			Node:      l.B.Node,
 			Interface: l.B.Intf,
 			Neighbor:  l.A.Node,
-			SystemID:  systemIDFor(na.ISISSID),
+			SystemID:  ISISSystemID(na.LoopbackV4),
 			LinkID:    l.ID,
 			Level:     "L2",
 		})
@@ -202,12 +201,6 @@ func WriteDOMLinks(w io.Writer, s *Spec) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	return enc.Encode(out)
-}
-
-func systemIDFor(sid int) string {
-	// IS-IS system-id is a 6-byte (12-hex) identifier. Pack the 4-digit
-	// SID into the last 2 bytes for a stable, human-readable form.
-	return fmt.Sprintf("0000.0000.%04d", sid)
 }
 
 func hubAddrV4(ifc *IfaceOnNode) string {
