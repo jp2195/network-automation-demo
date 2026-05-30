@@ -76,6 +76,14 @@ takeaway.
 - `helm`
 - `make`
 - `go` 1.22+ (only if you re-render from spec)
+- **`fs.inotify.max_user_instances` ≥ 512** (Linux hosts). The default of 128
+  is too low for this stack: the argo-events data plane crashloops with
+  "too many open files" and the cut→notify automation silently never fires.
+  `make up` warns if it's too low. Raise it once:
+  ```bash
+  sudo sysctl fs.inotify.max_user_instances=1024
+  echo 'fs.inotify.max_user_instances=1024' | sudo tee /etc/sysctl.d/99-inotify.conf
+  ```
 
 ## Quickstart
 
