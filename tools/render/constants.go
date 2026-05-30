@@ -36,6 +36,10 @@ const (
 	ImageFRR    = "quay.io/frrouting/frr:10.6.1"
 	ImagePython = "python:3.12-slim"
 	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.44.1"
+	// ImageEventingPy is the pre-baked eventing image (python + slack-sdk +
+	// valkey + scripts) pushed to the in-cluster registry. Single source for
+	// the incident-collector bundle step and the enriched-notify WFT.
+	ImageEventingPy = "atlas-demo-registry:5001/eventing-py:latest"
 )
 
 // Shared infra endpoints / credentials used across emitters (Go-only; not
