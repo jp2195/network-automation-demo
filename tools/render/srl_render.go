@@ -21,10 +21,10 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	// only viable transport: TCP from inside srbase-mgmt netns can't
 	// receive a SYN-ACK because SRL doesn't reclassify arriving replies
 	// back into the VRF netns. UDP needs no return packet.
-	syslog := "alloy-syslog.monitoring.svc.cluster.local"
+	syslog := AlloySyslogHost
 	p("set / system logging network-instance mgmt")
 	p("set / system logging remote-server %s transport udp", syslog)
-	p("set / system logging remote-server %s remote-port 5514", syslog)
+	p("set / system logging remote-server %s remote-port %s", syslog, AlloySyslogPort)
 	// SRL parses the remote-server block but won't actually forward
 	// anything unless at least one facility/priority filter is wired up.
 	// Forwarding "all" facilities at info+ matches the file/buffer

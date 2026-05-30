@@ -19,6 +19,12 @@ func newPrinter(w io.Writer) printer {
 	}
 }
 
+// clabFQDN returns the in-cluster DNS name clabernetes exposes a topology
+// node under: <topology>-<node>.<ClabDomain>.
+func clabFQDN(topology, node string) string {
+	return fmt.Sprintf("%s-%s.%s", topology, node, ClabDomain)
+}
+
 // renderTo opens path for writing, calls emit(f), closes the file, and
 // prints a one-line progress message. Exits via log.Fatal on any error.
 func renderTo(path, label string, emit func(io.Writer) error) {

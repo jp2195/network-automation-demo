@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 )
 
@@ -108,7 +107,7 @@ func FRRSNMPTargets(s *Spec) []string {
 		if n.Kind != KindFRR {
 			continue
 		}
-		out = append(out, fmt.Sprintf("%s-%s.clabernetes.svc.cluster.local", s.Metadata.Name, n.Name))
+		out = append(out, clabFQDN(s.Metadata.Name, n.Name))
 	}
 	return out
 }
