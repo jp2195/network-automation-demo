@@ -37,7 +37,10 @@ class Client:
         )
         with urllib.request.urlopen(req, timeout=self.timeout) as r:
             body = r.read()
-            return json.loads(body) if body else None
+            # Empty body (e.g. 204 No Content) → {} not None, so callers can
+            # chain .get("results") without an AttributeError on the
+            # not-found / empty-response path.
+            return json.loads(body) if body else {}
 
     def get(self, path, **params):
         return self._req("GET", path, **params)
