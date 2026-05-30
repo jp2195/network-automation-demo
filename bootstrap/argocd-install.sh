@@ -19,6 +19,8 @@ helm upgrade --install "${RELEASE}" argo/argo-cd \
   --set server.ingress.enabled=true \
   --set server.ingress.ingressClassName=traefik \
   --set server.ingress.hostname="${HOSTNAME}" \
+  --set controller.metrics.enabled=true \
+  --set controller.metrics.serviceMonitor.enabled=true \
   --wait --timeout 10m
 
 echo "==> Waiting for argocd-server rollout"

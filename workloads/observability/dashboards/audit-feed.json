@@ -134,12 +134,12 @@
       },
       "targets": [
         {
-          "expr": "sum(increase(argo_workflows_count{status=\"Succeeded\"}[24h])) or vector(0)",
+          "expr": "sum(argo_workflows_gauge{phase=\"Succeeded\"}) or vector(0)",
           "legendFormat": "succeeded",
           "refId": "A"
         },
         {
-          "expr": "sum(increase(argo_workflows_count{status=\"Failed\"}[24h])) or vector(0)",
+          "expr": "sum(argo_workflows_gauge{phase=~\"Failed|Error\"}) or vector(0)",
           "legendFormat": "failed",
           "refId": "B"
         }
@@ -285,7 +285,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (status) (increase(argo_workflows_count[5m]))",
+          "expr": "sum by (phase) (argo_workflows_gauge)",
           "legendFormat": "{{status}}",
           "refId": "A"
         }
