@@ -1,7 +1,9 @@
 # network-automation-demo
 
 A self-contained, GitOps-managed Kubernetes demo of streaming-telemetry-driven
-incident response over an SR-MPLS topology. Runs on a single laptop. Every
+incident response over a metro fiber-ring topology — SR-MPLS by design,
+IS-IS/IPv4 in the lab (see [docs/architecture.md](docs/architecture.md) for the
+scope cut). Runs on a single laptop. Every
 artifact — SR Linux configs, FRR configs, gNMIc targets, NetBox seed,
 Grafana GeoJSON, Clabernetes Topology CR, Prometheus recording rules — is
 generated from one source-of-truth file: [`spec/atlanta.yaml`](./spec/atlanta.yaml).
@@ -27,7 +29,7 @@ a 3-step Argo Workflow with an alert-fingerprint-keyed ledger in Valkey.
 | Layer | Component |
 |---|---|
 | Cluster | k3d (k3s in Docker), Traefik ingress, local-path storage |
-| GitOps | ArgoCD (App-of-Apps from `argocd/`) |
+| GitOps | ArgoCD ApplicationSet over `argocd/manifests/` |
 | Topology | Clabernetes operator + containerlab-flavored `Topology` CR |
 | Source of truth | NetBox (CNPG Postgres + valkey-io Valkey, no Bitnami workloads) |
 | Telemetry — modern | gNMIc streaming subscriptions on the SR Linux backbone → Prometheus |
@@ -93,7 +95,7 @@ takeaway.
 > `bootstrap/root-app.yaml` to wherever you've put it — before `make up`.
 
 ```bash
-make up        # creates k3d, installs ArgoCD, applies the App-of-Apps root
+make up        # creates k3d, installs ArgoCD, applies the root ApplicationSet
 make status    # nodes + ArgoCD app state + ArgoCD URL/admin password
 make down      # tear the cluster down
 make render    # re-render workloads/* from spec/atlanta.yaml
@@ -196,7 +198,7 @@ tools/render/              Go renderer: spec → SRL/FRR configs, gNMIc targets,
                              link_membership PromRule
 k3d/config.yaml            cluster shape, port maps, in-cluster registry
 bootstrap/                 manual one-shot: argocd-install.sh + root-app.yaml
-argocd/{platform,workloads}/  one ArgoCD Application per chart / kustomize dir
+argocd/                    applicationset.yaml + manifests/{platform,workloads}/ per-app stubs
 platform/values/           helm values for each platform chart
 workloads/
   netbox/                    netbox-chart values + CNPG Cluster + seed Job
