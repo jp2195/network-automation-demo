@@ -416,7 +416,7 @@
       "node": "hub-n",
       "interface": "ethernet-1/1",
       "neighbor": "hub-e",
-      "system_id": "0000.0000.16102",
+      "system_id": "0000.0000.0012",
       "link_id": "ring-n-e",
       "level": "L2"
     },
@@ -424,7 +424,7 @@
       "node": "hub-e",
       "interface": "ethernet-1/2",
       "neighbor": "hub-n",
-      "system_id": "0000.0000.16101",
+      "system_id": "0000.0000.0011",
       "link_id": "ring-n-e",
       "level": "L2"
     },
@@ -432,7 +432,7 @@
       "node": "hub-e",
       "interface": "ethernet-1/1",
       "neighbor": "hub-i20e",
-      "system_id": "0000.0000.16103",
+      "system_id": "0000.0000.0013",
       "link_id": "ring-e-i20e",
       "level": "L2"
     },
@@ -440,7 +440,7 @@
       "node": "hub-i20e",
       "interface": "ethernet-1/2",
       "neighbor": "hub-e",
-      "system_id": "0000.0000.16102",
+      "system_id": "0000.0000.0012",
       "link_id": "ring-e-i20e",
       "level": "L2"
     },
@@ -448,7 +448,7 @@
       "node": "hub-i20e",
       "interface": "ethernet-1/1",
       "neighbor": "hub-sw",
-      "system_id": "0000.0000.16105",
+      "system_id": "0000.0000.0015",
       "link_id": "ring-i20e-sw",
       "level": "L2"
     },
@@ -456,7 +456,7 @@
       "node": "hub-sw",
       "interface": "ethernet-1/2",
       "neighbor": "hub-i20e",
-      "system_id": "0000.0000.16103",
+      "system_id": "0000.0000.0013",
       "link_id": "ring-i20e-sw",
       "level": "L2"
     },
@@ -464,7 +464,7 @@
       "node": "hub-sw",
       "interface": "ethernet-1/1",
       "neighbor": "hub-i20w",
-      "system_id": "0000.0000.16106",
+      "system_id": "0000.0000.0016",
       "link_id": "ring-sw-i20w",
       "level": "L2"
     },
@@ -472,7 +472,7 @@
       "node": "hub-i20w",
       "interface": "ethernet-1/2",
       "neighbor": "hub-sw",
-      "system_id": "0000.0000.16105",
+      "system_id": "0000.0000.0015",
       "link_id": "ring-sw-i20w",
       "level": "L2"
     },
@@ -480,7 +480,7 @@
       "node": "hub-i20w",
       "interface": "ethernet-1/1",
       "neighbor": "hub-nw",
-      "system_id": "0000.0000.16104",
+      "system_id": "0000.0000.0014",
       "link_id": "ring-i20w-nw",
       "level": "L2"
     },
@@ -488,7 +488,7 @@
       "node": "hub-nw",
       "interface": "ethernet-1/2",
       "neighbor": "hub-i20w",
-      "system_id": "0000.0000.16106",
+      "system_id": "0000.0000.0016",
       "link_id": "ring-i20w-nw",
       "level": "L2"
     },
@@ -496,7 +496,7 @@
       "node": "hub-nw",
       "interface": "ethernet-1/1",
       "neighbor": "hub-n",
-      "system_id": "0000.0000.16101",
+      "system_id": "0000.0000.0011",
       "link_id": "ring-nw-n",
       "level": "L2"
     },
@@ -504,7 +504,7 @@
       "node": "hub-n",
       "interface": "ethernet-1/2",
       "neighbor": "hub-nw",
-      "system_id": "0000.0000.16104",
+      "system_id": "0000.0000.0014",
       "link_id": "ring-nw-n",
       "level": "L2"
     },
@@ -512,7 +512,7 @@
       "node": "tmc-1",
       "interface": "ethernet-1/1",
       "neighbor": "hub-nw",
-      "system_id": "0000.0000.16104",
+      "system_id": "0000.0000.0014",
       "link_id": "tmc1-hubnw",
       "level": "L2"
     },
@@ -520,7 +520,7 @@
       "node": "hub-nw",
       "interface": "ethernet-1/3",
       "neighbor": "tmc-1",
-      "system_id": "0000.0000.16001",
+      "system_id": "0000.0000.0001",
       "link_id": "tmc1-hubnw",
       "level": "L2"
     },
@@ -528,7 +528,7 @@
       "node": "tmc-1",
       "interface": "ethernet-1/2",
       "neighbor": "hub-sw",
-      "system_id": "0000.0000.16105",
+      "system_id": "0000.0000.0015",
       "link_id": "tmc1-hubsw",
       "level": "L2"
     },
@@ -536,7 +536,7 @@
       "node": "hub-sw",
       "interface": "ethernet-1/3",
       "neighbor": "tmc-1",
-      "system_id": "0000.0000.16001",
+      "system_id": "0000.0000.0001",
       "link_id": "tmc1-hubsw",
       "level": "L2"
     },
@@ -544,7 +544,7 @@
       "node": "tmc-2",
       "interface": "ethernet-1/1",
       "neighbor": "hub-n",
-      "system_id": "0000.0000.16101",
+      "system_id": "0000.0000.0011",
       "link_id": "tmc2-hubn",
       "level": "L2"
     },
@@ -552,7 +552,7 @@
       "node": "hub-n",
       "interface": "ethernet-1/3",
       "neighbor": "tmc-2",
-      "system_id": "0000.0000.16002",
+      "system_id": "0000.0000.0002",
       "link_id": "tmc2-hubn",
       "level": "L2"
     },
@@ -560,7 +560,7 @@
       "node": "tmc-2",
       "interface": "ethernet-1/2",
       "neighbor": "hub-e",
-      "system_id": "0000.0000.16102",
+      "system_id": "0000.0000.0012",
       "link_id": "tmc2-hube",
       "level": "L2"
     },
@@ -568,7 +568,7 @@
       "node": "hub-e",
       "interface": "ethernet-1/3",
       "neighbor": "tmc-2",
-      "system_id": "0000.0000.16002",
+      "system_id": "0000.0000.0002",
       "link_id": "tmc2-hube",
       "level": "L2"
     },
@@ -576,7 +576,7 @@
       "node": "tmc-1",
       "interface": "ethernet-1/3",
       "neighbor": "tmc-2",
-      "system_id": "0000.0000.16002",
+      "system_id": "0000.0000.0002",
       "link_id": "tmc1-tmc2",
       "level": "L2"
     },
@@ -584,7 +584,7 @@
       "node": "tmc-2",
       "interface": "ethernet-1/3",
       "neighbor": "tmc-1",
-      "system_id": "0000.0000.16001",
+      "system_id": "0000.0000.0001",
       "link_id": "tmc1-tmc2",
       "level": "L2"
     }
