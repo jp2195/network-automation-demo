@@ -12,6 +12,15 @@ const (
 
 	LinkKindBackbone = "backbone"
 	LinkKindCabinet  = "cabinet"
+
+	// Severity classes — mirror constants.py (match the emoji map in notify.py).
+	SeverityHigh    = "high"
+	SeverityMedium  = "medium"
+	SeverityWarning = "warning"
+	SeverityLow     = "low"
+
+	// CabinetNamePrefix identifies field-cabinet device names (e.g. fc-i20e).
+	CabinetNamePrefix = "fc-"
 )
 
 // Image versions used across the demo workloads. Mirrored to
