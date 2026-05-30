@@ -10,7 +10,8 @@ Run all of these before you stand in front of an audience.
 ```bash
 # 1. cluster + apps healthy
 kubectl -n argocd get applications --no-headers | awk '$2!="Synced" || $3!="Healthy"'
-# expected: empty output, all 19 apps Synced/Healthy
+# expected: only dom-synth (it ships automated:false — manual sync). The other
+# 18 of 19 Applications auto-sync to Synced/Healthy.
 
 # 2. all 12 lab pods ready
 kubectl -n clabernetes get pods | awk '/atlanta/ && !/1\/1.*Running/'
@@ -239,7 +240,7 @@ warning-severity branch of the enriched-notify pipeline. It auto-recovers.
    Block Kit messages in the channel. Otherwise:
 
    ```bash
-   kubectl -n argo logs -l workflows.argoproj.io/workflow \
+   kubectl -n argo-events logs -l workflows.argoproj.io/workflow \
      --tail=200 -c main | grep -A40 "block_kit"
    ```
 

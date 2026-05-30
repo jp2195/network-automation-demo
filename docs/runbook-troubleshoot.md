@@ -162,9 +162,9 @@ This was a real bug. Two possible root causes — pick by how it fails:
 
 ### "Geomap line is grey, not green or red"
 
-The route layer color is read from `Value` field across all 15 link
-queries (refIds `L01..L15`). If `link_endpoint_geo` recording rule
-hasn't been picked up, the queries return empty.
+The route layer color is read from the `Value` field of a single query
+(refId `L`) against the `link_endpoint_geo` recording rule. If that rule
+hasn't been picked up, the query returns empty.
 
 ```bash
 PROM_POD=$(kubectl -n monitoring get pods -l app.kubernetes.io/name=prometheus -o jsonpath='{.items[0].metadata.name}')

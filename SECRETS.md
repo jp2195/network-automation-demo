@@ -5,9 +5,12 @@ real, and no manifest in this repository commits a placeholder Secret you'd
 need to replace.** Anything that *looks* credential-shaped is either:
 
 - a documented default (e.g. NetBox / Grafana `admin / admin`), OR
-- a literal demo string with no authority anywhere (the NetBox API token
-  is `0123456789abcdef…01234567`, the NetBox `secret_key` is the string
-  `atlas-demo-not-secret-but-50-plus-chars-long-padding-yes`).
+- a literal demo string with no authority anywhere (e.g. the NetBox
+  `secret_key` is `atlas-demo-not-secret-but-50-plus-chars-long-padding-yes`).
+
+The NetBox **API token** isn't committed at all: the netbox-seed Job mints one
+at runtime (`tokens/provision/`) and patches it into the `argo-events/netbox-api`
+Secret, which the eventing/maintenance WorkflowTemplates read via `secretKeyRef`.
 
 For the one credential where a real value matters in a real demo —
 **Slack** — we don't ship a Secret manifest at all. The Argo Workflow
@@ -29,7 +32,7 @@ gitignored so a careless `git add -A` won't catch them.
 
 | Value | File | Why it's safe to commit |
 |---|---|---|
-| NetBox API token `0123…01234567` | `workloads/netbox/chart-values.yaml`, `workloads/eventing/wft-enriched-notify.yaml`, `workloads/netbox/seed/seed-job.yaml` | A 40-char string of `0123456789abcdef` repeated. Wouldn't authenticate against any real NetBox. |
+| NetBox API token (`argo-events/netbox-api` Secret) | not committed — minted at runtime by the netbox-seed Job and read via `secretKeyRef` in the eventing/maintenance WorkflowTemplates | Provisioned in-cluster, never in git. Consumers mark the ref `optional: true` so they start before the seed completes. |
 | NetBox superuser `admin` / `admin` | `workloads/netbox/chart-values.yaml` | Demo default; NetBox runs behind in-cluster ingress on a `nip.io` host bound to localhost. |
 | NetBox `secret_key` `"atlas-demo-not-secret-…"` | `workloads/netbox/chart-values.yaml` | Self-labelling demo string used only for Django session signing on a single-laptop cluster. |
 | Grafana admin `admin` / `admin` | `platform/values/kube-prometheus-stack.yaml` | Demo default. |

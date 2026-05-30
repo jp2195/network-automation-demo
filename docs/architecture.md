@@ -159,16 +159,19 @@ Three properties make this work in a demo setting:
 
 ```
 argocd/
-├── platform/        # third-party charts (kps, loki, alloy, argo-{events,wf}, ...)
-└── workloads/       # this-repo manifests (topology, gnmic, observability, snmp,
+├── applicationset.yaml        # generates one Application per stub below
+└── manifests/
+    ├── platform/    # third-party charts (kps, loki, alloy, argo-{events,wf}, ...)
+    └── workloads/   # this-repo manifests (topology, gnmic, observability, snmp,
                      #   eventing, netbox*, dom-synth)
 ```
 
-The root App-of-Apps points at both directories. Each Application listed
-there owns one logical chunk. The `topology` and `snmp` Applications
-carry `ignoreDifferences` blocks so clabernetes' admission webhook
-defaults and the Prometheus operator's stored `action: replace` don't
-register as drift.
+`bootstrap/root-app.yaml` applies the ApplicationSet, whose two `git.files`
+generators (one for platform, one for workloads) template one Application per
+stub. Each owns one logical chunk. The `topology`, `gnmic`, and `snmp` stubs
+carry `ignoreDifferences` blocks so clabernetes' admission webhook defaults and
+the Prometheus operator's stored `action: replace` don't register as drift; the
+`dom-synth` stub sets `automated: false` (manual sync).
 
 ## Trade-offs / scope
 
