@@ -7,11 +7,6 @@ import (
 	"strings"
 )
 
-const (
-	srlImage = ImageSRLinux
-	frrImage = ImageFRR
-)
-
 // frrDaemons is the standard FRR daemons file with zebra+bgpd enabled.
 // Cabinets run eBGP toward their parent hub; no other daemons needed.
 const frrDaemons = `zebra=yes
@@ -72,7 +67,7 @@ func WriteContainerlab(w io.Writer, spec *Spec) error {
 	fmt.Fprintln(w, "topology:")
 	fmt.Fprintln(w, "  kinds:")
 	fmt.Fprintln(w, "    nokia_srlinux:")
-	fmt.Fprintf(w, "      image: %s\n", srlImage)
+	fmt.Fprintf(w, "      image: %s\n", ImageSRLinux)
 	// Default chassis type is ixr-d2l, a TOR with no MPLS / segment-routing
 	// support. ixr-d3 is the smallest 7220 IXR variant that exposes the SR-MPLS
 	// schema. Use the dashed form — the legacy `ixrd3` spelling is deprecated.
@@ -85,7 +80,7 @@ func WriteContainerlab(w io.Writer, spec *Spec) error {
 	// containerlab's `linux` kind doesn't grant by default. Without these the
 	// daemons fail privs_init and watchfrr exits, crashlooping the cabinet.
 	fmt.Fprintln(w, "    linux:")
-	fmt.Fprintf(w, "      image: %s\n", frrImage)
+	fmt.Fprintf(w, "      image: %s\n", ImageFRR)
 	fmt.Fprintln(w, "      binds:")
 	fmt.Fprintln(w, "        - configs/daemons:/etc/frr/daemons")
 	fmt.Fprintln(w, "        - configs/snmpd.conf:/etc/snmp/snmpd.conf")

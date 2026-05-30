@@ -37,3 +37,19 @@ const (
 	ImagePython = "python:3.12-slim"
 	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.44.1"
 )
+
+// Shared infra endpoints / credentials used across emitters (Go-only; not
+// mirrored in constants.py). The demo gNMI password is a documented default
+// (see SECRETS.md), not a real credential.
+const (
+	GNMICUser     = "admin"
+	GNMICPassword = "NokiaSrl1!"
+	GNMICPort     = "57400"
+
+	// ClabDomain is the in-cluster DNS suffix clabernetes exposes each
+	// topology node Service under (<topology>-<node>.<ClabDomain>).
+	ClabDomain = "clabernetes.svc.cluster.local"
+
+	AlloySyslogHost = "alloy-syslog.monitoring.svc.cluster.local"
+	AlloySyslogPort = "5514"
+)
