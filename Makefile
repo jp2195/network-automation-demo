@@ -1,14 +1,16 @@
-.PHONY: up down status render render-check build demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet \
+.PHONY: up preflight down status render render-check build demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet \
         scenario scenario-list scenario-hurricane scenario-backhoe scenario-cabinet scenario-flap \
         scenario-gray-failure scenario-gray-failure-end \
         maintenance-start maintenance-end maintenance-list help
 
 CLUSTER_NAME ?= atlas-demo
 TOPO_NS      ?= clabernetes
+INOTIFY_MIN  ?= 512
 
 help:
 	@echo "Targets:"
 	@echo "  up           Create k3d cluster + build images + bootstrap ArgoCD + apply root Application"
+	@echo "  preflight    Check host fs.inotify.max_user_instances (eventing needs headroom)"
 	@echo "  down         Delete the k3d cluster"
 	@echo "  status       Show node + ArgoCD application state, print URL and admin password"
 	@echo "  render       Re-render workloads/* outputs from spec/atlanta.yaml"
@@ -29,7 +31,7 @@ help:
 	@echo "  maintenance-end      Close the maintenance window for NODE= early."
 	@echo "  maintenance-list     Show currently active atlas-maintenance silences."
 
-up:
+up: preflight
 	@echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"
 	k3d cluster create -c k3d/config.yaml
 	@echo "==> Building + pushing pre-baked images"
@@ -39,6 +41,25 @@ up:
 	@echo "==> Applying root Application (App-of-Apps)"
 	kubectl apply -f bootstrap/root-app.yaml
 	@$(MAKE) --no-print-directory status
+
+preflight:
+	@instances=$$(cat /proc/sys/fs/inotify/max_user_instances 2>/dev/null || echo 0); \
+	if [ "$$instances" -lt $(INOTIFY_MIN) ]; then \
+	  echo ""; \
+	  echo "  !!  fs.inotify.max_user_instances=$$instances (< $(INOTIFY_MIN))"; \
+	  echo "      The argo-events data plane (NATS EventBus + sensors + eventsource)"; \
+	  echo "      will crashloop with 'too many open files' and the cut->notify"; \
+	  echo "      automation will silently never fire. Raise it (one-time, host):"; \
+	  echo ""; \
+	  echo "        sudo sysctl fs.inotify.max_user_instances=1024"; \
+	  echo "        echo 'fs.inotify.max_user_instances=1024' | sudo tee /etc/sysctl.d/99-inotify.conf"; \
+	  echo ""; \
+	  echo "      Continuing anyway — the cluster and dashboards still work; only"; \
+	  echo "      the eventing pipeline is affected. See docs/runbook-troubleshoot.md."; \
+	  echo ""; \
+	else \
+	  echo "==> preflight: fs.inotify.max_user_instances=$$instances (ok)"; \
+	fi
 
 down:
 	k3d cluster delete $(CLUSTER_NAME)

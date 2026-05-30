@@ -82,6 +82,37 @@ you intended — the filter only matches `SRLInterfaceOperDown` and
 `TargetDown`, `CPUThrottlingHigh`) reach the same Alertmanager but get
 routed to the `null` receiver.
 
+### "Alert fires but no workflow runs; argo-events pods CrashLoopBackOff"
+
+Symptom: `make demo-cut` fires `SRLInterfaceOperDown` (visible in Alertmanager
+and on the dashboards), but `kubectl get workflows -n argo-events` stays empty
+and the eventing pods are crashlooping:
+
+```bash
+kubectl -n argo-events get pods
+# eventbus-default-js-*, interface-down-sensor-*, manual-cut-sensor-*,
+# webhook-eventsource-*  all CrashLoopBackOff
+kubectl -n argo-events logs -l eventsource-name=webhook --tail=5
+# Error: ... "failed to create watcher: too many open files"
+```
+
+Root cause: the host `fs.inotify.max_user_instances` limit (default 128) is
+exhausted by the full stack, so every fsnotify-using pod (NATS EventBus
+reloader, sensors, eventsource) fails to start its watcher. The metric-driven
+dashboards still react to a cut, but the enrich→analyze→notify automation
+never fires. Fix on the host and let the pods reschedule:
+
+```bash
+sudo sysctl fs.inotify.max_user_instances=1024
+echo 'fs.inotify.max_user_instances=1024' | sudo tee /etc/sysctl.d/99-inotify.conf
+kubectl -n argo-events delete pod -l eventbus-name=default
+kubectl -n argo-events delete pod -l sensor-name
+kubectl -n argo-events delete pod -l eventsource-name
+# within ~10s: eventbus 3/3, sensors + eventsource 1/1; re-cut to verify
+```
+
+`make up` runs a `preflight` check that warns when the limit is too low.
+
 ### "Workflow created but enrich step failed with `Invalid control character`"
 
 The `description:` annotation on the alert contains literal newlines
