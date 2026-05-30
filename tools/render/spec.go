@@ -139,12 +139,34 @@ func LoadSpec(path string) (*Spec, error) {
 
 func (s *Spec) Validate() error {
 	seen := map[string]bool{}
+	loopbacks := map[string]string{} // loopback_v4 -> node
+	sids := map[int]string{}         // isis_sid -> node
 	for _, n := range s.Nodes {
 		if seen[n.Name] {
 			return fmt.Errorf("duplicate node %q", n.Name)
 		}
 		seen[n.Name] = true
+		if n.LoopbackV4 != "" {
+			if other, ok := loopbacks[n.LoopbackV4]; ok {
+				return fmt.Errorf("duplicate loopback_v4 %s on %q and %q", n.LoopbackV4, other, n.Name)
+			}
+			loopbacks[n.LoopbackV4] = n.Name
+		}
+		if n.ISISSID != 0 {
+			if other, ok := sids[n.ISISSID]; ok {
+				return fmt.Errorf("duplicate isis_sid %d on %q and %q", n.ISISSID, other, n.Name)
+			}
+			sids[n.ISISSID] = n.Name
+		}
 	}
+	// parent_hub references resolve against the full node set (second pass so
+	// a cabinet declared before its hub still validates).
+	for _, n := range s.Nodes {
+		if n.ParentHub != "" && !seen[n.ParentHub] {
+			return fmt.Errorf("node %q: parent_hub %q not declared", n.Name, n.ParentHub)
+		}
+	}
+	ifaces := map[string]string{} // "node|intf" -> link id
 	for _, l := range s.Links {
 		if !seen[l.A.Node] {
 			return fmt.Errorf("link %s: side a node %q not declared", l.ID, l.A.Node)
@@ -154,6 +176,13 @@ func (s *Spec) Validate() error {
 		}
 		if _, _, err := net.ParseCIDR(l.SubnetV4); err != nil {
 			return fmt.Errorf("link %s: bad subnet %q: %w", l.ID, l.SubnetV4, err)
+		}
+		for _, ep := range []Endpoint{l.A, l.B} {
+			key := ep.Node + "|" + ep.Intf
+			if other, ok := ifaces[key]; ok {
+				return fmt.Errorf("link %s: interface %s/%s already used by link %s", l.ID, ep.Node, ep.Intf, other)
+			}
+			ifaces[key] = l.ID
 		}
 	}
 	return nil
