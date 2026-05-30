@@ -84,6 +84,8 @@ render-check:
 	  workloads/topology/kustomization.yaml \
 	  workloads/eventing/wft-cut-fiber.yaml \
 	  workloads/eventing/wft-incident-collector.yaml \
+	  workloads/eventing/wft-enriched-notify.yaml \
+	  workloads/eventing/wft-maintenance.yaml \
 	  workloads/versions.yaml \
 	  workloads/netbox/seed/seed.json \
 	  workloads/dom-synth/links.json \

@@ -114,6 +114,10 @@ func main() {
 		func(w io.Writer) error { return WriteWFTCutFiber(w, spec) })
 	renderTo(filepath.Join(eventingDir, "wft-incident-collector.yaml"), "",
 		func(w io.Writer) error { return WriteWFTIncidentCollector(w, spec) })
+	renderTo(filepath.Join(eventingDir, "wft-enriched-notify.yaml"), "",
+		func(w io.Writer) error { return WriteWFTEnrichedNotify(w, spec) })
+	renderTo(filepath.Join(eventingDir, "wft-maintenance.yaml"), "",
+		func(w io.Writer) error { return WriteWFTMaintenance(w, spec) })
 
 	renderTo(filepath.Join(*outDir, "workloads", "versions.yaml"), "",
 		func(w io.Writer) error { return WriteVersions(w) })
