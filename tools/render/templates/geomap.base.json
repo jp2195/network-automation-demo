@@ -1,0 +1,124 @@
+{
+ "annotations": {
+  "list": [
+   {
+    "builtIn": 1,
+    "datasource": "-- Grafana --",
+    "enable": true,
+    "hide": true,
+    "iconColor": "rgba(0, 211, 255, 1)",
+    "name": "Annotations & Alerts",
+    "type": "dashboard"
+   }
+  ]
+ },
+ "editable": true,
+ "fiscalYearStartMonth": 0,
+ "graphTooltip": 0,
+ "id": null,
+ "links": [],
+ "panels": [
+  {
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 0.5
+       },
+       {
+        "color": "red",
+        "value": 1.5
+       }
+      ]
+     }
+    }
+   },
+   "gridPos": {
+    "h": 24,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "id": 1,
+   "options": {
+    "basemap": {
+     "config": {},
+     "name": "Layer 0",
+     "type": "default"
+    },
+    "controls": {
+     "mouseWheelZoom": true,
+     "showAttribution": true,
+     "showDebug": false,
+     "showMeasure": true,
+     "showScale": true,
+     "showZoom": true
+    },
+    "layers": [],
+    "tooltip": {
+     "mode": "details"
+    },
+    "view": {
+     "id": "coords",
+     "lat": 33.78,
+     "lon": -84.39,
+     "zoom": 9.7
+    }
+   },
+   "targets": [],
+   "title": "Atlanta metro \u2014 Atlas DOT Region 7",
+   "transformations": [
+    {
+     "id": "convertFieldType",
+     "options": {
+      "conversions": [
+       {
+        "destinationType": "number",
+        "targetField": "lat"
+       },
+       {
+        "destinationType": "number",
+        "targetField": "lon"
+       }
+      ],
+      "fields": {}
+     }
+    }
+   ],
+   "type": "geomap"
+  }
+ ],
+ "refresh": "10s",
+ "schemaVersion": 38,
+ "style": "dark",
+ "tags": [
+  "network",
+  "atlas-dot",
+  "demo",
+  "geomap"
+ ],
+ "templating": {
+  "list": []
+ },
+ "time": {
+  "from": "now-15m",
+  "to": "now"
+ },
+ "title": "Atlanta metro \u2014 Geomap",
+ "uid": "geomap",
+ "version": 1
+}

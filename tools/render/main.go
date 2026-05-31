@@ -123,6 +123,9 @@ func main() {
 		func(w io.Writer) error { return WriteVersions(w) })
 
 	dashboardsDir := filepath.Join(*outDir, "workloads", "observability", "dashboards")
+	renderTo(filepath.Join(dashboardsDir, "geomap.json"), "",
+		func(w io.Writer) error { return WriteGeomap(w, spec) })
+
 	fmt.Printf("==> Rewriting dashboard cross-nav in %s/\n", dashboardsDir)
 	if err := RewriteDashboards(dashboardsDir); err != nil {
 		log.Fatal(err)
