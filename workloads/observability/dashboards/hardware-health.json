@@ -132,8 +132,8 @@
       },
       "id": 1,
       "options": {
-        "minVizHeight": 60,
-        "minVizWidth": 80,
+        "displayMode": "gradient",
+        "minVizHeight": 18,
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -142,9 +142,7 @@
           "fields": "",
           "values": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "showUnfilled": true
       },
       "targets": [
         {
@@ -154,7 +152,7 @@
         }
       ],
       "title": "Chassis temperatures (peak per device)",
-      "type": "gauge"
+      "type": "bargauge"
     },
     {
       "datasource": {
@@ -248,7 +246,8 @@
       },
       "id": 3,
       "options": {
-        "minVizHeight": 60,
+        "displayMode": "gradient",
+        "minVizHeight": 18,
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -257,8 +256,7 @@
           "fields": "",
           "values": false
         },
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "showUnfilled": true
       },
       "targets": [
         {
@@ -268,7 +266,7 @@
         }
       ],
       "title": "Fan speeds — current",
-      "type": "gauge"
+      "type": "bargauge"
     },
     {
       "datasource": {
@@ -319,7 +317,8 @@
       },
       "id": 4,
       "options": {
-        "minVizHeight": 60,
+        "displayMode": "gradient",
+        "minVizHeight": 18,
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -328,8 +327,7 @@
           "fields": "",
           "values": false
         },
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "showUnfilled": true
       },
       "targets": [
         {
@@ -339,7 +337,7 @@
         }
       ],
       "title": "PSU input voltage",
-      "type": "gauge"
+      "type": "bargauge"
     },
     {
       "datasource": {
@@ -381,7 +379,8 @@
       },
       "id": 5,
       "options": {
-        "minVizHeight": 60,
+        "displayMode": "gradient",
+        "minVizHeight": 18,
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -390,7 +389,7 @@
           "fields": "",
           "values": false
         },
-        "showThresholdMarkers": true
+        "showUnfilled": true
       },
       "targets": [
         {
@@ -400,7 +399,7 @@
         }
       ],
       "title": "CPU utilization (real, from gNMIc)",
-      "type": "gauge"
+      "type": "bargauge"
     },
     {
       "datasource": {
@@ -442,7 +441,8 @@
       },
       "id": 6,
       "options": {
-        "minVizHeight": 60,
+        "displayMode": "gradient",
+        "minVizHeight": 18,
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -451,7 +451,7 @@
           "fields": "",
           "values": false
         },
-        "showThresholdMarkers": true
+        "showUnfilled": true
       },
       "targets": [
         {
@@ -461,7 +461,7 @@
         }
       ],
       "title": "Memory utilization (real, from gNMIc)",
-      "type": "gauge"
+      "type": "bargauge"
     },
     {
       "datasource": {

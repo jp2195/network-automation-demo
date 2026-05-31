@@ -132,27 +132,27 @@
       },
       "id": 1,
       "options": {
-        "minVizHeight": 75,
+        "displayMode": "gradient",
+        "minVizHeight": 18,
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
-          "fields": ""
+          "fields": "",
+          "values": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "showUnfilled": true
       },
       "targets": [
         {
-          "expr": "100 * (link:p95_out_bps:30m{link_kind=\"backbone\"} / 1e10)",
+          "expr": "100 * (link:p95_out_bps:30m{link_kind=\"backbone\"} / 2000)",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
       ],
-      "title": "Per-link 95th-percentile utilization (% of 10G, last 1h)",
-      "type": "gauge"
+      "title": "Per-link 95th-pct utilization (% of 2 kb/s synthetic capacity, 30m)",
+      "type": "bargauge"
     },
     {
       "datasource": {

@@ -369,7 +369,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1e-9
+          "le": 1e-09
         },
         "legend": {
           "show": false
@@ -404,9 +404,18 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           },
-          "max": 100,
+          "custom": {
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          },
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -426,39 +435,40 @@
             ]
           },
           "unit": "percent"
-        }
+        },
+        "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 14,
         "w": 24,
         "x": 0,
         "y": 30
       },
       "id": 5,
       "options": {
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "horizontal",
-        "reduceOptions": {
+        "legend": {
           "calcs": [
-            "lastNotNull"
+            "lastNotNull",
+            "max"
           ],
-          "fields": "",
-          "values": false
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto"
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
-          "expr": "100 * (sum by (link_id) (link:rate_out_bps:1m{link_kind=\"backbone\"}) / 1e10)",
+          "expr": "100 * (sum by (link_id) (link:rate_out_bps:1m{link_kind=\"backbone\"}) / 2000)",
           "legendFormat": "{{link_id}}",
           "refId": "A"
         }
       ],
-      "title": "Backbone link utilization (% of 10G — synthetic)",
-      "type": "gauge"
+      "title": "Backbone link utilization (% of 2 kb/s synthetic capacity)",
+      "type": "timeseries"
     }
   ],
   "refresh": "10s",
