@@ -454,11 +454,11 @@
               "showLegend": true,
               "style": {
                 "color": {
-                  "field": "Value",
                   "fixed": "green"
                 },
+                "opacity": 0.95,
                 "size": {
-                  "fixed": 12
+                  "fixed": 14
                 },
                 "symbol": {
                   "fixed": "img/icons/marker/circle.svg",
@@ -468,20 +468,140 @@
                   "field": "node"
                 },
                 "textConfig": {
-                  "fontSize": 12,
-                  "offsetX": 0,
-                  "offsetY": -16,
+                  "fontSize": 11,
+                  "offsetY": -14,
                   "textAlign": "center",
                   "textBaseline": "bottom"
                 }
               }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "Aup"
             },
             "location": {
               "latitude": "lat",
               "longitude": "lon",
               "mode": "coords"
             },
-            "name": "Devices",
+            "name": "Hubs up",
+            "tooltip": true,
+            "type": "markers"
+          },
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "opacity": 0.95,
+                "size": {
+                  "fixed": 16
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "text": {
+                  "field": "node"
+                },
+                "textConfig": {
+                  "fontSize": 11,
+                  "offsetY": -14,
+                  "textAlign": "center",
+                  "textBaseline": "bottom"
+                }
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "Adn"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "Hubs DOWN",
+            "tooltip": true,
+            "type": "markers"
+          },
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "opacity": 0.95,
+                "size": {
+                  "fixed": 11
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/triangle.svg",
+                  "mode": "fixed"
+                },
+                "text": {
+                  "field": "node"
+                },
+                "textConfig": {
+                  "fontSize": 11,
+                  "offsetY": -14,
+                  "textAlign": "center",
+                  "textBaseline": "bottom"
+                }
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "Bup"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "Cabinets up",
+            "tooltip": true,
+            "type": "markers"
+          },
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "opacity": 0.95,
+                "size": {
+                  "fixed": 13
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/triangle.svg",
+                  "mode": "fixed"
+                },
+                "text": {
+                  "field": "node"
+                },
+                "textConfig": {
+                  "fontSize": 11,
+                  "offsetY": -14,
+                  "textAlign": "center",
+                  "textBaseline": "bottom"
+                }
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "Bdn"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "Cabinets DOWN",
             "tooltip": true,
             "type": "markers"
           }
@@ -498,16 +618,28 @@
       },
       "targets": [
         {
-          "expr": "max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"srlinux\"} * on(node) group_right(lat, lon, site, city, role, kind) (link:oper_state_with_meta))",
+          "expr": "(max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"srlinux\"} * on(node) group_right(lat, lon, site, city, role, kind) (link:oper_state_with_meta))) == 1",
           "format": "table",
           "instant": true,
-          "refId": "A"
+          "refId": "Aup"
         },
         {
-          "expr": "max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"frr\"} * on(node) group_right(lat, lon, site, city, role, kind) (2 - up{job=\"snmp-frr-cabinets\"}))",
+          "expr": "(max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"srlinux\"} * on(node) group_right(lat, lon, site, city, role, kind) (link:oper_state_with_meta))) >= 2",
           "format": "table",
           "instant": true,
-          "refId": "B"
+          "refId": "Adn"
+        },
+        {
+          "expr": "(max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"frr\"} * on(node) group_right(lat, lon, site, city, role, kind) (2 - up{job=\"snmp-frr-cabinets\"}))) == 1",
+          "format": "table",
+          "instant": true,
+          "refId": "Bup"
+        },
+        {
+          "expr": "(max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"frr\"} * on(node) group_right(lat, lon, site, city, role, kind) (2 - up{job=\"snmp-frr-cabinets\"}))) >= 2",
+          "format": "table",
+          "instant": true,
+          "refId": "Bdn"
         }
       ],
       "title": "Atlanta metro — device oper-state",
