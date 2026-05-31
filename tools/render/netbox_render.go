@@ -15,7 +15,7 @@ type netboxSeed struct {
 	RIRs           []nbRIR          `json:"rirs"`
 	ASNs           []nbASN          `json:"asns"`
 	Sites          []nbSite         `json:"sites"`
-	Tenants        []nbTenant       `json:"tenants"`
+	Tags           []nbTag          `json:"tags"`
 	OwnerGroups    []nbOwnerGroup   `json:"owner_groups"`
 	Owners         []nbOwner        `json:"owners"`
 	Manufacturers  []nbManufacturer `json:"manufacturers"`
@@ -86,7 +86,10 @@ type nbSite struct {
 	Group     string  `json:"group,omitempty"`  // slug
 }
 
-type nbTenant struct {
+// nbTag carries an agency. A device (esp. a field cabinet) can serve several
+// agencies, which NetBox's single-valued tenant can't model — tags are
+// many-to-many, so impact analysis can read every agency a device serves.
+type nbTag struct {
 	Slug string `json:"slug"`
 	Name string `json:"name"`
 }
@@ -115,7 +118,7 @@ type nbDevice struct {
 	DeviceType   string                 `json:"device_type"`
 	Status       string                 `json:"status"`
 	PrimaryIP4   string                 `json:"primary_ip4,omitempty"`
-	Tenants      []string               `json:"tenants,omitempty"`
+	Tags         []string               `json:"tags,omitempty"`
 	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
 }
 
@@ -223,7 +226,7 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 	}
 
 	for _, a := range s.Agencies {
-		out.Tenants = append(out.Tenants, nbTenant{Slug: a.Slug, Name: a.Name})
+		out.Tags = append(out.Tags, nbTag{Slug: a.Slug, Name: a.Name})
 	}
 
 	// Spec providers map to NetBox 4.6 Owners (asset-ownership model). One
@@ -277,7 +280,7 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 			DeviceType:   deviceType,
 			Status:       "active",
 			PrimaryIP4:   n.LoopbackV4 + "/32",
-			Tenants:      n.Agencies,
+			Tags:         n.Agencies,
 			CustomFields: map[string]interface{}{"isis_sid": n.ISISSID},
 		})
 	}

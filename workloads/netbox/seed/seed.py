@@ -246,15 +246,19 @@ def main():
             else:
                 sys.exit(f"FAILED asn/{a['asn']}: {body}")
 
-    print("== tenants ==", flush=True)
-    tenant_ids = {}
-    for t in data.get("tenants", []):
-        tenant_ids[t["slug"]] = upsert(
-            "/api/tenancy/tenants/",
+    # Agencies are NetBox tags (many-to-many) — a field cabinet serves several
+    # agencies, which the single-valued tenant can't model. Impact analysis
+    # reads a device's tags to total the affected agencies.
+    print("== tags ==", flush=True)
+    tag_name = {}
+    for t in data.get("tags", []):
+        upsert(
+            "/api/extras/tags/",
             {"slug": t["slug"]},
             {"slug": t["slug"], "name": t["name"]},
-            f"tenant/{t['slug']}",
+            f"tag/{t['slug']}",
         )
+        tag_name[t["slug"]] = t["name"]
 
     print("== owner_groups ==", flush=True)
     og_ids = {}
@@ -322,6 +326,8 @@ def main():
             "status": d.get("status", "active"),
             "custom_fields": d.get("custom_fields", {}),
         }
+        if d.get("tags"):
+            payload["tags"] = [{"name": tag_name[s]} for s in d["tags"]]
         device_ids[d["name"]] = upsert(
             "/api/dcim/devices/",
             {"name": d["name"]},
