@@ -203,7 +203,7 @@
       "group": "i-85-sw"
     }
   ],
-  "tenants": [
+  "tags": [
     {
       "slug": "adot-region-7",
       "name": "Atlas DOT Region 7 Operations"
@@ -455,7 +455,7 @@
       "device_type": "frr",
       "status": "active",
       "primary_ip4": "10.0.0.21/32",
-      "tenants": [
+      "tags": [
         "northridge-transportation-authority",
         "adot-region-7"
       ],
@@ -470,7 +470,7 @@
       "device_type": "frr",
       "status": "active",
       "primary_ip4": "10.0.0.22/32",
-      "tenants": [
+      "tags": [
         "pinecrest-public-works",
         "adot-region-7"
       ],
@@ -485,7 +485,7 @@
       "device_type": "frr",
       "status": "active",
       "primary_ip4": "10.0.0.23/32",
-      "tenants": [
+      "tags": [
         "lakeside-county-dot",
         "eastfield-county-dot",
         "adot-region-7"
@@ -501,7 +501,7 @@
       "device_type": "frr",
       "status": "active",
       "primary_ip4": "10.0.0.24/32",
-      "tenants": [
+      "tags": [
         "sandstone-municipal-works",
         "southfield-highway-department",
         "adot-region-7"

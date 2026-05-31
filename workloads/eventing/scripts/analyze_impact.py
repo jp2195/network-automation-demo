@@ -2,8 +2,8 @@
 """Walk the NetBox cable graph from the affected device to estimate impact.
 
 Reads enrichment JSON from $ENRICHMENT_JSON. For the affected device's site
-plus any device on the other end of the failed cable, totals up the tenants
-(agencies) and the count of cabinet (eBGP) downstream nodes that would lose
+plus any device on the other end of the failed cable, totals up the agencies (device tags)
+and the count of cabinet (eBGP) downstream nodes that would lose
 their uplink.
 
 Output: JSON {downstream_devices: [...], affected_agencies: [...], severity_class: "..."}.
@@ -66,9 +66,10 @@ def main():
     if affected_devices:
         dev_resp = get("/api/dcim/devices/", name=affected_devices, limit=200)
         for d in dev_resp.get("results", []):
-            tenant = d.get("tenant")
-            if tenant:
-                agencies.add(tenant.get("slug"))
+            # Agencies are device tags (a cabinet serves several); total them.
+            for tag in d.get("tags", []):
+                if tag.get("slug"):
+                    agencies.add(tag["slug"])
 
     alert = enrichment.get("alert", {}) or {}
     alert_severity = alert.get("severity", "")
