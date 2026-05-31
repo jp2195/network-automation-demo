@@ -101,21 +101,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [
-            {
-              "options": {
-                "1": {
-                  "color": "green",
-                  "text": "UP"
-                },
-                "2": {
-                  "color": "red",
-                  "text": "DOWN"
-                }
-              },
-              "type": "value"
-            }
-          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -125,7 +110,7 @@
               },
               {
                 "color": "green",
-                "value": 1
+                "value": 0.5
               },
               {
                 "color": "red",
@@ -160,25 +145,751 @@
           {
             "config": {
               "arrow": 0,
+              "showLegend": false,
               "style": {
                 "color": {
-                  "field": "Value"
+                  "fixed": "green"
                 },
-                "lineWidth": 4,
-                "opacity": 0.9
+                "lineWidth": 3,
+                "opacity": 0.85
               }
             },
             "filterData": {
               "id": "byRefId",
-              "options": "L.*"
+              "options": "U0"
             },
             "location": {
               "latitude": "lat",
               "longitude": "lon",
               "mode": "coords"
             },
-            "name": "Backbone fiber rings",
-            "tooltip": true,
+            "name": "U0",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D0"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D0",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U1"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U1",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D1"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D1",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U2"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U2",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D2"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D2",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U3"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U3",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D3"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D3",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U4"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U4",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D4"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D4",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U5"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U5",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D5"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D5",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U6"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U6",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D6"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D6",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U7"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U7",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D7"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D7",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U8"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U8",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D8"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D8",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U9"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U9",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D9"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D9",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U10"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U10",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D10"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D10",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U11"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U11",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D11"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D11",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U12"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U12",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D12"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D12",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U13"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U13",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D13"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D13",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "U14"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "U14",
+            "tooltip": false,
+            "type": "route"
+          },
+          {
+            "config": {
+              "arrow": 0,
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "lineWidth": 3,
+                "opacity": 0.85
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "D14"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "D14",
+            "tooltip": false,
             "type": "route"
           },
           {
@@ -186,11 +897,11 @@
               "showLegend": true,
               "style": {
                 "color": {
-                  "field": "Value"
+                  "fixed": "green"
                 },
                 "opacity": 0.95,
                 "size": {
-                  "fixed": 10
+                  "fixed": 11
                 },
                 "symbol": {
                   "fixed": "img/icons/marker/triangle.svg",
@@ -200,24 +911,23 @@
                   "field": "node"
                 },
                 "textConfig": {
-                  "fontSize": 11,
-                  "offsetX": 0,
-                  "offsetY": 14,
+                  "fontSize": 12,
+                  "offsetY": -16,
                   "textAlign": "center",
-                  "textBaseline": "top"
+                  "textBaseline": "bottom"
                 }
               }
             },
             "filterData": {
               "id": "byRefId",
-              "options": "A"
+              "options": "Aup"
             },
             "location": {
               "latitude": "lat",
               "longitude": "lon",
               "mode": "coords"
             },
-            "name": "Cabinets (FRR / SNMP)",
+            "name": "Cabinets up",
             "tooltip": true,
             "type": "markers"
           },
@@ -226,11 +936,50 @@
               "showLegend": true,
               "style": {
                 "color": {
-                  "field": "Value"
+                  "fixed": "red"
                 },
                 "opacity": 0.95,
                 "size": {
-                  "fixed": 16
+                  "fixed": 13
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/triangle.svg",
+                  "mode": "fixed"
+                },
+                "text": {
+                  "field": "node"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetY": -16,
+                  "textAlign": "center",
+                  "textBaseline": "bottom"
+                }
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "Adn"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "Cabinets DOWN",
+            "tooltip": true,
+            "type": "markers"
+          },
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "green"
+                },
+                "opacity": 0.95,
+                "size": {
+                  "fixed": 15
                 },
                 "symbol": {
                   "fixed": "img/icons/marker/circle.svg",
@@ -240,9 +989,8 @@
                   "field": "node"
                 },
                 "textConfig": {
-                  "fontSize": 13,
-                  "offsetX": 0,
-                  "offsetY": -18,
+                  "fontSize": 12,
+                  "offsetY": -16,
                   "textAlign": "center",
                   "textBaseline": "bottom"
                 }
@@ -250,14 +998,53 @@
             },
             "filterData": {
               "id": "byRefId",
-              "options": "B"
+              "options": "Bup"
             },
             "location": {
               "latitude": "lat",
               "longitude": "lon",
               "mode": "coords"
             },
-            "name": "Backbone hubs (SR Linux / gNMI)",
+            "name": "Hubs up",
+            "tooltip": true,
+            "type": "markers"
+          },
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "red"
+                },
+                "opacity": 0.95,
+                "size": {
+                  "fixed": 17
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "text": {
+                  "field": "node"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetY": -16,
+                  "textAlign": "center",
+                  "textBaseline": "bottom"
+                }
+              }
+            },
+            "filterData": {
+              "id": "byRefId",
+              "options": "Bdn"
+            },
+            "location": {
+              "latitude": "lat",
+              "longitude": "lon",
+              "mode": "coords"
+            },
+            "name": "Hubs DOWN",
             "tooltip": true,
             "type": "markers"
           }
@@ -274,23 +1061,208 @@
       },
       "targets": [
         {
-          "expr": "max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"frr\"} * on(node) group_right(lat, lon, site, city, role, kind) (2 - up{job=\"snmp-frr-cabinets\"}))",
+          "expr": "link_endpoint_geo{link_id=\"ring-n-e\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
           "format": "table",
           "instant": true,
-          "refId": "A"
+          "refId": "U0"
         },
         {
-          "expr": "max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"srlinux\"} * on(node) group_right(lat, lon, site, city, role, kind) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left link_membership_info))",
+          "expr": "link_endpoint_geo{link_id=\"ring-n-e\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
           "format": "table",
           "instant": true,
-          "refId": "B"
+          "refId": "D0"
         },
         {
-          "expr": "link_endpoint_geo * on(link_id) group_left(link_kind, corridor) max by(link_id, link_kind, corridor) (link:oper_state_with_meta)",
+          "expr": "link_endpoint_geo{link_id=\"ring-e-i20e\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
           "format": "table",
           "instant": true,
-          "legendFormat": "{{link_id}}",
-          "refId": "L"
+          "refId": "U1"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-e-i20e\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D1"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-i20e-sw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U2"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-i20e-sw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D2"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-sw-i20w\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U3"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-sw-i20w\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D3"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-i20w-nw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U4"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-i20w-nw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D4"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-nw-n\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U5"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"ring-nw-n\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D5"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc1-hubnw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U6"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc1-hubnw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D6"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc1-hubsw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U7"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc1-hubsw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D7"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc2-hubn\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U8"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc2-hubn\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D8"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc2-hube\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U9"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc2-hube\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D9"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc1-tmc2\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U10"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"tmc1-tmc2\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D10"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubn-fcn\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U11"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubn-fcn\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D11"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubnw-fcnw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U12"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubnw-fcnw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D12"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubi20e-fci20e\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U13"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubi20e-fci20e\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D13"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubsw-fcsw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 1)",
+          "format": "table",
+          "instant": true,
+          "refId": "U14"
+        },
+        {
+          "expr": "link_endpoint_geo{link_id=\"hubsw-fcsw\"} and on(link_id) (max by (link_id) (link:oper_state_with_meta) == 2)",
+          "format": "table",
+          "instant": true,
+          "refId": "D14"
+        },
+        {
+          "expr": "(max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"frr\"} * on(node) group_right(lat, lon, site, city, role, kind) (2 - up{job=\"snmp-frr-cabinets\"}))) == 1",
+          "format": "table",
+          "instant": true,
+          "refId": "Aup"
+        },
+        {
+          "expr": "(max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"frr\"} * on(node) group_right(lat, lon, site, city, role, kind) (2 - up{job=\"snmp-frr-cabinets\"}))) >= 2",
+          "format": "table",
+          "instant": true,
+          "refId": "Adn"
+        },
+        {
+          "expr": "(max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"srlinux\"} * on(node) group_right(lat, lon, site, city, role, kind) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left link_membership_info))) == 1",
+          "format": "table",
+          "instant": true,
+          "refId": "Bup"
+        },
+        {
+          "expr": "(max by (node, lat, lon, site, city, role, kind) (device_geo_info{kind=\"srlinux\"} * on(node) group_right(lat, lon, site, city, role, kind) (srl_nokia_interfaces_interface_oper_state * on(node, interface) group_left link_membership_info))) >= 2",
+          "format": "table",
+          "instant": true,
+          "refId": "Bdn"
         }
       ],
       "title": "Atlanta metro — Atlas DOT Region 7",
