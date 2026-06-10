@@ -222,8 +222,8 @@ prefix alone is enough.
 The default chassis type is a TOR. Switch to `type: ixr-d3` (dashed
 form) on every nokia_srlinux node in the topology. *Even with ixr-d3,
 the public srlinux image doesn't expose the base `mpls`/`segment-routing`
-features* — see "SR-MPLS scope cut" in
-`memory/project_build_progress.md`. Lab is IS-IS / IPv4 only.
+features* — see "Trade-offs / scope" in
+[`docs/architecture.md`](architecture.md). Lab is IS-IS / IPv4 only.
 
 ### `set / system name <X>` is wrong syntax
 
