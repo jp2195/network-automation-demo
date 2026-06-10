@@ -37,21 +37,29 @@ def main():
 
     if not device_name:
         sys.exit("no node/source label on alert")
+
+    # A device missing from NetBox (stale seed, typo'd label) must not
+    # abort the incident pipeline — degrade to a name-only enrichment and
+    # let notify still post, flagged as partial.
+    degraded = []
     devices = get("/api/dcim/devices/", name=device_name)
-    if not devices.get("results"):
-        sys.exit(f"device {device_name} not found")
-    device = devices["results"][0]
+    device = devices["results"][0] if devices.get("results") else None
+    if device is None:
+        degraded.append(f"device {device_name} not found in NetBox")
+        print(f"warning: {degraded[0]} — emitting degraded enrichment",
+              file=sys.stderr)
 
-    interfaces = get("/api/dcim/interfaces/",
-                     device_id=device["id"], name=iface_name)
-    interface = interfaces["results"][0] if interfaces.get("results") else {}
+    interface, cable, site = {}, {}, {}
+    if device:
+        interfaces = get("/api/dcim/interfaces/",
+                         device_id=device["id"], name=iface_name)
+        interface = interfaces["results"][0] if interfaces.get("results") else {}
 
-    cable = {}
-    if interface.get("cable"):
-        cables = get(f"/api/dcim/cables/{interface['cable']['id']}/")
-        cable = cables
+        if interface.get("cable"):
+            cables = get(f"/api/dcim/cables/{interface['cable']['id']}/")
+            cable = cables
 
-    site = get(f"/api/dcim/sites/{device['site']['id']}/")
+        site = get(f"/api/dcim/sites/{device['site']['id']}/")
 
     enrichment = {
         "alert": {
@@ -72,7 +80,7 @@ def main():
             "lon": site.get("longitude"),
             "primary_ip": device.get("primary_ip4", {}).get("address") if device.get("primary_ip4") else None,
             "custom_fields": device.get("custom_fields", {}),
-        },
+        } if device else {"name": device_name},
         "interface": {
             "name": interface.get("name"),
             "type": interface.get("type", {}).get("value") if interface.get("type") else None,
@@ -94,6 +102,7 @@ def main():
                 for t in cable.get(side, [])
             ],
         } if cable else {},
+        "degraded": degraded,
     }
 
     json.dump(enrichment, sys.stdout)
