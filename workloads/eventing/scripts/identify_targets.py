@@ -9,6 +9,7 @@ sequential round-trips to roughly 1 + N (N = ring count, typically 2).
 
 import json
 import os
+import sys
 
 from prom import prom_query
 
@@ -55,18 +56,24 @@ def main():
     ring_a = ring_neighbors[0] if len(ring_neighbors) > 0 else ""
     ring_b = ring_neighbors[1] if len(ring_neighbors) > 1 else ""
 
-    os.makedirs("/tmp/argo", exist_ok=True)
-    for k, v in (
-        ("affected", affected),
-        ("interface", iface),
-        ("link_id", link_id),
-        ("peer_node", peer_node),
-        ("peer_interface", peer_iface),
-        ("ring_a", ring_a),
-        ("ring_b", ring_b),
-    ):
-        with open(f"/tmp/argo/{k}", "w") as f:
-            f.write(v)
+    # These files are the step's Argo output parameters — a partial write
+    # would feed downstream gather-* steps empty targets, so fail the step
+    # with a readable diagnostic rather than a traceback.
+    try:
+        os.makedirs("/tmp/argo", exist_ok=True)
+        for k, v in (
+            ("affected", affected),
+            ("interface", iface),
+            ("link_id", link_id),
+            ("peer_node", peer_node),
+            ("peer_interface", peer_iface),
+            ("ring_a", ring_a),
+            ("ring_b", ring_b),
+        ):
+            with open(f"/tmp/argo/{k}", "w") as f:
+                f.write(v)
+    except OSError as e:
+        sys.exit(f"failed to write Argo output parameters under /tmp/argo: {e}")
     print(
         f"affected={affected}/{iface} peer={peer_node}/{peer_iface} "
         f"ring=[{ring_a},{ring_b}] link={link_id}",
