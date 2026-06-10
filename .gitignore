@@ -27,6 +27,7 @@ bin/*
 
 # Architectural reference kept locally only (not for the public repo)
 PLAN.md
+docs/superpowers/
 
 # Local secret overrides — see SECRETS.md
 secrets.local/
