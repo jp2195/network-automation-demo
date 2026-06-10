@@ -23,6 +23,7 @@ for how to opt into real Slack posting.
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 
 from constants import SEVERITY_HIGH, SEVERITY_LOW, SEVERITY_MEDIUM, SEVERITY_WARNING
@@ -30,6 +31,20 @@ from constants import SEVERITY_HIGH, SEVERITY_LOW, SEVERITY_MEDIUM, SEVERITY_WAR
 
 def _slack_unconfigured(token, channel):
     return not token or not channel
+
+
+def _valkey_retry(op, attempts=3):
+    # A transient Valkey blip shouldn't orphan the firing↔resolved
+    # correlation; the callers' except blocks handle a final failure.
+    for i in range(1, attempts + 1):
+        try:
+            return op()
+        except Exception as e:
+            if i == attempts:
+                raise
+            print(f"warning: valkey attempt {i}/{attempts} failed, retrying: {e}",
+                  file=sys.stderr)
+            time.sleep(0.5 * i)
 
 
 def _parse_iso(ts):
@@ -185,7 +200,7 @@ def main():
             record["ts"] = resp["ts"]
 
         try:
-            ledger_db.set(ledger_key, json.dumps(record), ex=86400)
+            _valkey_retry(lambda: ledger_db.set(ledger_key, json.dumps(record), ex=86400))
         except Exception as e:
             # A Valkey hiccup must not crash the step after we've already
             # posted; resolve will fall back to a fresh top-level post.
@@ -196,7 +211,7 @@ def main():
 
     # resolved
     try:
-        raw = ledger_db.get(ledger_key)
+        raw = _valkey_retry(lambda: ledger_db.get(ledger_key))
     except Exception as e:
         print(f"warning: ledger read failed, posting fresh resolved notice: {e}", file=sys.stderr)
         raw = None
@@ -245,7 +260,7 @@ def main():
             )
 
     try:
-        ledger_db.delete(ledger_key)
+        _valkey_retry(lambda: ledger_db.delete(ledger_key))
     except Exception as e:
         print(f"warning: ledger delete failed (24h TTL will reap it): {e}", file=sys.stderr)
     json.dump({"posted": not unconfigured, "status": "resolved",
