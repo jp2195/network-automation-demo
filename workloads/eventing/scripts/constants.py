@@ -27,3 +27,8 @@ LINK_KIND_CABINET  = "cabinet"
 # Cabinet device-name prefix — used by analyze_impact to identify
 # downstream cabinets without round-tripping NetBox.
 CABINET_NAME_PREFIX = "fc-"
+
+# Alertmanager silence `createdBy` stamp. maintenance_off only deletes
+# silences carrying this marker, so the two maintenance scripts must
+# agree on it. Python-only — no Go mirror.
+MAINTENANCE_CREATED_BY = "atlas-maintenance"

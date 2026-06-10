@@ -8,6 +8,7 @@ import sys
 import urllib.request
 from datetime import datetime, timezone
 
+from constants import MAINTENANCE_CREATED_BY
 from netbox_client import Client
 
 
@@ -29,7 +30,7 @@ def main():
     targets = []
     for s in _list_silences():
         state = (s.get("status", {}) or {}).get("state", "")
-        if state != "active" or s.get("createdBy") != "atlas-maintenance":
+        if state != "active" or s.get("createdBy") != MAINTENANCE_CREATED_BY:
             continue
         if any(m.get("name") == "node" and m.get("value") == NODE for m in s.get("matchers", [])):
             targets.append(s["id"])
