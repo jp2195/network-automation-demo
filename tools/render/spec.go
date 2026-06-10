@@ -4,8 +4,16 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"regexp"
 
 	"gopkg.in/yaml.v3"
+)
+
+// Interface naming is load-bearing: srl_render/frr_render/clabIntf all
+// assume SR Linux ports are "ethernet-1/N" and FRR cabinets "ethN".
+var (
+	srlIntfRe = regexp.MustCompile(`^ethernet-1/\d+$`)
+	frrIntfRe = regexp.MustCompile(`^eth\d+$`)
 )
 
 type Spec struct {
@@ -138,7 +146,12 @@ func LoadSpec(path string) (*Spec, error) {
 }
 
 func (s *Spec) Validate() error {
+	agencySlugs := map[string]bool{}
+	for _, a := range s.Agencies {
+		agencySlugs[a.Slug] = true
+	}
 	seen := map[string]bool{}
+	byName := map[string]Node{}
 	loopbacks := map[string]string{} // loopback_v4 -> node
 	sids := map[int]string{}         // isis_sid -> node
 	for _, n := range s.Nodes {
@@ -146,6 +159,15 @@ func (s *Spec) Validate() error {
 			return fmt.Errorf("duplicate node %q", n.Name)
 		}
 		seen[n.Name] = true
+		byName[n.Name] = n
+		if n.Kind != KindSRLinux && n.Kind != KindFRR {
+			return fmt.Errorf("node %q: unknown kind %q", n.Name, n.Kind)
+		}
+		for _, ag := range n.Agencies {
+			if !agencySlugs[ag] {
+				return fmt.Errorf("node %q: agency %q not declared in agencies", n.Name, ag)
+			}
+		}
 		if n.LoopbackV4 != "" {
 			if other, ok := loopbacks[n.LoopbackV4]; ok {
 				return fmt.Errorf("duplicate loopback_v4 %s on %q and %q", n.LoopbackV4, other, n.Name)
@@ -162,8 +184,15 @@ func (s *Spec) Validate() error {
 	// parent_hub references resolve against the full node set (second pass so
 	// a cabinet declared before its hub still validates).
 	for _, n := range s.Nodes {
-		if n.ParentHub != "" && !seen[n.ParentHub] {
+		if n.ParentHub == "" {
+			continue
+		}
+		hub, ok := byName[n.ParentHub]
+		if !ok {
 			return fmt.Errorf("node %q: parent_hub %q not declared", n.Name, n.ParentHub)
+		}
+		if hub.Role != RoleCorridorHub {
+			return fmt.Errorf("node %q: parent_hub %q has role %q, want %q", n.Name, n.ParentHub, hub.Role, RoleCorridorHub)
 		}
 	}
 	ifaces := map[string]string{} // "node|intf" -> link id
@@ -177,12 +206,38 @@ func (s *Spec) Validate() error {
 		if _, _, err := net.ParseCIDR(l.SubnetV4); err != nil {
 			return fmt.Errorf("link %s: bad subnet %q: %w", l.ID, l.SubnetV4, err)
 		}
+		// Link shape: backbones join two SR Linux nodes; cabinet links join
+		// one SR Linux hub and one FRR cabinet. dom_render/frr_render bake
+		// these assumptions in.
+		ak, bk := byName[l.A.Node].Kind, byName[l.B.Node].Kind
+		switch l.Kind {
+		case LinkKindBackbone:
+			if ak != KindSRLinux || bk != KindSRLinux {
+				return fmt.Errorf("link %s: backbone links must join two %s nodes (got %s/%s)", l.ID, KindSRLinux, ak, bk)
+			}
+		case LinkKindCabinet:
+			if !(ak == KindSRLinux && bk == KindFRR) && !(ak == KindFRR && bk == KindSRLinux) {
+				return fmt.Errorf("link %s: cabinet links must join one %s and one %s node (got %s/%s)", l.ID, KindSRLinux, KindFRR, ak, bk)
+			}
+		default:
+			return fmt.Errorf("link %s: unknown kind %q", l.ID, l.Kind)
+		}
 		for _, ep := range []Endpoint{l.A, l.B} {
 			key := ep.Node + "|" + ep.Intf
 			if other, ok := ifaces[key]; ok {
 				return fmt.Errorf("link %s: interface %s/%s already used by link %s", l.ID, ep.Node, ep.Intf, other)
 			}
 			ifaces[key] = l.ID
+			switch byName[ep.Node].Kind {
+			case KindSRLinux:
+				if !srlIntfRe.MatchString(ep.Intf) {
+					return fmt.Errorf("link %s: %s interface %q on %s must match ethernet-1/N", l.ID, KindSRLinux, ep.Intf, ep.Node)
+				}
+			case KindFRR:
+				if !frrIntfRe.MatchString(ep.Intf) {
+					return fmt.Errorf("link %s: %s interface %q on %s must match ethN", l.ID, KindFRR, ep.Intf, ep.Node)
+				}
+			}
 		}
 	}
 	return nil
