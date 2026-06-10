@@ -100,6 +100,10 @@ def _firing_blocks(enrichment, impact):
         agencies = ", ".join(impact["affected_agencies"])
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text":
             f"*Agencies affected*\n{agencies}"}})
+    if enrichment.get("degraded"):
+        blocks.append({"type": "context", "elements": [
+            {"type": "mrkdwn", "text":
+             "Partial enrichment: " + "; ".join(enrichment["degraded"])}]})
     return blocks
 
 
