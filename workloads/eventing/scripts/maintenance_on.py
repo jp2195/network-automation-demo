@@ -9,6 +9,7 @@ import sys
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
+from constants import MAINTENANCE_CREATED_BY
 from netbox_client import Client
 
 
@@ -27,7 +28,7 @@ def main():
         ],
         "startsAt": now.replace(microsecond=0).isoformat(),
         "endsAt":   ends.replace(microsecond=0).isoformat(),
-        "createdBy": "atlas-maintenance",
+        "createdBy": MAINTENANCE_CREATED_BY,
         "comment": f"{COMMENT} (workflow={os.environ.get('ARGO_WORKFLOW_NAME','?')})",
     }
     req = urllib.request.Request(
