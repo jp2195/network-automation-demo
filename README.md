@@ -254,3 +254,7 @@ Commit the diff. ArgoCD syncs.
   the live demo script (≈10 min), optional Slack hook-up.
 - [`docs/runbook-troubleshoot.md`](docs/runbook-troubleshoot.md) —
   symptom → diagnosis lookup table, subtle gotchas, hard reset.
+
+## License
+
+[MIT](LICENSE).
