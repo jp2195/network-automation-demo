@@ -23,6 +23,9 @@ var wftEnrichedNotifyTmpl string
 //go:embed templates/wft-maintenance.yaml.tmpl
 var wftMaintenanceTmpl string
 
+//go:embed templates/wft-remediation.yaml.tmpl
+var wftRemediationTmpl string
+
 // WriteWFTCutFiber emits the cut-fiber WorkflowTemplate. The clabernetes
 // FQDN baked into the gnmic -a flag is parameterised from
 // spec.Metadata.Name so renaming the cluster doesn't break the demo.
@@ -52,6 +55,20 @@ func WriteWFTEnrichedNotify(w io.Writer, _ *Spec) error {
 // their embedded template (fully static).
 func WriteWFTMaintenance(w io.Writer, _ *Spec) error {
 	_, err := fmt.Fprintf(w, "%s\n%s", renderBanner, wftMaintenanceTmpl)
+	return err
+}
+
+// WriteWFTRemediation emits the remediate-link WorkflowTemplate from its
+// embedded template. The clabernetes FQDN prefix, eventing-py image, and
+// IS-IS instance name are parameterised; the gnmic set-metric /
+// clear-metric steps are the only config-write capability in the cluster.
+func WriteWFTRemediation(w io.Writer, s *Spec) error {
+	body := strings.NewReplacer(
+		"@@EVENTING_IMAGE@@", ImageEventingPy,
+		"@@CLUSTER@@", s.Metadata.Name,
+		"@@ISIS_INSTANCE@@", ISISInstance,
+	).Replace(wftRemediationTmpl)
+	_, err := fmt.Fprintf(w, "%s\n%s", renderBanner, body)
 	return err
 }
 
