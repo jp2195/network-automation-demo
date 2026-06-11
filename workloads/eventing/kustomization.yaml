@@ -9,10 +9,12 @@ resources:
   - eventsource-webhook.yaml
   - sensor-interface-down.yaml
   - sensor-manual-cut.yaml
+  - sensor-remediation.yaml
   - wft-enriched-notify.yaml
   - wft-cut-fiber.yaml
   - wft-maintenance.yaml
   - wft-incident-collector.yaml
+  - wft-remediation.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
@@ -31,3 +33,5 @@ configMapGenerator:
       - scripts/maintenance_off.py
       - scripts/identify_targets.py
       - scripts/gather_dom.py
+      - scripts/remediate_decide.py
+      - scripts/remediate_record.py
