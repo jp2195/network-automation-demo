@@ -145,5 +145,40 @@ class DecideResolvedTests(unittest.TestCase):
         self.assertEqual(out["action"], "skip")
 
 
+from unittest import mock
+
+from remediate_record import build_text, finalize
+
+
+class RecordTests(unittest.TestCase):
+    def test_cost_out_text_names_link_metric_and_both_ends(self):
+        text = build_text("cost-out", LINK,
+                          "hub-e", "ethernet-1/1.0", "hub-i20e", "ethernet-1/2.0")
+        self.assertIn(LINK, text)
+        self.assertIn("16777214", text)
+        self.assertIn("hub-e/ethernet-1/1.0", text)
+        self.assertIn("hub-i20e/ethernet-1/2.0", text)
+
+    def test_restore_text_mentions_restoration(self):
+        text = build_text("restore", LINK,
+                          "hub-e", "ethernet-1/1.0", "hub-i20e", "ethernet-1/2.0")
+        self.assertIn(LINK, text)
+        self.assertIn("restored", text.lower())
+
+    def test_finalize_restore_clears_claim(self):
+        vk = fakeredis.FakeRedis(decode_responses=True)
+        vk.set(REMEDIATION_ACTIVE_PREFIX + LINK, "{}")
+        with mock.patch("valkey.from_url", return_value=vk):
+            finalize("restore", LINK, "valkey://stub:6379/2")
+        self.assertFalse(vk.exists(REMEDIATION_ACTIVE_PREFIX + LINK))
+
+    def test_finalize_cost_out_keeps_claim(self):
+        vk = fakeredis.FakeRedis(decode_responses=True)
+        vk.set(REMEDIATION_ACTIVE_PREFIX + LINK, "{}")
+        with mock.patch("valkey.from_url", return_value=vk):
+            finalize("cost-out", LINK, "valkey://stub:6379/2")
+        self.assertTrue(vk.exists(REMEDIATION_ACTIVE_PREFIX + LINK))
+
+
 if __name__ == "__main__":
     unittest.main()
