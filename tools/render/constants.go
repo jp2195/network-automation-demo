@@ -42,6 +42,12 @@ const (
 	ImageEventingPy = "atlas-demo-registry:5001/eventing-py:latest"
 )
 
+// ISISInstance is the IS-IS instance name programmed into every SR Linux
+// node (srl_render.go) and addressed by the remediation WorkflowTemplate's
+// gNMI metric path (wft_render.go). Single-sourced here so the two can
+// never drift.
+const ISISInstance = "atlas"
+
 // Shared infra endpoints / credentials used across emitters (Go-only; not
 // mirrored in constants.py). The demo gNMI password is a documented default
 // (see SECRETS.md), not a real credential.

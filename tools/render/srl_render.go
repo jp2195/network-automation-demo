@@ -71,20 +71,20 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 		isisLevel = "L2"
 	}
 
-	p("set / network-instance default protocols isis instance atlas admin-state enable")
-	p("set / network-instance default protocols isis instance atlas level-capability %s", isisLevel)
-	p("set / network-instance default protocols isis instance atlas net [ \"%s\" ]", netID)
-	p("set / network-instance default protocols isis instance atlas ipv4-unicast admin-state enable")
-	p("set / network-instance default protocols isis instance atlas interface lo0.0 admin-state enable")
-	p("set / network-instance default protocols isis instance atlas interface lo0.0 passive true")
-	p("set / network-instance default protocols isis instance atlas interface lo0.0 ipv4-unicast admin-state enable")
+	p("set / network-instance default protocols isis instance %s admin-state enable", ISISInstance)
+	p("set / network-instance default protocols isis instance %s level-capability %s", ISISInstance, isisLevel)
+	p("set / network-instance default protocols isis instance %s net [ \"%s\" ]", ISISInstance, netID)
+	p("set / network-instance default protocols isis instance %s ipv4-unicast admin-state enable", ISISInstance)
+	p("set / network-instance default protocols isis instance %s interface lo0.0 admin-state enable", ISISInstance)
+	p("set / network-instance default protocols isis instance %s interface lo0.0 passive true", ISISInstance)
+	p("set / network-instance default protocols isis instance %s interface lo0.0 ipv4-unicast admin-state enable", ISISInstance)
 	for _, ifc := range ifaces {
 		if ifc.LinkKind != LinkKindBackbone {
 			continue
 		}
-		p("set / network-instance default protocols isis instance atlas interface %s.0 admin-state enable", ifc.Name)
-		p("set / network-instance default protocols isis instance atlas interface %s.0 ipv4-unicast admin-state enable", ifc.Name)
-		p("set / network-instance default protocols isis instance atlas interface %s.0 circuit-type point-to-point", ifc.Name)
+		p("set / network-instance default protocols isis instance %s interface %s.0 admin-state enable", ISISInstance, ifc.Name)
+		p("set / network-instance default protocols isis instance %s interface %s.0 ipv4-unicast admin-state enable", ISISInstance, ifc.Name)
+		p("set / network-instance default protocols isis instance %s interface %s.0 circuit-type point-to-point", ISISInstance, ifc.Name)
 	}
 	p("")
 

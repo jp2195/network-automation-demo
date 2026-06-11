@@ -32,10 +32,11 @@ func WriteWFTCutFiber(w io.Writer, s *Spec) error {
 }
 
 // WriteWFTIncidentCollector emits the incident-collector WorkflowTemplate.
-// The cluster FQDN (gather-device) and the eventing-py bundle image are
-// parameterised from spec.Metadata.Name and ImageEventingPy.
+// The cluster FQDN (gather-device), IS-IS instance name, and the
+// eventing-py bundle image are parameterised from spec.Metadata.Name,
+// ISISInstance, and ImageEventingPy.
 func WriteWFTIncidentCollector(w io.Writer, s *Spec) error {
-	_, err := fmt.Fprintf(w, wftIncidentCollectorTemplate, s.Metadata.Name, ImageEventingPy)
+	_, err := fmt.Fprintf(w, wftIncidentCollectorTemplate, s.Metadata.Name, ISISInstance, ImageEventingPy)
 	return err
 }
 
@@ -281,7 +282,7 @@ spec:
           IF_PATH="/interface[name=*]/oper-state"
           [ -n "$IFC" ] && IF_PATH="/interface[name=${IFC}]"
           IF_BLOCK=$(gnmic_get "$IF_PATH" | head -200)
-          ISIS_BLOCK=$(gnmic_get "/network-instance[name=default]/protocols/srl_nokia-isis:isis/instance[name=atlas]" | head -200)
+          ISIS_BLOCK=$(gnmic_get "/network-instance[name=default]/protocols/srl_nokia-isis:isis/instance[name=%s]" | head -200)
 
           printf '## %%s — %%s%%s\n\n' "$ROLE" "$DEV" "${IFC:+ ($IFC)}"
           printf '### interface state\n` + "`" + `` + "`" + `` + "`" + `json\n%%s\n` + "`" + `` + "`" + `` + "`" + `\n\n' "$IF_BLOCK"
