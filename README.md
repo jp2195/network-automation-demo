@@ -184,6 +184,29 @@ The 3-step DAG:
      in place (✅ + downtime), thread reply with the resolution
      summary, DEL the ledger key.
 
+### Closed-loop remediation
+
+Gray failures are the one case IS-IS will not route around on its own — the
+link stays up while the optics degrade. When `SRLOpticalDegrading` /
+`SRLInterfaceErrorsHigh` fire, the `remediation` Sensor launches a
+`remediate-link` Workflow that **costs the link out** (IS-IS metric 16777214
+on both ends, applied over gNMI — the same management plane the telemetry
+uses). Traffic shifts to the healthy ring path within seconds; when the
+warning resolves, a second Workflow deletes the metric override and the link
+returns to service. State (claims, mode, approvals) lives in Valkey.
+
+```bash
+make scenario-gray-failure LINK=ring-e-i20e   # watch the workflow cost the link out
+make remediation-status                        # current mode + active cost-outs
+
+make remediation-mode MODE=gated               # require human approval first
+make remediation-approve LINK=ring-e-i20e      # release a pending gated remediation
+make remediation-mode MODE=auto                # back to full closed-loop
+```
+
+The deterministic remediation workflow is the only component in the cluster
+holding gNMI *Set* capability; everything else is structurally read-only.
+
 ## Slack
 
 Without real Slack credentials the workflow's notify step prints the
