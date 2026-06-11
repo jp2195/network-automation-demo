@@ -70,6 +70,12 @@ class DecideFiringTests(unittest.TestCase):
         out = decide(alert(link_kind="cabinet"), self.vk, self.prom, PROM)
         self.assertEqual(out["action"], "skip")
 
+    def test_missing_link_kind_is_skipped(self):
+        payload = alert()
+        del payload["alerts"][0]["labels"]["link_kind"]
+        out = decide(payload, self.vk, self.prom, PROM)
+        self.assertEqual(out["action"], "skip")
+
     def test_missing_link_id_is_skipped(self):
         out = decide(alert(link_id=""), self.vk, self.prom, PROM)
         self.assertEqual(out["action"], "skip")
@@ -93,10 +99,12 @@ class DecideGatedTests(unittest.TestCase):
         self.assertFalse(self.vk.exists(REMEDIATION_APPROVE_PREFIX + LINK))
 
     def test_gate_timeout_skips_without_claim(self):
+        calls = []
         out = decide(alert(), self.vk, self.prom, PROM,
-                     gate_timeout=0, sleep_fn=lambda s: None)
+                     gate_timeout=0, sleep_fn=lambda s: calls.append(s))
         self.assertEqual(out["action"], "skip")
         self.assertFalse(self.vk.exists(REMEDIATION_ACTIVE_PREFIX + LINK))
+        self.assertEqual(calls, [], "sleep_fn must not run on an immediate timeout")
 
     def test_approval_arriving_during_poll(self):
         sleeps = []
