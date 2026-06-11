@@ -65,6 +65,7 @@ func WriteWFTMaintenance(w io.Writer, _ *Spec) error {
 func WriteWFTRemediation(w io.Writer, s *Spec) error {
 	body := strings.NewReplacer(
 		"@@EVENTING_IMAGE@@", ImageEventingPy,
+		"@@GNMIC_IMAGE@@", ImageGNMIC,
 		"@@CLUSTER@@", s.Metadata.Name,
 		"@@ISIS_INSTANCE@@", ISISInstance,
 	).Replace(wftRemediationTmpl)
