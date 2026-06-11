@@ -31,7 +31,7 @@ func TestWFTOutputsHaveNoSentinels(t *testing.T) {
 			i := strings.Index(out, "@@")
 			t.Errorf("%s: unreplaced sentinel near %q", name, out[i:min(i+30, len(out))])
 		}
-		if !strings.Contains(out, ImageEventingPy) && (name == "WriteWFTEnrichedNotify" || name == "WriteWFTIncidentCollector") {
+		if !strings.Contains(out, ImageEventingPy) && (name == "WriteWFTEnrichedNotify" || name == "WriteWFTIncidentCollector" || name == "WriteWFTRemediation") {
 			t.Errorf("%s: eventing image %q missing from output", name, ImageEventingPy)
 		}
 	}
