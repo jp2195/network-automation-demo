@@ -19,6 +19,7 @@ func TestWFTOutputsHaveNoSentinels(t *testing.T) {
 		"WriteWFTIncidentCollector": WriteWFTIncidentCollector,
 		"WriteWFTEnrichedNotify":    WriteWFTEnrichedNotify,
 		"WriteWFTMaintenance":       WriteWFTMaintenance,
+		"WriteWFTRemediation":       WriteWFTRemediation,
 	}
 	for name, fn := range writers {
 		var buf bytes.Buffer

@@ -118,6 +118,8 @@ func main() {
 		func(w io.Writer) error { return WriteWFTEnrichedNotify(w, spec) })
 	renderTo(filepath.Join(eventingDir, "wft-maintenance.yaml"), "",
 		func(w io.Writer) error { return WriteWFTMaintenance(w, spec) })
+	renderTo(filepath.Join(eventingDir, "wft-remediation.yaml"), "",
+		func(w io.Writer) error { return WriteWFTRemediation(w, spec) })
 
 	renderTo(filepath.Join(*outDir, "workloads", "versions.yaml"), "",
 		func(w io.Writer) error { return WriteVersions(w) })

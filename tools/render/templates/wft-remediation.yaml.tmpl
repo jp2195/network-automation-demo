@@ -1,0 +1,222 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: remediate-link
+spec:
+  serviceAccountName: operate-workflow-sa
+  entrypoint: remediate
+  arguments:
+    parameters:
+      - name: alert
+  volumes:
+    - name: scripts
+      configMap:
+        name: workflow-scripts
+  templates:
+    - name: remediate
+      inputs:
+        parameters:
+          - name: alert
+      dag:
+        tasks:
+          - name: decide
+            template: decide
+            arguments:
+              parameters:
+                - name: alert
+                  value: "{{inputs.parameters.alert}}"
+
+          # ── cost-out: raise the IS-IS metric on both ends ────────────
+          - name: cost-a
+            template: set-metric
+            depends: "decide"
+            when: "'{{tasks.decide.outputs.parameters.action}}' == 'cost-out'"
+            arguments:
+              parameters:
+                - {name: node,      value: "{{tasks.decide.outputs.parameters.node_a}}"}
+                - {name: interface, value: "{{tasks.decide.outputs.parameters.iface_a}}"}
+          - name: cost-b
+            template: set-metric
+            depends: "decide"
+            when: "'{{tasks.decide.outputs.parameters.action}}' == 'cost-out'"
+            arguments:
+              parameters:
+                - {name: node,      value: "{{tasks.decide.outputs.parameters.node_b}}"}
+                - {name: interface, value: "{{tasks.decide.outputs.parameters.iface_b}}"}
+
+          # ── restore: delete the metric leaf, back to rendered default ─
+          - name: restore-a
+            template: clear-metric
+            depends: "decide"
+            when: "'{{tasks.decide.outputs.parameters.action}}' == 'restore'"
+            arguments:
+              parameters:
+                - {name: node,      value: "{{tasks.decide.outputs.parameters.node_a}}"}
+                - {name: interface, value: "{{tasks.decide.outputs.parameters.iface_a}}"}
+          - name: restore-b
+            template: clear-metric
+            depends: "decide"
+            when: "'{{tasks.decide.outputs.parameters.action}}' == 'restore'"
+            arguments:
+              parameters:
+                - {name: node,      value: "{{tasks.decide.outputs.parameters.node_b}}"}
+                - {name: interface, value: "{{tasks.decide.outputs.parameters.iface_b}}"}
+
+          # record runs only when a full pair of Sets succeeded; on
+          # action=skip everything above is Skipped and record is omitted.
+          - name: record
+            template: record
+            depends: >-
+              (cost-a.Succeeded && cost-b.Succeeded) ||
+              (restore-a.Succeeded && restore-b.Succeeded)
+            arguments:
+              parameters:
+                - {name: action,  value: "{{tasks.decide.outputs.parameters.action}}"}
+                - {name: link_id, value: "{{tasks.decide.outputs.parameters.link_id}}"}
+                - {name: node_a,  value: "{{tasks.decide.outputs.parameters.node_a}}"}
+                - {name: iface_a, value: "{{tasks.decide.outputs.parameters.iface_a}}"}
+                - {name: node_b,  value: "{{tasks.decide.outputs.parameters.node_b}}"}
+                - {name: iface_b, value: "{{tasks.decide.outputs.parameters.iface_b}}"}
+
+    # ── decide ───────────────────────────────────────────────────────────
+    - name: decide
+      inputs:
+        parameters:
+          - name: alert
+      script:
+        image: @@EVENTING_IMAGE@@
+        command: [python3]
+        source: |
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
+          runpy.run_path("/scripts/remediate_decide.py", run_name="__main__")
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
+        env:
+          - name: ALERT_JSON
+            value: "{{inputs.parameters.alert}}"
+          - name: PROM_URL
+            value: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          - name: VALKEY_URL
+            value: valkey://valkey.valkey.svc.cluster.local:6379/2
+          - name: REMEDIATION_GATE_TIMEOUT
+            value: "600"
+        resources:
+          requests: {cpu: 50m, memory: 64Mi}
+          limits:   {memory: 128Mi}
+      outputs:
+        parameters:
+          - {name: action,  valueFrom: {path: /tmp/argo/action}}
+          - {name: link_id, valueFrom: {path: /tmp/argo/link_id}}
+          - {name: node_a,  valueFrom: {path: /tmp/argo/node_a}}
+          - {name: iface_a, valueFrom: {path: /tmp/argo/iface_a}}
+          - {name: node_b,  valueFrom: {path: /tmp/argo/node_b}}
+          - {name: iface_b, valueFrom: {path: /tmp/argo/iface_b}}
+
+    # ── set-metric ───────────────────────────────────────────────────────
+    # The ONLY config-write capability in the cluster lives in these two
+    # gnmic templates (same Set pattern as the cut-fiber WFT).
+    - name: set-metric
+      inputs:
+        parameters:
+          - name: node
+          - name: interface
+      container:
+        image: ghcr.io/openconfig/gnmic:0.44.1
+        command: [gnmic]
+        args:
+          - -a
+          - "@@CLUSTER@@-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
+          - -u
+          - admin
+          - -p
+          - "NokiaSrl1!"
+          - --skip-verify
+          - --encoding
+          - json_ietf
+          - set
+          - --update-path
+          - "/network-instance[name=default]/protocols/srl_nokia-isis:isis/instance[name=@@ISIS_INSTANCE@@]/interface[interface-name={{inputs.parameters.interface}}]/level[level-number=2]/metric"
+          - --update-value
+          - "16777214"
+        resources:
+          requests: {cpu: 30m, memory: 32Mi}
+          limits:   {memory: 128Mi}
+
+    # ── clear-metric ─────────────────────────────────────────────────────
+    - name: clear-metric
+      inputs:
+        parameters:
+          - name: node
+          - name: interface
+      container:
+        image: ghcr.io/openconfig/gnmic:0.44.1
+        command: [gnmic]
+        args:
+          - -a
+          - "@@CLUSTER@@-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
+          - -u
+          - admin
+          - -p
+          - "NokiaSrl1!"
+          - --skip-verify
+          - --encoding
+          - json_ietf
+          - set
+          - --delete
+          - "/network-instance[name=default]/protocols/srl_nokia-isis:isis/instance[name=@@ISIS_INSTANCE@@]/interface[interface-name={{inputs.parameters.interface}}]/level[level-number=2]/metric"
+        resources:
+          requests: {cpu: 30m, memory: 32Mi}
+          limits:   {memory: 128Mi}
+
+    # ── record ───────────────────────────────────────────────────────────
+    - name: record
+      inputs:
+        parameters:
+          - name: action
+          - name: link_id
+          - name: node_a
+          - name: iface_a
+          - name: node_b
+          - name: iface_b
+      script:
+        image: @@EVENTING_IMAGE@@
+        command: [python3]
+        source: |
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
+          runpy.run_path("/scripts/remediate_record.py", run_name="__main__")
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
+        env:
+          - name: ACTION
+            value: "{{inputs.parameters.action}}"
+          - name: LINK_ID
+            value: "{{inputs.parameters.link_id}}"
+          - name: NODE_A
+            value: "{{inputs.parameters.node_a}}"
+          - name: IFACE_A
+            value: "{{inputs.parameters.iface_a}}"
+          - name: NODE_B
+            value: "{{inputs.parameters.node_b}}"
+          - name: IFACE_B
+            value: "{{inputs.parameters.iface_b}}"
+          - name: VALKEY_URL
+            value: valkey://valkey.valkey.svc.cluster.local:6379/2
+          - name: SLACK_BOT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: slack-bot
+                key: bot_token
+                optional: true
+          - name: SLACK_CHANNEL_ID
+            valueFrom:
+              secretKeyRef:
+                name: slack-bot
+                key: channel_id
+                optional: true
+        resources:
+          requests: {cpu: 50m, memory: 64Mi}
+          limits:   {memory: 128Mi}
