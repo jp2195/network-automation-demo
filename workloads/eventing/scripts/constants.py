@@ -32,3 +32,12 @@ CABINET_NAME_PREFIX = "fc-"
 # silences carrying this marker, so the two maintenance scripts must
 # agree on it. Python-only — no Go mirror.
 MAINTENANCE_CREATED_BY = "atlas-maintenance"
+
+# Closed-loop remediation state in Valkey DB 2. Python-only — no Go
+# mirror (the drift-guard test in tools/render/constants_test.go checks
+# a fixed allowlist and tolerates extra Python constants).
+REMEDIATION_MODE_KEY       = "remediation:mode"       # value: auto | gated (absent => auto)
+REMEDIATION_MODE_AUTO      = "auto"
+REMEDIATION_MODE_GATED     = "gated"
+REMEDIATION_ACTIVE_PREFIX  = "remediation:active:"    # + link_id — claim, EX 7200
+REMEDIATION_APPROVE_PREFIX = "remediation:approve:"   # + link_id — gated-mode approval token
