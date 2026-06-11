@@ -1,7 +1,8 @@
 .PHONY: up preflight down status render render-check build demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet \
         scenario scenario-list scenario-hurricane scenario-backhoe scenario-cabinet scenario-flap \
         scenario-gray-failure scenario-gray-failure-end \
-        maintenance-start maintenance-end maintenance-list help
+        maintenance-start maintenance-end maintenance-list \
+        remediation-mode remediation-approve remediation-status help
 
 CLUSTER_NAME ?= atlas-demo
 TOPO_NS      ?= clabernetes
@@ -30,6 +31,9 @@ help:
 	@echo "  maintenance-start    Open a maintenance window for NODE= for HOURS= (default 2). Silences alerts."
 	@echo "  maintenance-end      Close the maintenance window for NODE= early."
 	@echo "  maintenance-list     Show currently active atlas-maintenance silences."
+	@echo "  remediation-mode     Set closed-loop remediation mode (MODE=auto|gated)"
+	@echo "  remediation-approve  Approve a pending gated remediation (LINK= required)"
+	@echo "  remediation-status   Show remediation mode and active cost-outs"
 
 up: preflight
 	@echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"
@@ -86,6 +90,7 @@ render-check:
 	  workloads/eventing/wft-incident-collector.yaml \
 	  workloads/eventing/wft-enriched-notify.yaml \
 	  workloads/eventing/wft-maintenance.yaml \
+	  workloads/eventing/wft-remediation.yaml \
 	  workloads/versions.yaml \
 	  workloads/netbox/seed/seed.json \
 	  workloads/dom-synth/links.json \
@@ -221,3 +226,20 @@ maintenance-end:
 
 maintenance-list:
 	@bin/maintenance.sh list
+
+# --- Closed-loop remediation ----------------------------------------------
+
+remediation-mode:
+	@[ "$(MODE)" = "auto" ] || [ "$(MODE)" = "gated" ] || { echo "MODE must be auto or gated (e.g. MODE=gated)"; exit 1; }
+	@kubectl -n valkey exec deploy/valkey -c valkey -- valkey-cli -n 2 set remediation:mode $(MODE) >/dev/null
+	@echo "==> remediation mode: $(MODE)"
+
+remediation-approve:
+	@[ -n "$(LINK)" ] || { echo "LINK is required (e.g. LINK=ring-e-i20e)"; exit 1; }
+	@kubectl -n valkey exec deploy/valkey -c valkey -- valkey-cli -n 2 set remediation:approve:$(LINK) 1 EX 900 >/dev/null
+	@echo "==> approval recorded for $(LINK) (valid 15 minutes)"
+
+remediation-status:
+	@printf "mode:   "; kubectl -n valkey exec deploy/valkey -c valkey -- valkey-cli -n 2 get remediation:mode 2>/dev/null | grep . || echo "auto (default)"
+	@echo "active:"
+	@kubectl -n valkey exec deploy/valkey -c valkey -- valkey-cli -n 2 --scan --pattern 'remediation:active:*' 2>/dev/null | sed 's/^/  /' | grep . || echo "  (none)"
