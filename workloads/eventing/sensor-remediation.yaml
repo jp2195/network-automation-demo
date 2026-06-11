@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: remediation
+spec:
+  template:
+    serviceAccountName: operate-workflow-sa
+  dependencies:
+    - name: alert
+      eventSourceName: webhook
+      eventName: alert
+      filters:
+        data:
+          # Only the gray-failure warning lane — hard cuts reroute via
+          # IS-IS on their own and need no metric intervention. Both
+          # firing and resolved events pass; the decide step branches.
+          - path: body.alerts.0.labels.alertname
+            type: string
+            value:
+              - SRLOpticalDegrading
+              - SRLInterfaceErrorsHigh
+  triggers:
+    - template:
+        name: remediate
+        k8s:
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: remediate-
+              spec:
+                serviceAccountName: operate-workflow-sa
+                workflowTemplateRef:
+                  name: remediate-link
+                arguments:
+                  parameters:
+                    - name: alert
+                      value: "placeholder"
+          parameters:
+            - src:
+                dependencyName: alert
+                dataKey: body
+              dest: spec.arguments.parameters.0.value
