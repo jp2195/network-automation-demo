@@ -48,7 +48,7 @@ def decide(alert_body, vk, prom_fn, prom_url,
 
     if not link_id:
         return _skip("alert carries no link_id label")
-    if labels.get("link_kind", LINK_KIND_BACKBONE) != LINK_KIND_BACKBONE:
+    if labels.get("link_kind") != LINK_KIND_BACKBONE:
         return _skip(f"{link_id} is not a backbone link; nothing to cost out")
 
     rows = prom_fn(
