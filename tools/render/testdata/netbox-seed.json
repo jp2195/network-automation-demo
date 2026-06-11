@@ -1,0 +1,418 @@
+{
+  "custom_fields": [
+    {
+      "name": "isis_sid",
+      "label": "IS-IS SID",
+      "type": "integer",
+      "object_types": [
+        "dcim.device"
+      ],
+      "description": "Segment Routing prefix-SID"
+    },
+    {
+      "name": "circuit_id",
+      "label": "Circuit ID",
+      "type": "text",
+      "object_types": [
+        "dcim.cable"
+      ],
+      "description": "Provider circuit / OSP identifier"
+    },
+    {
+      "name": "restoration_sla_hours",
+      "label": "Restoration SLA (h)",
+      "type": "integer",
+      "object_types": [
+        "dcim.cable"
+      ],
+      "description": "Provider restoration SLA in hours"
+    }
+  ],
+  "regions": [
+    {
+      "slug": "district-7",
+      "name": "District 7"
+    },
+    {
+      "slug": "district-8",
+      "name": "District 8"
+    }
+  ],
+  "site_groups": [
+    {
+      "slug": "i-00",
+      "name": "I-00",
+      "description": "Highway corridor (Atlas DOT Region 7)"
+    }
+  ],
+  "rirs": [
+    {
+      "slug": "atlas-private",
+      "name": "Atlas Private",
+      "is_private": true
+    }
+  ],
+  "asns": [
+    {
+      "asn": 64512,
+      "rir": "atlas-private",
+      "sites": [
+        "fc-x-site"
+      ],
+      "description": "BGP ASN for cabinet fc-x"
+    }
+  ],
+  "sites": [
+    {
+      "slug": "hub-a-site",
+      "name": "Goldenville",
+      "latitude": 33.7,
+      "longitude": -84.4,
+      "region": "district-7",
+      "group": "i-00"
+    },
+    {
+      "slug": "hub-b-site",
+      "name": "Specton",
+      "latitude": 33.8,
+      "longitude": -84.3,
+      "region": "district-7"
+    },
+    {
+      "slug": "fc-x-site",
+      "name": "Fixture Falls",
+      "latitude": 33.9,
+      "longitude": -84.2,
+      "region": "district-8",
+      "group": "i-00"
+    }
+  ],
+  "tags": [
+    {
+      "slug": "adot-region-7",
+      "name": "Atlas DOT Region 7"
+    }
+  ],
+  "owner_groups": [
+    {
+      "name": "OSP Providers",
+      "description": "Outside-plant fiber lessors and operator-owned plant"
+    }
+  ],
+  "owners": [
+    {
+      "name": "Ringlight Fiber",
+      "group": "OSP Providers",
+      "description": "Fiber owner for cabinet/ring OSP cables"
+    }
+  ],
+  "manufacturers": [
+    {
+      "slug": "nokia",
+      "name": "Nokia"
+    },
+    {
+      "slug": "frrouting",
+      "name": "FRRouting"
+    },
+    {
+      "slug": "atlas-vision",
+      "name": "Atlas Vision"
+    },
+    {
+      "slug": "atlas-traffic",
+      "name": "Atlas Traffic Systems"
+    }
+  ],
+  "device_types": [
+    {
+      "manufacturer": "nokia",
+      "model": "SR Linux",
+      "slug": "srlinux"
+    },
+    {
+      "manufacturer": "frrouting",
+      "model": "FRR Routing Stack",
+      "slug": "frr"
+    },
+    {
+      "manufacturer": "atlas-vision",
+      "model": "AV-CCTV-HD",
+      "slug": "av-cctv-hd"
+    },
+    {
+      "manufacturer": "atlas-traffic",
+      "model": "AT-SIG-2070",
+      "slug": "at-sig-2070"
+    },
+    {
+      "manufacturer": "atlas-traffic",
+      "model": "AT-DMS-VMS16",
+      "slug": "at-dms-vms16"
+    },
+    {
+      "manufacturer": "atlas-traffic",
+      "model": "AT-RAMP-MID",
+      "slug": "at-ramp-mid"
+    }
+  ],
+  "device_roles": [
+    {
+      "slug": "tmc",
+      "name": "TMC",
+      "color": "ff0000"
+    },
+    {
+      "slug": "corridor-hub",
+      "name": "Corridor Hub",
+      "color": "0066ff"
+    },
+    {
+      "slug": "field-cabinet",
+      "name": "Field Cabinet",
+      "color": "00aa00"
+    },
+    {
+      "slug": "cctv-camera",
+      "name": "CCTV Camera",
+      "color": "9c27b0"
+    },
+    {
+      "slug": "signal-controller",
+      "name": "Signal Controller",
+      "color": "ff9800"
+    },
+    {
+      "slug": "dms",
+      "name": "DMS",
+      "color": "795548"
+    },
+    {
+      "slug": "ramp-meter",
+      "name": "Ramp Meter",
+      "color": "607d8b"
+    }
+  ],
+  "devices": [
+    {
+      "name": "hub-a",
+      "site": "hub-a-site",
+      "role": "corridor-hub",
+      "device_type": "srlinux",
+      "status": "active",
+      "primary_ip4": "10.0.0.1/32",
+      "custom_fields": {
+        "isis_sid": 16001
+      }
+    },
+    {
+      "name": "hub-b",
+      "site": "hub-b-site",
+      "role": "tmc",
+      "device_type": "srlinux",
+      "status": "active",
+      "primary_ip4": "10.0.0.2/32",
+      "custom_fields": {
+        "isis_sid": 16002
+      }
+    },
+    {
+      "name": "fc-x",
+      "site": "fc-x-site",
+      "role": "field-cabinet",
+      "device_type": "frr",
+      "status": "active",
+      "primary_ip4": "10.0.0.3/32",
+      "tags": [
+        "adot-region-7"
+      ],
+      "custom_fields": {
+        "isis_sid": 0
+      }
+    },
+    {
+      "name": "fc-x-cctv-01",
+      "site": "fc-x-site",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-x-cctv-02",
+      "site": "fc-x-site",
+      "role": "cctv-camera",
+      "device_type": "av-cctv-hd",
+      "status": "active"
+    },
+    {
+      "name": "fc-x-sig-01",
+      "site": "fc-x-site",
+      "role": "signal-controller",
+      "device_type": "at-sig-2070",
+      "status": "active"
+    },
+    {
+      "name": "fc-x-dms-01",
+      "site": "fc-x-site",
+      "role": "dms",
+      "device_type": "at-dms-vms16",
+      "status": "active"
+    },
+    {
+      "name": "fc-x-rm-01",
+      "site": "fc-x-site",
+      "role": "ramp-meter",
+      "device_type": "at-ramp-mid",
+      "status": "active"
+    }
+  ],
+  "interfaces": [
+    {
+      "device": "hub-a",
+      "name": "lo0",
+      "type": "virtual",
+      "description": "Loopback (router-id, IS-IS source)"
+    },
+    {
+      "device": "hub-a",
+      "name": "ethernet-1/1",
+      "type": "10gbase-x-sfpp",
+      "description": "to hub-b/ethernet-1/1 []"
+    },
+    {
+      "device": "hub-a",
+      "name": "ethernet-1/2",
+      "type": "10gbase-x-sfpp",
+      "description": "to fc-x/eth1 [OSP-GOLD-001]"
+    },
+    {
+      "device": "hub-b",
+      "name": "lo0",
+      "type": "virtual",
+      "description": "Loopback (router-id, IS-IS source)"
+    },
+    {
+      "device": "hub-b",
+      "name": "ethernet-1/1",
+      "type": "10gbase-x-sfpp",
+      "description": "to hub-a/ethernet-1/1 []"
+    },
+    {
+      "device": "fc-x",
+      "name": "lo",
+      "type": "virtual",
+      "description": "Loopback (router-id, IS-IS source)"
+    },
+    {
+      "device": "fc-x",
+      "name": "eth1",
+      "type": "1000base-t",
+      "description": "to hub-a/ethernet-1/2 [OSP-GOLD-001]"
+    }
+  ],
+  "ip_addresses": [
+    {
+      "address": "10.0.0.1/32",
+      "device": "hub-a",
+      "interface": "lo0"
+    },
+    {
+      "address": "10.0.0.2/32",
+      "device": "hub-b",
+      "interface": "lo0"
+    },
+    {
+      "address": "10.0.0.3/32",
+      "device": "fc-x",
+      "interface": "lo"
+    },
+    {
+      "address": "10.1.1.1/30",
+      "device": "hub-a",
+      "interface": "ethernet-1/1"
+    },
+    {
+      "address": "10.2.1.1/30",
+      "device": "hub-a",
+      "interface": "ethernet-1/2"
+    },
+    {
+      "address": "10.1.1.2/30",
+      "device": "hub-b",
+      "interface": "ethernet-1/1"
+    },
+    {
+      "address": "10.2.1.2/30",
+      "device": "fc-x",
+      "interface": "eth1"
+    }
+  ],
+  "cables": [
+    {
+      "label": "",
+      "a": {
+        "device": "hub-a",
+        "interface": "ethernet-1/1"
+      },
+      "b": {
+        "device": "hub-b",
+        "interface": "ethernet-1/1"
+      },
+      "status": "connected",
+      "type": "smf-os2",
+      "length_unit": "km",
+      "custom_fields": {
+        "circuit_id": "",
+        "restoration_sla_hours": 0
+      }
+    },
+    {
+      "label": "OSP-GOLD-001",
+      "a": {
+        "device": "hub-a",
+        "interface": "ethernet-1/2"
+      },
+      "b": {
+        "device": "fc-x",
+        "interface": "eth1"
+      },
+      "status": "connected",
+      "type": "smf-os2",
+      "owner": "Ringlight Fiber",
+      "description": "I-00 trench",
+      "length": 1.2,
+      "length_unit": "km",
+      "install_date": "2020-01-01",
+      "custom_fields": {
+        "circuit_id": "RF-0001",
+        "restoration_sla_hours": 8
+      }
+    }
+  ],
+  "journal_entries": [
+    {
+      "assigned_object_type": "dcim.cable",
+      "assigned_object": {
+        "label": "FOC-NW-01"
+      },
+      "kind": "info",
+      "comments": "2024-08-12: prior splice failure during I-75 widening; resolved 4h22m by Apex Fiber crew. Reference incident IR-2024-0814."
+    },
+    {
+      "assigned_object_type": "dcim.cable",
+      "assigned_object": {
+        "label": "FOC-RING-NWN"
+      },
+      "kind": "warning",
+      "comments": "2025-02-03: scheduled corridor maintenance (I-285 paving); 90-minute window 02:00-03:30 EDT, no traffic impact (TI-LFA absorbed reroute)."
+    },
+    {
+      "assigned_object_type": "dcim.cable",
+      "assigned_object": {
+        "label": "FOC-CAB-NW"
+      },
+      "kind": "info",
+      "comments": "2025-04-19: cabinet drop hand-off acceptance; OTDR baseline recorded by Pinecrest Public Works."
+    }
+  ]
+}
