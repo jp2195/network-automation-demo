@@ -41,6 +41,7 @@ GNMIC_OUTPUT = json.dumps([{
             "values": {
                 "srl_nokia-network-instance:network-instance/protocols/srl_nokia-isis:isis/instance": {
                     "name": "atlas",
+                    "admin-state": "enable",
                     "interface": [
                         {"interface-name": "ethernet-1/1.0",
                          "level": [{"level-number": 2, "metric": 16777214}]},
