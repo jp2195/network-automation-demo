@@ -200,6 +200,62 @@
     },
     {
       "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0,
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value_and_name"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum(count_over_time({namespace=\"argo-events\"} |= `postmortem generated` [24h]))",
+          "legendFormat": "postmortems",
+          "refId": "A"
+        }
+      ],
+      "title": "Postmortems 24h",
+      "type": "stat"
+    },
+    {
+      "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
@@ -352,11 +408,11 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"argo-events\"} |~ \"affected_device|severity_class|provisioned|enrichment|posted to Slack|short-circuit\"",
+          "expr": "{namespace=\"argo-events\"} |~ \"affected_device|severity_class|provisioned|enrichment|posted to Slack|short-circuit|postmortem generated\"",
           "refId": "A"
         }
       ],
-      "title": "Workflow output — enrichment + analyze + notify",
+      "title": "Workflow output — enrichment + analyze + notify + postmortem",
       "type": "logs"
     },
     {
