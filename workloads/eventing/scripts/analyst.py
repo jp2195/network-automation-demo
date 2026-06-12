@@ -23,13 +23,13 @@ import re
 import sys
 
 from pydantic import BaseModel, Field
-from pydantic_ai import Agent
+from pydantic_ai import Agent, ToolOutput
 from pydantic_ai.usage import UsageLimits
 
 import analyst_tools
 from constants import AI_ANALYSIS_MARKER
 
-MAX_MODEL_REQUESTS = 12  # iteration cap; per-tool timeouts live in analyst_tools
+MAX_MODEL_REQUESTS = 24  # iteration cap; per-tool timeouts live in analyst_tools
 
 
 class Evidence(BaseModel):
@@ -60,7 +60,14 @@ tools — verify current state, find the affected link's both ends, check
 whether IS-IS rerouted, look for related log lines — then return an
 IncidentAnalysis. Be concise and concrete; every claim in the summary
 or root cause should be backed by an evidence entry (source, exact
-query, observation). Aim for at most ~6 tool calls.
+query, observation).
+
+Every turn must be exactly one tool call — never reply in plain text;
+narration belongs in the final analysis, not between calls. Investigate
+with AT MOST 6 tool calls, then you MUST finish by calling
+submit_incident_analysis with your structured analysis — investigating
+forever without submitting is a failure. If the evidence is incomplete,
+submit anyway with a lower confidence and note what is missing.
 
 A deterministic remediation lane may already have costed out a degraded
 link (IS-IS metric 16777214 on both ends — visible via gnmi_get). You
@@ -88,13 +95,24 @@ def _model_settings():
 def build_agent(model, isis_instance=None):
     return Agent(
         model,
-        output_type=IncidentAnalysis,
+        # A salient, imperative output-tool name: small local models
+        # ignore the default "final_result" and investigate forever
+        # (smoke-found); the explicit submit_* verb converges them.
+        output_type=ToolOutput(
+            IncidentAnalysis,
+            name="submit_incident_analysis",
+            description="Submit your final IncidentAnalysis. Call this "
+                        "exactly once to finish the investigation.",
+        ),
         # .replace, not .format: instruction edits may add PromQL/JSON
         # examples with literal braces, which .format would blow up on.
         instructions=_INSTRUCTIONS.replace(
             "{isis}", isis_instance or os.environ.get("ISIS_INSTANCE", "atlas")),
         tools=analyst_tools.ALL_TOOLS,
-        retries=2,
+        # Small local models occasionally narrate in plain text between
+        # tool calls; each such turn costs an output retry, so leave
+        # headroom (wall-clock is still bounded by activeDeadlineSeconds).
+        retries=8,
         model_settings=_model_settings(),
     )
 
