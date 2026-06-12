@@ -131,7 +131,7 @@ Note the two endpoints for the SAME registry:
   `image:` field, because that's how the registry resolves from inside
   the cluster.
 
-These three images deliberately stay on `:latest`: `make build` rebuilds and
+These four images deliberately stay on `:latest`: `make build` rebuilds and
 pushes them on every `make up`, and the registry lives and dies with the k3d
 cluster, so a pinned tag would only add a version-bump step to the edit loop
 without making anything more reproducible. Upstream images (SR Linux, FRR,
