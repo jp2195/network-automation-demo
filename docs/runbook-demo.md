@@ -272,3 +272,29 @@ resolve within `for:` window (1–2 min).
   (skipped).
 - Run two scenarios on different links concurrently → independent ramps;
   alerts fire per link.
+
+## AI incident analyst (advisory lane)
+
+The same alert, two analyses: the deterministic pipeline's enrichment,
+and — when enabled — an LLM agent that interrogates the network
+read-only and publishes a structured `IncidentAnalysis`.
+
+1. Enable the lane (optional; without it every `ai-analyze-*` workflow
+   no-ops with "AI disabled"): create the `ai-analyst` Secret per
+   `SECRETS.md` — any OpenAI-compatible endpoint works, including a
+   local Ollama at zero cost.
+2. Trigger an incident with agency impact:
+   `make demo-cut NODE=hub-i20e INTERFACE=ethernet-1/4`
+3. Watch the lane: `kubectl -n argo-events get workflows` — an
+   `ai-analyze-*` workflow runs alongside `enrich-notify-*`, never
+   blocking it. Its pod log ends with one
+   `INCIDENT_ANALYSIS_V1 {...}` line.
+4. See it on the **Alert console** dashboard — "AI analyst —
+   IncidentAnalysis (advisory lane)" panel.
+5. Restore (`make demo-restore NODE=hub-i20e INTERFACE=ethernet-1/4`)
+   and fetch the postmortem (`make postmortem FP=<fingerprint>`): the
+   analysis appears as the "Analyst narrative (AI)" section.
+
+The agent is advisory forever: its tools are structurally read-only
+(gNMI Get-only module, allowlisted inputs) and remediation stays in the
+deterministic lane.

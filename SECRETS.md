@@ -28,6 +28,37 @@ The patterns generalize to any other secret you might want to add later
 patterns `*.secret.yaml` and the directory `secrets.local/` are
 gitignored so a careless `git add -A` won't catch them.
 
+## AI incident analyst (`ai-analyst` Secret)
+
+The AI lane follows the same optional-Secret pattern as Slack. With no
+Secret, every `ai-analyze-*` workflow step prints `AI disabled` and
+exits 0 — the deterministic pipeline never depends on it.
+
+To enable it, point the Secret at any OpenAI-compatible endpoint:
+
+```
+kubectl create secret generic ai-analyst \
+  --namespace argo-events \
+  --from-literal=base_url='https://api.openai.com/v1' \
+  --from-literal=api_key='sk-YOUR-REAL-KEY' \
+  --from-literal=model='gpt-5.2'
+```
+
+Zero-cost local option — Ollama on the host (k3d resolves the host as
+`host.k3d.internal`; the api_key just has to be non-empty):
+
+```
+kubectl create secret generic ai-analyst \
+  --namespace argo-events \
+  --from-literal=base_url='http://host.k3d.internal:11434/v1' \
+  --from-literal=api_key='ollama' \
+  --from-literal=model='qwen3.5:9b'
+```
+
+The analyst is read-only by construction (gNMI Get-only module, input
+allowlists on every tool) and advisory forever — it never executes
+remediation. Remove with `kubectl -n argo-events delete secret ai-analyst`.
+
 ## What lives in the repo today (and isn't a secret)
 
 | Value | File | Why it's safe to commit |
