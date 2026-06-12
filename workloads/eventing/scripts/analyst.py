@@ -80,8 +80,10 @@ def build_agent(model, isis_instance=None):
         retries=2,
         # Explicit output cap: thinking models (e.g. qwen3.5) otherwise
         # exhaust the provider-default budget on reasoning tokens before
-        # any structured response lands (UnexpectedModelBehavior).
-        model_settings={"max_tokens": 16384},
+        # any structured response lands (UnexpectedModelBehavior). A
+        # ceiling, not an allocation — generous on purpose; runaway cost
+        # is already bounded by request_limit + activeDeadlineSeconds.
+        model_settings={"max_tokens": 32768},
     )
 
 
