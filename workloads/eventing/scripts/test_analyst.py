@@ -69,6 +69,17 @@ class TestToolAllowlists(unittest.TestCase):
             with self.assertRaises(ModelRetry, msg=path):
                 analyst_tools.gnmi_get("hub-e", path)
 
+    def test_third_identical_call_is_blocked(self):
+        analyst_tools._seen_calls.clear()
+        with mock.patch("analyst_tools.prom_query", return_value=[]):
+            with mock.patch.dict("os.environ", {"PROM_URL": "http://x"}):
+                analyst_tools.query_prometheus("up")
+                analyst_tools.query_prometheus("up")          # re-check ok
+                analyst_tools.query_prometheus("up{job='x'}")  # different ok
+                with self.assertRaises(ModelRetry):
+                    analyst_tools.query_prometheus("up")       # 3rd → blocked
+        analyst_tools._seen_calls.clear()
+
     def test_huge_tool_results_are_byte_bounded(self):
         big = [{"interface": f"ethernet-1/{i}", "stats": "x" * 200}
                for i in range(200)]
