@@ -34,5 +34,8 @@ func TestWFTOutputsHaveNoSentinels(t *testing.T) {
 		if !strings.Contains(out, ImageEventingPy) && (name == "WriteWFTEnrichedNotify" || name == "WriteWFTIncidentCollector" || name == "WriteWFTRemediation") {
 			t.Errorf("%s: eventing image %q missing from output", name, ImageEventingPy)
 		}
+		if !strings.Contains(out, ImageGNMIC) && name == "WriteWFTRemediation" {
+			t.Errorf("%s: gnmic image %q missing from output", name, ImageGNMIC)
+		}
 	}
 }

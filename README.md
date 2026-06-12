@@ -238,8 +238,8 @@ workloads/
   snmp/                      snmp_exporter + Probe CR + PromRule (legacy lane)
   observability/             PromRules + AlertmanagerConfig + dashboards
   eventing/                  EventSource + Sensors + WorkflowTemplates +
-                               Python step scripts (enrich/analyze/notify)
-Makefile                   make up | down | status | render | demo-cut | demo-restore
+                               Python step scripts (enrich/analyze/notify/remediate)
+Makefile                   make up | down | status | render | demo-cut | demo-restore | remediation-*
 SECRETS.md                 how to use real credentials without committing them
 ```
 
