@@ -172,9 +172,9 @@ def main():
         print(f"no drift across {len(expected) - len(unreachable)} nodes", flush=True)
         return
 
-    status = post_alerts(os.environ["ALERTMANAGER_URL"], build_alerts(kept))
     for d in kept:
         print(f"DRIFT {d['node']} {d['interface']}: {d['detail']}", flush=True)
+    status = post_alerts(os.environ["ALERTMANAGER_URL"], build_alerts(kept))
     print(f"posted {len(kept)} ConfigDrift alert(s) (HTTP {status})", flush=True)
 
 
