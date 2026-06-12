@@ -9,7 +9,9 @@ any lazy network-dep import).
 """
 
 import asyncio
+import contextlib
 import inspect
+import io
 import json
 import unittest
 from unittest import mock
@@ -170,6 +172,43 @@ class TestMarkerContract(unittest.TestCase):
         md = postmortem._section_ai(parsed)
         self.assertIn("Analyst narrative", md)
         self.assertIn("Dispatch fiber crew", md)
+
+
+class TestMainDegradePaths(unittest.TestCase):
+    """The lane must be a no-op without the Secret, and firing-only.
+    These paths must not import the OpenAI client (not installed in this
+    test env — an import would error loudly, which is the point)."""
+
+    def _run_main(self, env):
+        out = io.StringIO()
+        with mock.patch.dict("os.environ", env, clear=True):
+            with contextlib.redirect_stdout(out):
+                analyst.main()
+        return out.getvalue()
+
+    def test_secret_absent_prints_disabled_and_exits_zero(self):
+        msg = self._run_main({})
+        self.assertIn("AI disabled", msg)
+
+    def test_partial_secret_counts_as_absent(self):
+        msg = self._run_main({"AI_BASE_URL": "http://x:11434/v1"})
+        self.assertIn("AI disabled", msg)
+
+    def test_resolved_event_skips_analysis(self):
+        body = {"alerts": [{"status": "resolved",
+                            "fingerprint": "abc",
+                            "labels": {"alertname": "SRLInterfaceOperDown"}}]}
+        msg = self._run_main({"AI_BASE_URL": "http://x:11434/v1",
+                              "AI_MODEL": "m",
+                              "ALERT_JSON": json.dumps(body)})
+        self.assertIn("resolved event", msg)
+
+    def test_missing_fingerprint_skips_analysis(self):
+        body = {"alerts": [{"status": "firing", "labels": {}}]}
+        msg = self._run_main({"AI_BASE_URL": "http://x:11434/v1",
+                              "AI_MODEL": "m",
+                              "ALERT_JSON": json.dumps(body)})
+        self.assertIn("no fingerprint", msg)
 
 
 if __name__ == "__main__":
