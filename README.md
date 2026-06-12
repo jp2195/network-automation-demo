@@ -113,12 +113,16 @@ UIs after sync settles:
 
 ### Pre-baked images
 
-`make up` (and `make build` standalone) builds and pushes three pre-baked
+`make up` (and `make build` standalone) builds and pushes four pre-baked
 images into the k3d-bundled distribution registry:
 
 - `localhost:5001/eventing-py:latest` — Python + slack-sdk + valkey + eventing scripts.
 - `localhost:5001/dom-synth:latest` — Python + valkey + dom_synth.py.
 - `localhost:5001/frr-snmpd:latest` — FRR + net-snmp.
+- `localhost:5001/ai-analyst:latest` — Python + Pydantic AI + the read-only
+  tool deps (pygnmi Get-only, SNMP, PromQL/LogQL/NetBox over stdlib) for the
+  advisory AI lane. A no-op unless you create the optional `ai-analyst`
+  Secret (see `SECRETS.md`).
 
 Note the two endpoints for the SAME registry:
 
