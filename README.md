@@ -207,6 +207,23 @@ make remediation-mode MODE=auto                # back to full closed-loop
 The deterministic remediation workflow is the only component in the cluster
 holding gNMI *Set* capability; everything else is structurally read-only.
 
+### Config drift audit
+
+NetBox + git say what the network *should* be; the drift audit proves the
+network *is* that. Every 5 minutes a CronWorkflow pulls each SR Linux
+node's running config over gNMI and diffs it against the rendered intent
+(interface admin-state, IS-IS metric overrides). Any divergence raises a
+`ConfigDrift` warning through the same enrich→notify pipeline as an
+outage — so an out-of-band change (try `make demo-cut NODE=hub-e
+INTERFACE=ethernet-1/3`) is caught, named precisely, and self-resolves
+once the config is brought back in line. Metric overrides applied by the
+closed-loop remediation are recognized as platform actions and suppressed,
+not flagged.
+
+```bash
+make drift-check    # run the audit immediately
+```
+
 ## Slack
 
 Without real Slack credentials the workflow's notify step prints the
