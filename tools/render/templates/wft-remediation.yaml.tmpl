@@ -124,7 +124,7 @@ spec:
           - name: interface
       container:
         image: @@GNMIC_IMAGE@@
-        command: [gnmic]
+        command: [/app/gnmic]
         args:
           - -a
           - "@@CLUSTER@@-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
@@ -152,7 +152,7 @@ spec:
           - name: interface
       container:
         image: @@GNMIC_IMAGE@@
-        command: [gnmic]
+        command: [/app/gnmic]
         args:
           - -a
           - "@@CLUSTER@@-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"

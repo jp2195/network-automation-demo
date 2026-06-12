@@ -96,7 +96,7 @@ spec:
           - name: action
       container:
         image: ghcr.io/openconfig/gnmic:0.44.1
-        command: [gnmic]
+        command: [/app/gnmic]
         args:
           - -a
           - "%s-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
@@ -293,7 +293,7 @@ spec:
           fi
           ADDR="%s-${DEV}.clabernetes.svc.cluster.local:57400"
           gnmic_get() {
-            timeout 8 gnmic -a "$ADDR" -u admin -p 'NokiaSrl1!' --skip-verify \
+            timeout 8 /app/gnmic -a "$ADDR" -u admin -p 'NokiaSrl1!' --skip-verify \
               -e json_ietf get --path "$1" 2>/dev/null \
               || echo "[unreachable: $1]"
           }
