@@ -10,11 +10,18 @@ any lazy network-dep import).
 
 import asyncio
 import inspect
+import json
 import unittest
+from unittest import mock
 
 import gnmi_readonly
 import analyst_tools
-from pydantic_ai import ModelRetry
+import analyst
+import postmortem
+from constants import AI_ANALYSIS_MARKER
+from pydantic_ai import ModelResponse, ModelRetry, ToolCallPart
+from pydantic_ai.models.function import FunctionModel
+from pydantic_ai.models.test import TestModel
 
 
 class TestGnmiStructurallyReadOnly(unittest.TestCase):
@@ -86,6 +93,83 @@ class TestToolAllowlists(unittest.TestCase):
         self.assertEqual(analyst_tools._clamp_minutes(999999), 360)
         self.assertEqual(analyst_tools._clamp_minutes(0), 1)
         self.assertEqual(analyst_tools._clamp_minutes("45"), 45)
+
+
+_ANALYSIS_KW = dict(
+    summary="Fiber cut on ring-e-i20e; IS-IS rerouted.",
+    probable_root_cause="Physical layer failure on FOC-RING-EI20E",
+    recommendation="Dispatch fiber crew; verify optics before restore.",
+    confidence=0.85,
+    evidence=[dict(source="prometheus",
+                   query='link:oper_state_with_meta{link_id="ring-e-i20e"}',
+                   observation="state 2 (DOWN) on both ends")],
+)
+
+
+class TestAgentCore(unittest.TestCase):
+    def test_structured_output_with_testmodel(self):
+        agent = analyst.build_agent(TestModel(call_tools=[]))
+        result = agent.run_sync("analyze")
+        self.assertIsInstance(result.output, analyst.IncidentAnalysis)
+
+    def test_all_five_tool_families_registered(self):
+        m = TestModel(call_tools=[])
+        analyst.build_agent(m).run_sync("analyze")
+        names = {t.name for t in m.last_model_request_parameters.function_tools}
+        self.assertEqual(names, {"query_prometheus", "query_prometheus_range",
+                                 "query_loki", "query_netbox",
+                                 "gnmi_get", "snmp_get"})
+
+    def test_tool_call_round_trip_with_functionmodel(self):
+        seen = []
+
+        def scripted(messages, info):
+            if len(messages) == 1:
+                return ModelResponse(parts=[
+                    ToolCallPart("query_prometheus",
+                                 {"promql": 'ALERTS{alertstate="firing"}'})])
+            return ModelResponse(parts=[
+                ToolCallPart(info.output_tools[0].name, dict(_ANALYSIS_KW))])
+
+        def fake_prom(url, expr, timeout=10):
+            seen.append(expr)
+            return [{"metric": {"alertname": "SRLInterfaceOperDown"}}]
+
+        with mock.patch.dict("os.environ", {"PROM_URL": "http://prom.test"}):
+            with mock.patch("analyst_tools.prom_query", fake_prom):
+                agent = analyst.build_agent(FunctionModel(scripted))
+                result = agent.run_sync("analyze")
+        self.assertEqual(seen, ['ALERTS{alertstate="firing"}'])
+        self.assertEqual(result.output.confidence, 0.85)
+
+
+class TestMarkerContract(unittest.TestCase):
+    """The line analyst.py prints must round-trip through the consumer
+    that already shipped in feature 3: postmortem.extract_ai_analysis."""
+
+    def _line(self):
+        a = analyst.IncidentAnalysis(**_ANALYSIS_KW)
+        return analyst.render_marker_line(a, "bd056a705953f6a1")
+
+    def test_single_line_starting_with_marker(self):
+        line = self._line()
+        self.assertNotIn("\n", line)
+        self.assertTrue(line.startswith(AI_ANALYSIS_MARKER + " "))
+
+    def test_fingerprint_is_stamped_not_model_supplied(self):
+        # IncidentAnalysis has no fingerprint field — render_marker_line
+        # injects the deterministic one from the alert.
+        self.assertNotIn("fingerprint", analyst.IncidentAnalysis.model_fields)
+        payload = json.loads(self._line()[len(AI_ANALYSIS_MARKER) + 1:])
+        self.assertEqual(payload["fingerprint"], "bd056a705953f6a1")
+
+    def test_postmortem_extractor_parses_it(self):
+        parsed = postmortem.extract_ai_analysis([(1, self._line())])
+        self.assertEqual(parsed["summary"], _ANALYSIS_KW["summary"])
+        self.assertEqual(parsed["evidence"][0]["source"], "prometheus")
+        md = postmortem._section_ai(parsed)
+        self.assertIn("Analyst narrative", md)
+        self.assertIn("Dispatch fiber crew", md)
 
 
 if __name__ == "__main__":
