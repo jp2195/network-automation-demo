@@ -27,6 +27,7 @@ import time
 from datetime import datetime, timezone
 
 from constants import SEVERITY_HIGH, SEVERITY_LOW, SEVERITY_MEDIUM, SEVERITY_WARNING
+from timefmt import humanize_seconds, parse_iso
 
 
 def _slack_unconfigured(token, channel):
@@ -46,24 +47,6 @@ def _valkey_retry(op, attempts=3):
                   file=sys.stderr)
             time.sleep(0.5 * i)
 
-
-def _parse_iso(ts):
-    if not ts:
-        return None
-    try:
-        return datetime.fromisoformat(ts.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-
-
-def _humanize_seconds(secs):
-    secs = max(0, int(secs))
-    if secs < 60:
-        return f"{secs}s"
-    if secs < 3600:
-        return f"{secs // 60}m {secs % 60}s"
-    h, rem = divmod(secs, 3600)
-    return f"{h}h {rem // 60}m"
 
 
 def _firing_blocks(enrichment, impact):
@@ -223,12 +206,12 @@ def main():
     else:
         ledger_record = json.loads(raw)
 
-    started = _parse_iso(ledger_record.get("first_seen"))
-    ended = _parse_iso(alert.get("ended"))
+    started = parse_iso(ledger_record.get("first_seen"))
+    ended = parse_iso(alert.get("ended"))
     if not ended:
         ended = datetime.now(timezone.utc)
     downtime_secs = (ended - started).total_seconds() if started else 0
-    downtime_str = _humanize_seconds(downtime_secs)
+    downtime_str = humanize_seconds(downtime_secs)
     blocks = _resolved_blocks(enrichment, ledger_record, downtime_str)
     summary = _thread_summary(downtime_str, ledger_record)
 
