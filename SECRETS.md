@@ -34,7 +34,8 @@ The AI lane follows the same optional-Secret pattern as Slack. With no
 Secret, every `ai-analyze-*` workflow step prints `AI disabled` and
 exits 0 — the deterministic pipeline never depends on it.
 
-To enable it, point the Secret at any OpenAI-compatible endpoint:
+To enable it, point the Secret at any OpenAI-compatible endpoint.
+A hosted frontier model gives the best analyses with zero tuning:
 
 ```
 kubectl create secret generic ai-analyst \
@@ -44,16 +45,53 @@ kubectl create secret generic ai-analyst \
   --from-literal=model='gpt-5.2'
 ```
 
-Zero-cost local option — Ollama on the host (k3d resolves the host as
-`host.k3d.internal`; the api_key just has to be non-empty):
+"OpenAI-compatible" covers more than OpenAI — Anthropic
+(`base_url=https://api.anthropic.com/v1/`, a `claude-*` model) and
+Gemini (`base_url=https://generativelanguage.googleapis.com/v1beta/openai/`)
+both expose compatible endpoints, so the same three keys work.
+
+### Zero-cost local option (Ollama, live-verified recipe)
+
+Small local models work, but need three things or they fail in
+well-understood ways (see the troubleshooting runbook): a context
+window big enough for tool results, thinking disabled, and a low
+temperature. One-time Ollama server config (the same override you
+already need so k3d pods can reach the host at all):
+
+```
+# /etc/systemd/system/ollama.service.d/override.conf
+[Service]
+Environment="OLLAMA_HOST=0.0.0.0"
+Environment="OLLAMA_CONTEXT_LENGTH=16384"
+```
+
+(No sudo? `ollama create qwen3.5-16k -f-` with `FROM qwen3.5:9b` +
+`PARAMETER num_ctx 16384` achieves the same per-model.)
+
+Then the Secret — verified end-to-end with `qwen3.5:9b` (correctly
+root-caused an admin-disabled interface at 0.95 confidence):
 
 ```
 kubectl create secret generic ai-analyst \
   --namespace argo-events \
   --from-literal=base_url='http://host.k3d.internal:11434/v1' \
   --from-literal=api_key='ollama' \
-  --from-literal=model='qwen3.5:9b'
+  --from-literal=model='qwen3.5:9b' \
+  --from-literal=reasoning_effort='none' \
+  --from-literal=temperature='0.2'
 ```
+
+### Optional tuning keys
+
+All optional; omitted keys are simply not sent to the endpoint:
+
+- `reasoning_effort` — `none` disables thinking on local models that
+  otherwise burn the whole output budget on reasoning. Cloud reasoning
+  models accept their documented values (`minimal`, `low`, ...).
+- `temperature` — `0.2` steadies small local models. Omit for cloud
+  reasoning models (they reject non-default temperature).
+- `max_requests` — backstop on model requests per incident
+  (default 24). Raise for deeper dives with a strong model.
 
 The analyst is read-only by construction (gNMI Get-only module, input
 allowlists on every tool) and advisory forever — it never executes

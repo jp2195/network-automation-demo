@@ -327,11 +327,16 @@ re-apply the topology if you've edited the spec.
    - exceeded `activeDeadlineSeconds: 600`: small local models can be
      slow — try a smaller alert window or a stronger model;
    - `Model token limit ... exceeded before any response was generated`:
-     a thinking model burned the whole output budget on reasoning.
-     The agent caps output at 16384 tokens; with Ollama also raise the
-     *context* window (`OLLAMA_CONTEXT_LENGTH=16384`, default is often
-     4096) — silent context truncation makes models loop in reasoning
-     and never emit the structured answer.
+     a thinking model burned the whole output budget on reasoning —
+     set the `reasoning_effort=none` Secret key (SECRETS.md);
+   - `The next request would exceed the request_limit`: the model
+     investigated without ever submitting. The failed pod's log carries
+     a full `--- agent transcript ---` on stderr showing every tool
+     call — read it. Usual local-model causes, in order: Ollama context
+     too small (`OLLAMA_CONTEXT_LENGTH=16384`; the default ~4k silently
+     truncates the conversation and the model loses the thread),
+     thinking enabled, temperature too high (set the `temperature=0.2`
+     Secret key). All three are baked into the SECRETS.md Ollama recipe.
 4. **Postmortem has no "Analyst narrative (AI)" section** — the
    analysis must land in Loki during the incident window (the analyst
    runs on the firing event). Check the marker line exists:
