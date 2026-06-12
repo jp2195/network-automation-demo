@@ -2,7 +2,8 @@
         scenario scenario-list scenario-hurricane scenario-backhoe scenario-cabinet scenario-flap \
         scenario-gray-failure scenario-gray-failure-end \
         maintenance-start maintenance-end maintenance-list \
-        remediation-mode remediation-approve remediation-status help
+        remediation-mode remediation-approve remediation-status \
+        drift-check help
 
 CLUSTER_NAME ?= atlas-demo
 TOPO_NS      ?= clabernetes
@@ -34,6 +35,7 @@ help:
 	@echo "  remediation-mode     Set closed-loop remediation mode (MODE=auto|gated)"
 	@echo "  remediation-approve  Approve a pending gated remediation (LINK= required)"
 	@echo "  remediation-status   Show remediation mode and active cost-outs"
+	@echo "  drift-check          Run the config drift audit now (CronWorkflow runs it every 5m)"
 
 up: preflight
 	@echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"
@@ -91,6 +93,8 @@ render-check:
 	  workloads/eventing/wft-enriched-notify.yaml \
 	  workloads/eventing/wft-maintenance.yaml \
 	  workloads/eventing/wft-remediation.yaml \
+	  workloads/eventing/wft-drift-audit.yaml \
+	  workloads/eventing/scripts/drift_expected.json \
 	  workloads/versions.yaml \
 	  workloads/netbox/seed/seed.json \
 	  workloads/dom-synth/links.json \
@@ -243,3 +247,10 @@ remediation-status:
 	@printf "mode:   "; kubectl -n valkey exec deploy/valkey -c valkey -- valkey-cli -n 2 get remediation:mode 2>/dev/null | grep . || echo "auto (default)"
 	@echo "active:"
 	@kubectl -n valkey exec deploy/valkey -c valkey -- valkey-cli -n 2 --scan --pattern 'remediation:active:*' 2>/dev/null | sed 's/^/  /' | grep . || echo "  (none)"
+
+# --- Config drift audit ---------------------------------------------------
+
+drift-check:
+	@echo '{"apiVersion":"argoproj.io/v1alpha1","kind":"Workflow","metadata":{"generateName":"drift-check-"},"spec":{"serviceAccountName":"operate-workflow-sa","workflowTemplateRef":{"name":"drift-audit"}}}' \
+	  | kubectl -n argo-events create -f -
+	@echo "==> drift audit submitted; watch: kubectl -n argo-events get workflows"

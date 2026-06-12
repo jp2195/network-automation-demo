@@ -107,8 +107,10 @@ func main() {
 		func(w io.Writer) error { return WriteSNMPProbe(w, spec) })
 
 	eventingDir := filepath.Join(*outDir, "workloads", "eventing")
-	if err := os.MkdirAll(eventingDir, 0o755); err != nil {
-		log.Fatal(err)
+	for _, d := range []string{eventingDir, filepath.Join(eventingDir, "scripts")} {
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			log.Fatal(err)
+		}
 	}
 	renderTo(filepath.Join(eventingDir, "wft-cut-fiber.yaml"), "",
 		func(w io.Writer) error { return WriteWFTCutFiber(w, spec) })
