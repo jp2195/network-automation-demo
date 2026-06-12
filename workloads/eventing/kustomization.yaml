@@ -41,3 +41,4 @@ configMapGenerator:
       - scripts/remediate_record.py
       - scripts/drift_compare.py
       - scripts/drift_expected.json
+      - scripts/postmortem.py
