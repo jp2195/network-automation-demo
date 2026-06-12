@@ -17,7 +17,7 @@ help:
 	@echo "  status       Show node + ArgoCD application state, print URL and admin password"
 	@echo "  render       Re-render workloads/* outputs from spec/atlanta.yaml"
 	@echo "  render-check Re-render to /tmp/render-check and verify no drift vs the committed outputs"
-	@echo "  build        Build + push the three pre-baked images to the k3d registry (localhost:5001)"
+	@echo "  build        Build + push the pre-baked images to the k3d registry (localhost:5001)"
 	@echo "  demo-cut             Disable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-restore         Re-enable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-cut-cabinet     Disable an interface on an FRR cabinet via vtysh (NODE=, INTERFACE= required)"
@@ -142,6 +142,7 @@ build:
 	docker buildx build -t localhost:5001/eventing-py:latest -f images/eventing-py/Dockerfile workloads/eventing/ --push
 	docker buildx build -t localhost:5001/dom-synth:latest   -f images/dom-synth/Dockerfile   workloads/dom-synth/ --push
 	docker buildx build -t localhost:5001/frr-snmpd:latest   -f images/frr-snmpd/Dockerfile   images/frr-snmpd/    --push
+	docker buildx build -t localhost:5001/ai-analyst:latest  -f images/ai-analyst/Dockerfile  workloads/eventing/ --push
 	@echo "==> All images pushed. Verify with: curl -s localhost:5001/v2/_catalog"
 
 status:
