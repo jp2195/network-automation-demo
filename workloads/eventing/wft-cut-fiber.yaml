@@ -21,7 +21,7 @@ spec:
           - name: action
       container:
         image: ghcr.io/openconfig/gnmic:0.44.1
-        command: [gnmic]
+        command: [/app/gnmic]
         args:
           - -a
           - "atlanta-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
