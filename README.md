@@ -224,6 +224,23 @@ not flagged.
 make drift-check    # run the audit immediately
 ```
 
+### Postmortem generator
+
+Every incident closes with a written artifact. When an alert resolves, the
+enriched-notify Workflow's final step assembles a Markdown postmortem —
+timeline (first seen → resolved, duration), alert and cable context, impact
+table (downstream devices, affected agencies), restoration-SLA math, the
+link-state telemetry around the window, and device log excerpts from Loki —
+and stores it in Valkey for seven days, keyed by the alert fingerprint.
+When the optional AI incident analyst is enabled, its narrative for the same
+fingerprint is appended as an extra section; absent, the deterministic
+report stands alone.
+
+```bash
+make postmortem                      # list stored postmortems
+make postmortem FP=<fingerprint>     # print one (also saved to /tmp)
+```
+
 ## Slack
 
 Without real Slack credentials the workflow's notify step prints the

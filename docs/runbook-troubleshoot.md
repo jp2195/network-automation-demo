@@ -291,3 +291,22 @@ done
 Anything firing `ERRO` in the postdeploy log means a startup-config
 syntax error. The renderer is the source of truth — re-render and
 re-apply the topology if you've edited the spec.
+
+## Postmortem missing after a resolve
+
+`make postmortem` shows nothing for an incident you just resolved:
+
+1. Did the resolved Workflow run? `kubectl -n argo-events get wf | head` —
+   look for a recent `enrich-notify-*`. Alertmanager sends the resolved
+   webhook on its next group interval, so allow a minute or two.
+2. Was the postmortem step Skipped? Check the workflow node states:
+   `kubectl -n argo-events get wf <name> -o json | python3 -c "import json,sys; [print(n['displayName'], n['phase']) for n in json.load(sys.stdin)['status']['nodes'].values()]"`.
+   Skipped means the notify step reported `status=firing` — either this was
+   the firing-path workflow (expected: only the resolved run generates a
+   postmortem) or notify could not write `/tmp/argo/status` and the gate
+   read its `default: firing`.
+3. Step failed? `kubectl -n argo-events logs <pod>` for the postmortem pod —
+   a Valkey outage is the only hard failure; Prometheus/Loki problems just
+   omit sections. The full Markdown is dumped to the step log on a store
+   failure, so the artifact is recoverable from Loki.
+4. TTL: postmortems expire after 7 days (`postmortem:<fp>` in Valkey DB 2).
