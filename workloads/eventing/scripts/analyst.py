@@ -176,8 +176,24 @@ def main():
     agent = build_agent(model)
     prompt = ("Analyze this alert and produce an IncidentAnalysis.\n"
               "Alert JSON:\n" + json.dumps(alert, indent=2))
-    result = agent.run_sync(
-        prompt, usage_limits=UsageLimits(request_limit=MAX_MODEL_REQUESTS))
+    from pydantic_ai import capture_run_messages
+    with capture_run_messages() as messages:
+        try:
+            result = agent.run_sync(
+                prompt,
+                usage_limits=UsageLimits(request_limit=MAX_MODEL_REQUESTS))
+        except Exception:
+            # Compact transcript to stderr (pod logs) so a failed run is
+            # triageable from the cluster — which tools the model called
+            # and what came back (runbook: "AI analyst produced nothing").
+            print("--- agent transcript (truncated) ---", file=sys.stderr)
+            for m in messages:
+                for p in getattr(m, "parts", []):
+                    content = str(getattr(p, "content", getattr(p, "args", "")))
+                    print(f"{type(p).__name__:22s} "
+                          f"{getattr(p, 'tool_name', '') or '':28s} "
+                          f"{content[:140]}", file=sys.stderr)
+            raise
 
     print(render_marker_line(result.output, fingerprint))
     _maybe_slack(result.output, alert)
