@@ -310,3 +310,25 @@ re-apply the topology if you've edited the spec.
    omit sections. The full Markdown is dumped to the step log on a store
    failure, so the artifact is recoverable from Loki.
 4. TTL: postmortems expire after 7 days (`postmortem:<fp>` in Valkey DB 2).
+
+## AI analyst produced nothing
+
+1. **No `ai-analyze-*` workflow at all** — the sensor isn't running or
+   eventing isn't synced; same triage as enriched-notify (check
+   `kubectl -n argo-events get sensors,pods`).
+2. **Workflow Succeeded but the log says `AI disabled`** — the
+   `ai-analyst` Secret is absent or incomplete. It needs all three
+   keys: `base_url`, `api_key`, `model` (see SECRETS.md).
+3. **Workflow Failed** — `kubectl -n argo-events logs <ai-analyze pod>`:
+   - connection refused / timeout on `base_url`: for local Ollama,
+     confirm it listens beyond loopback (`OLLAMA_HOST=0.0.0.0`) and
+     that `host.k3d.internal` resolves from a pod;
+   - unknown model name: must match the endpoint's model list;
+   - exceeded `activeDeadlineSeconds: 600`: small local models can be
+     slow — try a smaller alert window or a stronger model.
+4. **Postmortem has no "Analyst narrative (AI)" section** — the
+   analysis must land in Loki during the incident window (the analyst
+   runs on the firing event). Check the marker line exists:
+   `kubectl -n argo-events logs <ai-analyze pod> | grep INCIDENT_ANALYSIS_V1`.
+   Small local models occasionally fail structured output — rerun the
+   incident with a stronger model.
