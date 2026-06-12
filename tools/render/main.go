@@ -120,6 +120,10 @@ func main() {
 		func(w io.Writer) error { return WriteWFTMaintenance(w, spec) })
 	renderTo(filepath.Join(eventingDir, "wft-remediation.yaml"), "",
 		func(w io.Writer) error { return WriteWFTRemediation(w, spec) })
+	renderTo(filepath.Join(eventingDir, "wft-drift-audit.yaml"), "",
+		func(w io.Writer) error { return WriteWFTDriftAudit(w, spec) })
+	renderTo(filepath.Join(eventingDir, "scripts", "drift_expected.json"), "",
+		func(w io.Writer) error { return WriteDriftExpected(w, spec) })
 
 	renderTo(filepath.Join(*outDir, "workloads", "versions.yaml"), "",
 		func(w io.Writer) error { return WriteVersions(w) })
