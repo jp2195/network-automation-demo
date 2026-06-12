@@ -92,6 +92,10 @@ def decide(alert_body, vk, prom_fn, prom_url,
         approve_key = REMEDIATION_APPROVE_PREFIX + link_id
         waited = 0
         while True:
+            # Each warning alert spawns its own workflow; if a sibling
+            # already won the approval and claimed the link, stop waiting.
+            if vk.exists(active_key):
+                return _skip(f"{link_id} claimed by a concurrent workflow")
             if vk.get(approve_key):
                 vk.delete(approve_key)
                 break
