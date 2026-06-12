@@ -66,6 +66,7 @@ def main():
             "name": labels.get("alertname"),
             "severity": labels.get("severity"),
             "corridor": labels.get("corridor"),
+            "link_id": labels.get("link_id"),
             "started": a.get("startsAt"),
             "ended": a.get("endsAt"),
             "status": a.get("status"),
