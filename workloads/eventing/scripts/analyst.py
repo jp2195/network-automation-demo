@@ -78,6 +78,10 @@ def build_agent(model, isis_instance=None):
             "{isis}", isis_instance or os.environ.get("ISIS_INSTANCE", "atlas")),
         tools=analyst_tools.ALL_TOOLS,
         retries=2,
+        # Explicit output cap: thinking models (e.g. qwen3.5) otherwise
+        # exhaust the provider-default budget on reasoning tokens before
+        # any structured response lands (UnexpectedModelBehavior).
+        model_settings={"max_tokens": 8192},
     )
 
 
