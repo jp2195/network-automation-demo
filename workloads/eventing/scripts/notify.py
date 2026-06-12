@@ -13,6 +13,8 @@ Behavior:
   - On resolved: load ledger, chat.update the original message in place
     (✅ header + downtime), then chat.postMessage a thread reply with the
     resolution summary.
+  - Always: writes the alert status to /tmp/argo/status (Argo output
+    parameter gating the postmortem step on the resolved path).
 
 If SLACK_BOT_TOKEN or SLACK_CHANNEL_ID is empty (the Slack `slack-bot`
 Secret hasn't been created), the script short-circuits to stderr-printed
@@ -147,6 +149,16 @@ def main():
     fingerprint = alert.get("fingerprint")
     status = alert.get("status", "firing")
 
+    # The WFT maps /tmp/argo/status to an output parameter that gates the
+    # postmortem step (when: == resolved). A write failure degrades to the
+    # parameter's `default: firing` — postmortem skipped, notify unharmed.
+    try:
+        os.makedirs("/tmp/argo", exist_ok=True)
+        with open("/tmp/argo/status", "w") as f:
+            f.write(status)
+    except OSError as e:
+        print(f"warning: could not write /tmp/argo/status: {e}", file=sys.stderr)
+
     token = os.environ.get("SLACK_BOT_TOKEN", "")
     channel = os.environ.get("SLACK_CHANNEL_ID", "")
     valkey_url = os.environ["VALKEY_URL"]
@@ -248,6 +260,7 @@ def main():
         print(f"warning: ledger delete failed (24h TTL will reap it): {e}", file=sys.stderr)
     json.dump({"posted": not unconfigured, "status": "resolved",
                "downtime_seconds": int(downtime_secs),
+               "first_seen": ledger_record.get("first_seen"),
                "fingerprint": fingerprint}, sys.stdout)
 
 
