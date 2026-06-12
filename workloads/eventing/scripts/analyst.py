@@ -29,7 +29,19 @@ from pydantic_ai.usage import UsageLimits
 import analyst_tools
 from constants import AI_ANALYSIS_MARKER
 
-MAX_MODEL_REQUESTS = 24  # iteration cap; per-tool timeouts live in analyst_tools
+# Backstop iteration cap for an unattended lane (per-tool timeouts live
+# in analyst_tools; wall-clock in the WFT activeDeadlineSeconds).
+# Tunable via the optional max_requests Secret key — raise it for deep
+# dives with a strong model.
+DEFAULT_MAX_REQUESTS = 24
+
+
+def _max_requests():
+    raw = os.environ.get("AI_MAX_REQUESTS", "").strip()
+    try:
+        return max(1, int(raw)) if raw else DEFAULT_MAX_REQUESTS
+    except ValueError:
+        return DEFAULT_MAX_REQUESTS
 
 
 class Evidence(BaseModel):
@@ -195,7 +207,7 @@ def main():
         try:
             result = agent.run_sync(
                 prompt,
-                usage_limits=UsageLimits(request_limit=MAX_MODEL_REQUESTS))
+                usage_limits=UsageLimits(request_limit=_max_requests()))
         except Exception:
             # Compact transcript to stderr (pod logs) so a failed run is
             # triageable from the cluster — which tools the model called
