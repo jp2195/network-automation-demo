@@ -1,0 +1,158 @@
+{
+  "hub-e": {
+    "interfaces": {
+      "ethernet-1/1": {
+        "link_id": "ring-e-i20e"
+      },
+      "ethernet-1/2": {
+        "link_id": "ring-n-e"
+      },
+      "ethernet-1/3": {
+        "link_id": "tmc2-hube"
+      }
+    },
+    "isis_interfaces": [
+      "ethernet-1/1.0",
+      "ethernet-1/2.0",
+      "ethernet-1/3.0",
+      "lo0.0"
+    ]
+  },
+  "hub-i20e": {
+    "interfaces": {
+      "ethernet-1/1": {
+        "link_id": "ring-i20e-sw"
+      },
+      "ethernet-1/2": {
+        "link_id": "ring-e-i20e"
+      },
+      "ethernet-1/4": {
+        "link_id": "hubi20e-fci20e"
+      }
+    },
+    "isis_interfaces": [
+      "ethernet-1/1.0",
+      "ethernet-1/2.0",
+      "lo0.0"
+    ]
+  },
+  "hub-i20w": {
+    "interfaces": {
+      "ethernet-1/1": {
+        "link_id": "ring-i20w-nw"
+      },
+      "ethernet-1/2": {
+        "link_id": "ring-sw-i20w"
+      }
+    },
+    "isis_interfaces": [
+      "ethernet-1/1.0",
+      "ethernet-1/2.0",
+      "lo0.0"
+    ]
+  },
+  "hub-n": {
+    "interfaces": {
+      "ethernet-1/1": {
+        "link_id": "ring-n-e"
+      },
+      "ethernet-1/2": {
+        "link_id": "ring-nw-n"
+      },
+      "ethernet-1/3": {
+        "link_id": "tmc2-hubn"
+      },
+      "ethernet-1/4": {
+        "link_id": "hubn-fcn"
+      }
+    },
+    "isis_interfaces": [
+      "ethernet-1/1.0",
+      "ethernet-1/2.0",
+      "ethernet-1/3.0",
+      "lo0.0"
+    ]
+  },
+  "hub-nw": {
+    "interfaces": {
+      "ethernet-1/1": {
+        "link_id": "ring-nw-n"
+      },
+      "ethernet-1/2": {
+        "link_id": "ring-i20w-nw"
+      },
+      "ethernet-1/3": {
+        "link_id": "tmc1-hubnw"
+      },
+      "ethernet-1/4": {
+        "link_id": "hubnw-fcnw"
+      }
+    },
+    "isis_interfaces": [
+      "ethernet-1/1.0",
+      "ethernet-1/2.0",
+      "ethernet-1/3.0",
+      "lo0.0"
+    ]
+  },
+  "hub-sw": {
+    "interfaces": {
+      "ethernet-1/1": {
+        "link_id": "ring-sw-i20w"
+      },
+      "ethernet-1/2": {
+        "link_id": "ring-i20e-sw"
+      },
+      "ethernet-1/3": {
+        "link_id": "tmc1-hubsw"
+      },
+      "ethernet-1/4": {
+        "link_id": "hubsw-fcsw"
+      }
+    },
+    "isis_interfaces": [
+      "ethernet-1/1.0",
+      "ethernet-1/2.0",
+      "ethernet-1/3.0",
+      "lo0.0"
+    ]
+  },
+  "tmc-1": {
+    "interfaces": {
+      "ethernet-1/1": {
+        "link_id": "tmc1-hubnw"
+      },
+      "ethernet-1/2": {
+        "link_id": "tmc1-hubsw"
+      },
+      "ethernet-1/3": {
+        "link_id": "tmc1-tmc2"
+      }
+    },
+    "isis_interfaces": [
+      "ethernet-1/1.0",
+      "ethernet-1/2.0",
+      "ethernet-1/3.0",
+      "lo0.0"
+    ]
+  },
+  "tmc-2": {
+    "interfaces": {
+      "ethernet-1/1": {
+        "link_id": "tmc2-hubn"
+      },
+      "ethernet-1/2": {
+        "link_id": "tmc2-hube"
+      },
+      "ethernet-1/3": {
+        "link_id": "tmc1-tmc2"
+      }
+    },
+    "isis_interfaces": [
+      "ethernet-1/1.0",
+      "ethernet-1/2.0",
+      "ethernet-1/3.0",
+      "lo0.0"
+    ]
+  }
+}
