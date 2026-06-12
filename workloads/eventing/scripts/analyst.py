@@ -68,6 +68,23 @@ are advisory only: never claim to have changed anything, and phrase the
 recommendation as operator actions."""
 
 
+def _model_settings():
+    # Explicit output cap: thinking models (e.g. qwen3.5) otherwise
+    # exhaust the provider-default budget on reasoning tokens before
+    # any structured response lands (UnexpectedModelBehavior). A
+    # ceiling, not an allocation — generous on purpose; runaway cost
+    # is already bounded by request_limit + activeDeadlineSeconds.
+    settings = {"max_tokens": 32768}
+    # Optional Secret key reasoning_effort: local thinking models loop
+    # in reasoning on small contexts — "none" disables thinking on
+    # Ollama's OpenAI-compat endpoint (smoke-verified). Omitted, the
+    # endpoint's default applies; never sent unless the user set it.
+    effort = os.environ.get("AI_REASONING_EFFORT", "").strip()
+    if effort:
+        settings["openai_reasoning_effort"] = effort
+    return settings
+
+
 def build_agent(model, isis_instance=None):
     return Agent(
         model,
@@ -78,12 +95,7 @@ def build_agent(model, isis_instance=None):
             "{isis}", isis_instance or os.environ.get("ISIS_INSTANCE", "atlas")),
         tools=analyst_tools.ALL_TOOLS,
         retries=2,
-        # Explicit output cap: thinking models (e.g. qwen3.5) otherwise
-        # exhaust the provider-default budget on reasoning tokens before
-        # any structured response lands (UnexpectedModelBehavior). A
-        # ceiling, not an allocation — generous on purpose; runaway cost
-        # is already bounded by request_limit + activeDeadlineSeconds.
-        model_settings={"max_tokens": 32768},
+        model_settings=_model_settings(),
     )
 
 
