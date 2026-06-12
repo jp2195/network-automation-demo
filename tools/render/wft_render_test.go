@@ -39,8 +39,19 @@ func TestWFTOutputsHaveNoSentinels(t *testing.T) {
 		if !strings.Contains(out, ImageGNMIC) && (name == "WriteWFTRemediation" || name == "WriteWFTDriftAudit") {
 			t.Errorf("%s: gnmic image %q missing from output", name, ImageGNMIC)
 		}
-		if name == "WriteWFTAIAnalyst" && !strings.Contains(out, ImageAIAnalyst) {
-			t.Errorf("%s: ai-analyst image %q missing from output", name, ImageAIAnalyst)
+		if name == "WriteWFTAIAnalyst" {
+			if !strings.Contains(out, ImageAIAnalyst) {
+				t.Errorf("%s: ai-analyst image %q missing from output", name, ImageAIAnalyst)
+			}
+			// Positive value checks: a replacer-key/template-token rename
+			// would otherwise emit empty env values without tripping the
+			// sentinel guard above.
+			if !strings.Contains(out, `value: "`+s.Metadata.Name+`"`) {
+				t.Errorf("%s: CLAB_PREFIX value %q missing from output", name, s.Metadata.Name)
+			}
+			if !strings.Contains(out, `value: "`+ISISInstance+`"`) {
+				t.Errorf("%s: ISIS_INSTANCE value %q missing from output", name, ISISInstance)
+			}
 		}
 	}
 }
