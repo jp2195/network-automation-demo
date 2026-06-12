@@ -41,6 +41,19 @@ spec:
                   value: "{{tasks.enrich.outputs.result}}"
                 - name: impact
                   value: "{{tasks.analyze.outputs.result}}"
+          - name: postmortem
+            template: postmortem
+            dependencies: [notify]
+            # Skipped on firing alerts; runs only on the resolved path.
+            when: "'{{tasks.notify.outputs.parameters.status}}' == 'resolved'"
+            arguments:
+              parameters:
+                - name: enrichment
+                  value: "{{tasks.enrich.outputs.result}}"
+                - name: impact
+                  value: "{{tasks.analyze.outputs.result}}"
+                - name: notify_result
+                  value: "{{tasks.notify.outputs.result}}"
 
     - name: enrich
       inputs:
@@ -158,4 +171,46 @@ spec:
             memory: 96Mi
           limits:
             memory: 192Mi
+      outputs:
+        parameters:
+          - name: status
+            valueFrom:
+              path: /tmp/argo/status
+              # If notify couldn't write the file, gate postmortem closed.
+              default: firing
 
+    - name: postmortem
+      inputs:
+        parameters:
+          - name: enrichment
+          - name: impact
+          - name: notify_result
+      script:
+        image: @@EVENTING_IMAGE@@
+        command: [python3]
+        source: |
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
+          runpy.run_path("/scripts/postmortem.py", run_name="__main__")
+        env:
+          - name: ENRICHMENT_JSON
+            value: "{{inputs.parameters.enrichment}}"
+          - name: IMPACT_JSON
+            value: "{{inputs.parameters.impact}}"
+          - name: NOTIFY_JSON
+            value: "{{inputs.parameters.notify_result}}"
+          - name: VALKEY_URL
+            value: valkey://valkey.valkey.svc.cluster.local:6379/2
+          - name: PROM_URL
+            value: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+          - name: LOKI_URL
+            value: http://loki-gateway.monitoring.svc.cluster.local
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
+        resources:
+          requests:
+            cpu: 50m
+            memory: 96Mi
+          limits:
+            memory: 192Mi
