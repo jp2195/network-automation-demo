@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: drift-audit
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 60
+  workflowSpec:
+    serviceAccountName: operate-workflow-sa
+    workflowTemplateRef:
+      name: drift-audit
+    # 12 runs/hour — GC finished ones so the workflow list stays readable.
+    ttlStrategy:
+      secondsAfterSuccess: 1800
+      secondsAfterFailure: 7200

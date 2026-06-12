@@ -18,6 +18,7 @@ spec:
               - SRLInterfaceFlapping
               - SRLOpticalDegrading
               - SRLInterfaceErrorsHigh
+              - ConfigDrift
   triggers:
     - template:
         name: enrich-notify

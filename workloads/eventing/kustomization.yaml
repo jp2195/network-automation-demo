@@ -10,11 +10,13 @@ resources:
   - sensor-interface-down.yaml
   - sensor-manual-cut.yaml
   - sensor-remediation.yaml
+  - cron-drift-audit.yaml
   - wft-enriched-notify.yaml
   - wft-cut-fiber.yaml
   - wft-maintenance.yaml
   - wft-incident-collector.yaml
   - wft-remediation.yaml
+  - wft-drift-audit.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
@@ -35,3 +37,5 @@ configMapGenerator:
       - scripts/gather_dom.py
       - scripts/remediate_decide.py
       - scripts/remediate_record.py
+      - scripts/drift_compare.py
+      - scripts/drift_expected.json
