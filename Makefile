@@ -3,7 +3,7 @@
         scenario-gray-failure scenario-gray-failure-end \
         maintenance-start maintenance-end maintenance-list \
         remediation-mode remediation-approve remediation-status \
-        drift-check help
+        drift-check postmortem help
 
 CLUSTER_NAME ?= atlas-demo
 TOPO_NS      ?= clabernetes
@@ -36,6 +36,7 @@ help:
 	@echo "  remediation-approve  Approve a pending gated remediation (LINK= required)"
 	@echo "  remediation-status   Show remediation mode and active cost-outs"
 	@echo "  drift-check          Run the config drift audit now (CronWorkflow runs it every 5m)"
+	@echo "  postmortem           List stored postmortems, or print+save one (FP=<fingerprint>)"
 
 up: preflight
 	@echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"
@@ -254,3 +255,17 @@ drift-check:
 	@echo '{"apiVersion":"argoproj.io/v1alpha1","kind":"Workflow","metadata":{"generateName":"drift-check-"},"spec":{"serviceAccountName":"operate-workflow-sa","workflowTemplateRef":{"name":"drift-audit"}}}' \
 	  | kubectl -n argo-events create -f -
 	@echo "==> drift audit submitted; watch: kubectl -n argo-events get workflows"
+
+# --- Postmortems -----------------------------------------------------------
+
+postmortem:
+	@if [ -z "$(FP)" ]; then \
+	  echo "Stored postmortems (fetch one: make postmortem FP=<fingerprint>):"; \
+	  kubectl -n valkey exec deploy/valkey -c valkey -- valkey-cli -n 2 --scan --pattern 'postmortem:*' 2>/dev/null | sed 's/^postmortem:/  /' | grep . || echo "  (none)"; \
+	else \
+	  kubectl -n valkey exec deploy/valkey -c valkey -- valkey-cli -n 2 exists postmortem:$(FP) | grep -q 1 || { echo "no postmortem stored for $(FP)"; exit 1; }; \
+	  f=/tmp/postmortem-$(FP).md; \
+	  kubectl -n valkey exec deploy/valkey -c valkey -- valkey-cli -n 2 get postmortem:$(FP) > $$f; \
+	  cat $$f; \
+	  echo; echo "==> saved to $$f"; \
+	fi
