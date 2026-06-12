@@ -125,6 +125,16 @@ class TestToolAllowlists(unittest.TestCase):
         with mock.patch.dict("os.environ", {}, clear=True):
             self.assertNotIn("openai_reasoning_effort", analyst._model_settings())
 
+    def test_max_requests_env_overrides_default(self):
+        with mock.patch.dict("os.environ", {"AI_MAX_REQUESTS": "48"}):
+            self.assertEqual(analyst._max_requests(), 48)
+        with mock.patch.dict("os.environ", {"AI_MAX_REQUESTS": "junk"}):
+            self.assertEqual(analyst._max_requests(),
+                             analyst.DEFAULT_MAX_REQUESTS)
+        with mock.patch.dict("os.environ", {}, clear=True):
+            self.assertEqual(analyst._max_requests(),
+                             analyst.DEFAULT_MAX_REQUESTS)
+
     def test_temperature_env_wires_into_model_settings(self):
         # Only sent when set: OpenAI reasoning-class models reject
         # non-default temperature, so there must be no default.

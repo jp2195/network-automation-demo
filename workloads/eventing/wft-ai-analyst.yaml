@@ -70,6 +70,14 @@ spec:
                 name: ai-analyst
                 key: temperature
                 optional: true
+          # Optional: backstop on model requests per incident
+          # (default 24) — raise for deep dives with a strong model.
+          - name: AI_MAX_REQUESTS
+            valueFrom:
+              secretKeyRef:
+                name: ai-analyst
+                key: max_requests
+                optional: true
           - name: PROM_URL
             value: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
           - name: LOKI_URL
