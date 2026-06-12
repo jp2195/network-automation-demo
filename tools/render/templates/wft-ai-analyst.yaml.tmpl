@@ -61,6 +61,14 @@ spec:
                 name: ai-analyst
                 key: reasoning_effort
                 optional: true
+          # Optional: low values (0.2) steady small local models; omit
+          # for cloud endpoints (reasoning models reject it).
+          - name: AI_TEMPERATURE
+            valueFrom:
+              secretKeyRef:
+                name: ai-analyst
+                key: temperature
+                optional: true
           - name: PROM_URL
             value: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
           - name: LOKI_URL
