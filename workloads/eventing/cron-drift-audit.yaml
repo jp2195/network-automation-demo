@@ -3,7 +3,10 @@ kind: CronWorkflow
 metadata:
   name: drift-audit
 spec:
-  schedule: "*/5 * * * *"
+  # Plural form (v3.6+); the singular `schedule` field was removed in
+  # Argo Workflows v4 and is silently ignored / rejected by the CRD.
+  schedules:
+    - "*/5 * * * *"
   concurrencyPolicy: Forbid
   startingDeadlineSeconds: 60
   workflowSpec:
