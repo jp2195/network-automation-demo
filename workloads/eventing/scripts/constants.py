@@ -41,3 +41,13 @@ REMEDIATION_MODE_AUTO      = "auto"
 REMEDIATION_MODE_GATED     = "gated"
 REMEDIATION_ACTIVE_PREFIX  = "remediation:active:"    # + link_id — claim, EX 7200
 REMEDIATION_APPROVE_PREFIX = "remediation:approve:"   # + link_id — gated-mode approval token
+
+# Postmortem storage in Valkey DB 2. Python-only — no Go mirror.
+POSTMORTEM_KEY_PREFIX  = "postmortem:"   # + alert fingerprint
+POSTMORTEM_TTL_SECONDS = 604800          # 7 days
+
+# Contract between the (future) ai-analyst workflow and postmortem.py:
+# the analyst logs one line containing this marker followed by the
+# IncidentAnalysis JSON (which includes the alert fingerprint). The
+# postmortem queries Loki for marker+fingerprint; absent → section omitted.
+AI_ANALYSIS_MARKER = "INCIDENT_ANALYSIS_V1"
