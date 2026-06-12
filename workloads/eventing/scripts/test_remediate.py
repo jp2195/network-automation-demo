@@ -118,6 +118,18 @@ class DecideGatedTests(unittest.TestCase):
         self.assertEqual(out["action"], "cost-out")
         self.assertEqual(len(sleeps), 1)
 
+    def test_sibling_claim_during_poll_ends_the_wait(self):
+        # Each warning alert spawns its own gated workflow; when one of
+        # them wins the approval and claims the link, the others must
+        # stop waiting instead of polling until the gate timeout.
+        def sleep_fn(s):
+            self.vk.set(REMEDIATION_ACTIVE_PREFIX + LINK, "{}")
+
+        out = decide(alert(), self.vk, self.prom, PROM,
+                     gate_timeout=60, poll_interval=5, sleep_fn=sleep_fn)
+        self.assertEqual(out["action"], "skip")
+        self.assertIn("concurrent", out["reason"])
+
 
 class DecideResolvedTests(unittest.TestCase):
     def setUp(self):
