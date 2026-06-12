@@ -81,7 +81,9 @@ def _model_settings():
     # any structured response lands (UnexpectedModelBehavior). A
     # ceiling, not an allocation — generous on purpose; runaway cost
     # is already bounded by request_limit + activeDeadlineSeconds.
-    settings = {"max_tokens": 32768}
+    # Low temperature: the analyst should be deterministic, and small
+    # local models wander between tool calls at their chatty defaults.
+    settings = {"max_tokens": 32768, "temperature": 0.2}
     # Optional Secret key reasoning_effort: local thinking models loop
     # in reasoning on small contexts — "none" disables thinking on
     # Ollama's OpenAI-compat endpoint (smoke-verified). Omitted, the
