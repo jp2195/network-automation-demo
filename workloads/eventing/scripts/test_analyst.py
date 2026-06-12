@@ -69,6 +69,15 @@ class TestToolAllowlists(unittest.TestCase):
             with self.assertRaises(ModelRetry, msg=path):
                 analyst_tools.gnmi_get("hub-e", path)
 
+    def test_gnmi_get_coerces_none_response(self):
+        # pygnmi yields None for empty notifications; a None tool return
+        # becomes a null tool message, which Ollama's OpenAI-compat
+        # endpoint rejects with HTTP 400 (smoke-found, 2026-06-12).
+        with mock.patch.object(analyst_tools.gnmi_readonly, "get",
+                               return_value=None):
+            out = analyst_tools.gnmi_get("hub-e", "/interface[name=ethernet-1/1]")
+        self.assertEqual(out, {"error": "empty gNMI response"})
+
     def test_snmp_get_rejects_non_cabinet_nodes(self):
         for node in ("hub-e", "fc-i20e.evil.com", "FC-I20E", ""):
             with self.assertRaises(ModelRetry, msg=node):
