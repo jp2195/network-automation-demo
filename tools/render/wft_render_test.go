@@ -21,6 +21,7 @@ func TestWFTOutputsHaveNoSentinels(t *testing.T) {
 		"WriteWFTMaintenance":       WriteWFTMaintenance,
 		"WriteWFTRemediation":       WriteWFTRemediation,
 		"WriteWFTDriftAudit":        WriteWFTDriftAudit,
+		"WriteWFTAIAnalyst":         WriteWFTAIAnalyst,
 	}
 	for name, fn := range writers {
 		var buf bytes.Buffer
@@ -37,6 +38,9 @@ func TestWFTOutputsHaveNoSentinels(t *testing.T) {
 		}
 		if !strings.Contains(out, ImageGNMIC) && (name == "WriteWFTRemediation" || name == "WriteWFTDriftAudit") {
 			t.Errorf("%s: gnmic image %q missing from output", name, ImageGNMIC)
+		}
+		if name == "WriteWFTAIAnalyst" && !strings.Contains(out, ImageAIAnalyst) {
+			t.Errorf("%s: ai-analyst image %q missing from output", name, ImageAIAnalyst)
 		}
 	}
 }

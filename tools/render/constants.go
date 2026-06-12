@@ -40,6 +40,11 @@ const (
 	// valkey + scripts) pushed to the in-cluster registry. Single source for
 	// the incident-collector bundle step and the enriched-notify WFT.
 	ImageEventingPy = "atlas-demo-registry:5001/eventing-py:latest"
+	// ImageAIAnalyst is the pre-baked advisory-lane image (python +
+	// pydantic-ai + read-only tool deps: pygnmi Get, puresnmp, slack-sdk).
+	// Used only by the ai-analyst WFT; the deterministic pipeline never
+	// touches it.
+	ImageAIAnalyst = "atlas-demo-registry:5001/ai-analyst:latest"
 )
 
 // ISISInstance is the IS-IS instance name programmed into every SR Linux

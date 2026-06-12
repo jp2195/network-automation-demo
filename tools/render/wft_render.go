@@ -26,6 +26,9 @@ var wftMaintenanceTmpl string
 //go:embed templates/wft-remediation.yaml.tmpl
 var wftRemediationTmpl string
 
+//go:embed templates/wft-ai-analyst.yaml.tmpl
+var wftAIAnalystTmpl string
+
 // WriteWFTCutFiber emits the cut-fiber WorkflowTemplate. The clabernetes
 // FQDN baked into the gnmic -a flag is parameterised from
 // spec.Metadata.Name so renaming the cluster doesn't break the demo.
@@ -69,6 +72,20 @@ func WriteWFTRemediation(w io.Writer, s *Spec) error {
 		"@@CLUSTER@@", s.Metadata.Name,
 		"@@ISIS_INSTANCE@@", ISISInstance,
 	).Replace(wftRemediationTmpl)
+	_, err := fmt.Fprintf(w, "%s\n%s", renderBanner, body)
+	return err
+}
+
+// WriteWFTAIAnalyst emits the advisory-lane WorkflowTemplate from its
+// embedded template. The analyst image, clabernetes FQDN prefix, and
+// IS-IS instance name are parameterised; the lane is read-only by
+// construction (analyst_tools allowlists + gnmi_readonly Get-only).
+func WriteWFTAIAnalyst(w io.Writer, s *Spec) error {
+	body := strings.NewReplacer(
+		"@@AI_ANALYST_IMAGE@@", ImageAIAnalyst,
+		"@@CLUSTER@@", s.Metadata.Name,
+		"@@ISIS_INSTANCE@@", ISISInstance,
+	).Replace(wftAIAnalystTmpl)
 	_, err := fmt.Fprintf(w, "%s\n%s", renderBanner, body)
 	return err
 }

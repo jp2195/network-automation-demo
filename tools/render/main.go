@@ -124,6 +124,8 @@ func main() {
 		func(w io.Writer) error { return WriteWFTRemediation(w, spec) })
 	renderTo(filepath.Join(eventingDir, "wft-drift-audit.yaml"), "",
 		func(w io.Writer) error { return WriteWFTDriftAudit(w, spec) })
+	renderTo(filepath.Join(eventingDir, "wft-ai-analyst.yaml"), "",
+		func(w io.Writer) error { return WriteWFTAIAnalyst(w, spec) })
 	renderTo(filepath.Join(eventingDir, "scripts", "drift_expected.json"), "",
 		func(w io.Writer) error { return WriteDriftExpected(w, spec) })
 
