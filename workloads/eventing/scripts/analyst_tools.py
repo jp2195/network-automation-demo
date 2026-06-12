@@ -101,6 +101,10 @@ def query_prometheus_range(promql: str, minutes: int = 30) -> list:
     """Run a PromQL range query over the last `minutes` (max 360),
     30s step. Use label filters — at most 20 series are returned.
     Returns the Prometheus matrix result list (empty on error)."""
+    # Models habitually append a range selector ([5m]) — the range API
+    # rejects it (window comes from `minutes`), so strip rather than
+    # return a confusing [].
+    promql = re.sub(r"\[\d+[smhdw]\]\s*$", "", (promql or "").strip())
     _repeat_guard("query_prometheus_range", (promql, _clamp_minutes(minutes)))
     now = time.time()
     return _bounded(prom_query_range(os.environ["PROM_URL"], promql,
@@ -128,10 +132,17 @@ def query_netbox(path: str, params: dict | None = None) -> dict:
     query_netbox("/api/dcim/cables/", {"label": "FOC-RING-EI20E"}).
     Device tags carry the agencies a cabinet serves. Returns the JSON
     body ({"error": ...} on HTTP failure)."""
+    # Be liberal: models naturally write REST paths with query strings
+    # (?name=hub-e). Split it off and fold into params — the path part
+    # still faces the allowlist, params still go through urlencode.
+    if path and "?" in path:
+        from urllib.parse import parse_qsl
+        path, _, qs = path.partition("?")
+        params = {**dict(parse_qsl(qs)), **(params or {})}
     if not _NETBOX_PATH_RE.fullmatch(path or ""):
         raise ModelRetry(
             "path must be a NetBox REST path like /api/dcim/devices/ "
-            "(no query string — pass filters via params)")
+            "(filters go in params)")
     _repeat_guard("query_netbox",
                   (path, tuple(sorted((params or {}).items()))))
     from netbox_client import Client

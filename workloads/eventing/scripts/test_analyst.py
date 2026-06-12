@@ -69,6 +69,35 @@ class TestToolAllowlists(unittest.TestCase):
             with self.assertRaises(ModelRetry, msg=path):
                 analyst_tools.gnmi_get("hub-e", path)
 
+    def test_netbox_query_string_folds_into_params(self):
+        analyst_tools._seen_calls.clear()
+        captured = {}
+
+        class FakeClient:
+            def get(self, path, **params):
+                captured["path"], captured["params"] = path, params
+                return {"count": 0}
+        with mock.patch.dict("sys.modules"):
+            import netbox_client
+            with mock.patch.object(netbox_client, "Client", FakeClient):
+                out = analyst_tools.query_netbox("/api/dcim/cables/?label=FOC-X")
+        self.assertEqual(out, {"count": 0})
+        self.assertEqual(captured["path"], "/api/dcim/cables/")
+        self.assertEqual(captured["params"], {"label": "FOC-X"})
+        # still rejects non-API paths even with a query string
+        with self.assertRaises(ModelRetry):
+            analyst_tools.query_netbox("/admin/?x=1")
+        analyst_tools._seen_calls.clear()
+
+    def test_range_selector_is_stripped_from_range_queries(self):
+        analyst_tools._seen_calls.clear()
+        with mock.patch("analyst_tools.prom_query_range",
+                        return_value=[]) as pq:
+            with mock.patch.dict("os.environ", {"PROM_URL": "http://x"}):
+                analyst_tools.query_prometheus_range("up{job=\"a\"}[5m]", 30)
+        self.assertEqual(pq.call_args[0][1], 'up{job="a"}')
+        analyst_tools._seen_calls.clear()
+
     def test_third_identical_call_is_blocked(self):
         analyst_tools._seen_calls.clear()
         with mock.patch("analyst_tools.prom_query", return_value=[]):
@@ -126,7 +155,7 @@ class TestToolAllowlists(unittest.TestCase):
     def test_query_netbox_rejects_paths_outside_api(self):
         for path in ("/dcim/devices/",       # missing /api prefix
                      "/api/../admin/",        # traversal
-                     "/api/dcim/?brief=1",    # query string smuggling
+                     "/admin/?next=/api/",    # query string can't launder a bad path
                      "http://evil/api/x/",    # absolute URL
                      ""):
             with self.assertRaises(ModelRetry, msg=path):
