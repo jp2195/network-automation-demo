@@ -72,8 +72,10 @@ def build_agent(model, isis_instance=None):
     return Agent(
         model,
         output_type=IncidentAnalysis,
-        instructions=_INSTRUCTIONS.format(
-            isis=isis_instance or os.environ.get("ISIS_INSTANCE", "atlas")),
+        # .replace, not .format: instruction edits may add PromQL/JSON
+        # examples with literal braces, which .format would blow up on.
+        instructions=_INSTRUCTIONS.replace(
+            "{isis}", isis_instance or os.environ.get("ISIS_INSTANCE", "atlas")),
         tools=analyst_tools.ALL_TOOLS,
         retries=2,
     )
