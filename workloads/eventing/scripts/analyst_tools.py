@@ -14,6 +14,7 @@ accept path so the unit tests run with pydantic-ai-slim alone.
 """
 
 import asyncio
+import json
 import os
 import re
 import time
@@ -40,6 +41,25 @@ def _clamp_minutes(minutes):
         return 30
 
 
+# Every tool result is byte-bounded before it reaches the model: one
+# un-filtered gNMI subtree or NetBox list can be tens of thousands of
+# tokens, which floods a small local model's context window and makes
+# it forget its own earlier tool results (smoke-found: the agent then
+# wanders until the request limit). 5000 chars ≈ 1.2k tokens.
+_MAX_RESULT_CHARS = 5000
+
+
+def _bounded(result):
+    s = json.dumps(result, separators=(",", ":"), default=str)
+    if len(s) <= _MAX_RESULT_CHARS:
+        return result
+    return {"truncated": True,
+            "note": (f"result was {len(s)} chars; first "
+                     f"{_MAX_RESULT_CHARS} shown — repeat the call with "
+                     f"a narrower filter/path for full detail"),
+            "head": s[:_MAX_RESULT_CHARS]}
+
+
 def query_prometheus(promql: str) -> list:
     """Run an instant PromQL query against the network's Prometheus.
 
@@ -48,7 +68,7 @@ def query_prometheus(promql: str) -> list:
     (both ends of a link), srl_nokia_interfaces_interface_oper_state,
     ALERTS{alertstate="firing"} (everything currently firing).
     Returns the Prometheus result list (empty list on error/no data)."""
-    return prom_query(os.environ["PROM_URL"], promql)
+    return _bounded(prom_query(os.environ["PROM_URL"], promql))
 
 
 # A 360-minute window at 30s step is 720 points per series; an
@@ -62,9 +82,9 @@ def query_prometheus_range(promql: str, minutes: int = 30) -> list:
     30s step. Use label filters — at most 20 series are returned.
     Returns the Prometheus matrix result list (empty on error)."""
     now = time.time()
-    return prom_query_range(os.environ["PROM_URL"], promql,
-                            now - _clamp_minutes(minutes) * 60, now,
-                            step=30)[:_MAX_RANGE_SERIES]
+    return _bounded(prom_query_range(os.environ["PROM_URL"], promql,
+                                     now - _clamp_minutes(minutes) * 60, now,
+                                     step=30)[:_MAX_RANGE_SERIES])
 
 
 def query_loki(logql: str, minutes: int = 30) -> list:
@@ -76,7 +96,7 @@ def query_loki(logql: str, minutes: int = 30) -> list:
     now = time.time()
     rows = loki_query_range(os.environ["LOKI_URL"], logql,
                             now - _clamp_minutes(minutes) * 60, now, limit=100)
-    return [[ts, line[:500]] for ts, line in rows]
+    return _bounded([[ts, line[:500]] for ts, line in rows])
 
 
 def query_netbox(path: str, params: dict | None = None) -> dict:
@@ -92,7 +112,7 @@ def query_netbox(path: str, params: dict | None = None) -> dict:
             "(no query string — pass filters via params)")
     from netbox_client import Client
     try:
-        return Client().get(path, **(params or {}))
+        return _bounded(Client().get(path, **(params or {})))
     except Exception as e:
         return {"error": str(e)}
 
@@ -117,7 +137,7 @@ def gnmi_get(node: str, path: str) -> dict:
     # pygnmi yields None for an empty notification; a None tool return
     # serializes to a null tool message, which some OpenAI-compatible
     # servers (Ollama) reject with 400 invalid message content.
-    return out if out is not None else {"error": "empty gNMI response"}
+    return _bounded(out) if out is not None else {"error": "empty gNMI response"}
 
 
 async def snmp_get(node: str, oid: str) -> dict:

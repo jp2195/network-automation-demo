@@ -69,6 +69,15 @@ class TestToolAllowlists(unittest.TestCase):
             with self.assertRaises(ModelRetry, msg=path):
                 analyst_tools.gnmi_get("hub-e", path)
 
+    def test_huge_tool_results_are_byte_bounded(self):
+        big = [{"interface": f"ethernet-1/{i}", "stats": "x" * 200}
+               for i in range(200)]
+        out = analyst_tools._bounded(big)
+        self.assertTrue(out["truncated"])
+        self.assertLessEqual(len(out["head"]), analyst_tools._MAX_RESULT_CHARS)
+        small = {"oid": "1.3.6.1.2.1.1.3.0", "value": "42"}
+        self.assertIs(analyst_tools._bounded(small), small)
+
     def test_reasoning_effort_env_wires_into_model_settings(self):
         with mock.patch.dict("os.environ", {"AI_REASONING_EFFORT": "none"}):
             self.assertEqual(
