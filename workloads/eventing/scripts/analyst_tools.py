@@ -49,6 +49,25 @@ def _clamp_minutes(minutes):
 _MAX_RESULT_CHARS = 5000
 
 
+# Anti-repeat guard: at low temperature a small model that repeats one
+# query verbatim will repeat it forever (smoke-found: 23 identical
+# range queries until the request limit). Two identical calls are
+# legitimate (re-check after another tool); the third gets a corrective
+# ModelRetry instead of burning the budget.
+_seen_calls = {}
+
+
+def _repeat_guard(tool, key):
+    n = _seen_calls.get((tool, key), 0) + 1
+    _seen_calls[(tool, key)] = n
+    if n > 2:
+        raise ModelRetry(
+            f"you already called {tool} with these exact arguments "
+            f"{n - 1} times — the result will not change. Try a "
+            f"different query or tool, or call submit_incident_analysis "
+            f"with what you have.")
+
+
 def _bounded(result):
     s = json.dumps(result, separators=(",", ":"), default=str)
     if len(s) <= _MAX_RESULT_CHARS:
@@ -68,6 +87,7 @@ def query_prometheus(promql: str) -> list:
     (both ends of a link), srl_nokia_interfaces_interface_oper_state,
     ALERTS{alertstate="firing"} (everything currently firing).
     Returns the Prometheus result list (empty list on error/no data)."""
+    _repeat_guard("query_prometheus", promql)
     return _bounded(prom_query(os.environ["PROM_URL"], promql))
 
 
@@ -81,6 +101,7 @@ def query_prometheus_range(promql: str, minutes: int = 30) -> list:
     """Run a PromQL range query over the last `minutes` (max 360),
     30s step. Use label filters — at most 20 series are returned.
     Returns the Prometheus matrix result list (empty on error)."""
+    _repeat_guard("query_prometheus_range", (promql, _clamp_minutes(minutes)))
     now = time.time()
     return _bounded(prom_query_range(os.environ["PROM_URL"], promql,
                                      now - _clamp_minutes(minutes) * 60, now,
@@ -93,6 +114,7 @@ def query_loki(logql: str, minutes: int = 30) -> list:
     Device logs: {namespace="clabernetes"} |= "hub-e". Workflow logs:
     {namespace="argo-events"}. Returns up to 100 [timestamp_ns, line]
     pairs, oldest first (empty on error/no match)."""
+    _repeat_guard("query_loki", (logql, _clamp_minutes(minutes)))
     now = time.time()
     rows = loki_query_range(os.environ["LOKI_URL"], logql,
                             now - _clamp_minutes(minutes) * 60, now, limit=100)
@@ -110,6 +132,8 @@ def query_netbox(path: str, params: dict | None = None) -> dict:
         raise ModelRetry(
             "path must be a NetBox REST path like /api/dcim/devices/ "
             "(no query string — pass filters via params)")
+    _repeat_guard("query_netbox",
+                  (path, tuple(sorted((params or {}).items()))))
     from netbox_client import Client
     try:
         return _bounded(Client().get(path, **(params or {})))
@@ -128,6 +152,7 @@ def gnmi_get(node: str, path: str) -> dict:
     if not _SRL_NODE_RE.fullmatch(node or ""):
         raise ModelRetry("node must be an SR Linux node: tmc-* or hub-* "
                          "(fc-* cabinets speak SNMP — use snmp_get)")
+    _repeat_guard("gnmi_get", (node, path))
     try:
         out = gnmi_readonly.get(node, path)
     except ValueError as e:
@@ -152,6 +177,7 @@ async def snmp_get(node: str, oid: str) -> dict:
                          "(SRL nodes speak gNMI — use gnmi_get)")
     if not _OID_RE.fullmatch(oid or ""):
         raise ModelRetry("oid must be numeric dotted form, e.g. 1.3.6.1.2.1.1.3.0")
+    _repeat_guard("snmp_get", (node, oid))
     try:
         from puresnmp import V2C, Client as SnmpClient, PyWrapper
         host = (f"{os.environ['CLAB_PREFIX']}-{node}"

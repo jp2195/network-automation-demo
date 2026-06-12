@@ -58,7 +58,11 @@ workflow logs. IS-IS instance name: {isis}.
 You receive one Alertmanager alert. Investigate it with the read-only
 tools — verify current state, find the affected link's both ends, check
 whether IS-IS rerouted, look for related log lines — then return an
-IncidentAnalysis. Be concise and concrete; every claim in the summary
+IncidentAnalysis. Label shapes: raw srl_nokia_* series are labeled by
+node/interface and have NO link_id label; link-level state lives in
+link:oper_state_with_meta and link_membership_info (labeled by
+link_id). If a query returns [], change the query — never repeat it
+verbatim. Be concise and concrete; every claim in the summary
 or root cause should be backed by an evidence entry (source, exact
 query, observation).
 
