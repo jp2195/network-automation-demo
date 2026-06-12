@@ -56,8 +56,9 @@ class TestToolAllowlists(unittest.TestCase):
                 analyst_tools.gnmi_get(node, "/interface[name=ethernet-1/1]")
 
     def test_gnmi_get_rejects_bad_path(self):
-        with self.assertRaises(ModelRetry):
-            analyst_tools.gnmi_get("hub-e", "interface; drop")
+        for path in ("interface; drop", "interface", "", "/x\ny"):
+            with self.assertRaises(ModelRetry, msg=path):
+                analyst_tools.gnmi_get("hub-e", path)
 
     def test_snmp_get_rejects_non_cabinet_nodes(self):
         for node in ("hub-e", "fc-i20e.evil.com", "FC-I20E", ""):

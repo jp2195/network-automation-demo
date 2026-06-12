@@ -51,13 +51,20 @@ def query_prometheus(promql: str) -> list:
     return prom_query(os.environ["PROM_URL"], promql)
 
 
+# A 360-minute window at 30s step is 720 points per series; an
+# unfiltered query could match hundreds of series and blow the model's
+# context. 20 series is plenty at this topology's scale (8 SRL + 4 FRR).
+_MAX_RANGE_SERIES = 20
+
+
 def query_prometheus_range(promql: str, minutes: int = 30) -> list:
     """Run a PromQL range query over the last `minutes` (max 360),
-    30s step. Good for seeing when a link state or error rate changed.
+    30s step. Use label filters — at most 20 series are returned.
     Returns the Prometheus matrix result list (empty on error)."""
     now = time.time()
     return prom_query_range(os.environ["PROM_URL"], promql,
-                            now - _clamp_minutes(minutes) * 60, now, step=30)
+                            now - _clamp_minutes(minutes) * 60, now,
+                            step=30)[:_MAX_RANGE_SERIES]
 
 
 def query_loki(logql: str, minutes: int = 30) -> list:
@@ -121,12 +128,12 @@ async def snmp_get(node: str, oid: str) -> dict:
                          "(SRL nodes speak gNMI — use gnmi_get)")
     if not _OID_RE.fullmatch(oid or ""):
         raise ModelRetry("oid must be numeric dotted form, e.g. 1.3.6.1.2.1.1.3.0")
-    from puresnmp import V2C, Client as SnmpClient, PyWrapper
-    host = (f"{os.environ['CLAB_PREFIX']}-{node}"
-            ".clabernetes.svc.cluster.local")
-    client = PyWrapper(SnmpClient(
-        host, V2C(os.environ.get("SNMP_COMMUNITY", "public"))))
     try:
+        from puresnmp import V2C, Client as SnmpClient, PyWrapper
+        host = (f"{os.environ['CLAB_PREFIX']}-{node}"
+                ".clabernetes.svc.cluster.local")
+        client = PyWrapper(SnmpClient(
+            host, V2C(os.environ.get("SNMP_COMMUNITY", "public"))))
         value = await asyncio.wait_for(client.get(oid.lstrip(".")), timeout=10)
         return {"oid": oid, "value": str(value)}
     except Exception as e:
