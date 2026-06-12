@@ -109,11 +109,15 @@ def gnmi_get(node: str, path: str) -> dict:
         raise ModelRetry("node must be an SR Linux node: tmc-* or hub-* "
                          "(fc-* cabinets speak SNMP — use snmp_get)")
     try:
-        return gnmi_readonly.get(node, path)
+        out = gnmi_readonly.get(node, path)
     except ValueError as e:
         raise ModelRetry(str(e))
     except Exception as e:
         return {"error": str(e)}
+    # pygnmi yields None for an empty notification; a None tool return
+    # serializes to a null tool message, which some OpenAI-compatible
+    # servers (Ollama) reject with 400 invalid message content.
+    return out if out is not None else {"error": "empty gNMI response"}
 
 
 async def snmp_get(node: str, oid: str) -> dict:
