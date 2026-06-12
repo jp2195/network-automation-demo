@@ -85,9 +85,19 @@ def _model_settings():
     # any structured response lands (UnexpectedModelBehavior). A
     # ceiling, not an allocation — generous on purpose; runaway cost
     # is already bounded by request_limit + activeDeadlineSeconds.
-    # Low temperature: the analyst should be deterministic, and small
-    # local models wander between tool calls at their chatty defaults.
-    settings = {"max_tokens": 32768, "temperature": 0.2}
+    settings = {"max_tokens": 32768}
+    # Optional Secret key temperature: low values (0.2) keep small
+    # local models from wandering between tool calls. NOT defaulted —
+    # OpenAI reasoning-class models reject non-default temperature, so
+    # it is only sent when the user set it (same pattern as
+    # reasoning_effort below).
+    temp = os.environ.get("AI_TEMPERATURE", "").strip()
+    if temp:
+        try:
+            settings["temperature"] = float(temp)
+        except ValueError:
+            print(f"ignoring non-numeric AI_TEMPERATURE {temp!r}",
+                  file=sys.stderr)
     # Optional Secret key reasoning_effort: local thinking models loop
     # in reasoning on small contexts — "none" disables thinking on
     # Ollama's OpenAI-compat endpoint (smoke-verified). Omitted, the

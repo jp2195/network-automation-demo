@@ -96,6 +96,14 @@ class TestToolAllowlists(unittest.TestCase):
         with mock.patch.dict("os.environ", {}, clear=True):
             self.assertNotIn("openai_reasoning_effort", analyst._model_settings())
 
+    def test_temperature_env_wires_into_model_settings(self):
+        # Only sent when set: OpenAI reasoning-class models reject
+        # non-default temperature, so there must be no default.
+        with mock.patch.dict("os.environ", {"AI_TEMPERATURE": "0.2"}):
+            self.assertEqual(analyst._model_settings().get("temperature"), 0.2)
+        with mock.patch.dict("os.environ", {}, clear=True):
+            self.assertNotIn("temperature", analyst._model_settings())
+
     def test_gnmi_get_coerces_none_response(self):
         # pygnmi yields None for empty notifications; a None tool return
         # becomes a null tool message, which Ollama's OpenAI-compat
