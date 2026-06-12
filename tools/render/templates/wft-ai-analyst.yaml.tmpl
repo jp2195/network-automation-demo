@@ -53,6 +53,14 @@ spec:
                 name: ai-analyst
                 key: model
                 optional: true
+          # Optional: "none" disables thinking on local models that
+          # otherwise loop in reasoning (see SECRETS.md Ollama recipe).
+          - name: AI_REASONING_EFFORT
+            valueFrom:
+              secretKeyRef:
+                name: ai-analyst
+                key: reasoning_effort
+                optional: true
           - name: PROM_URL
             value: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
           - name: LOKI_URL

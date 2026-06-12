@@ -69,6 +69,13 @@ class TestToolAllowlists(unittest.TestCase):
             with self.assertRaises(ModelRetry, msg=path):
                 analyst_tools.gnmi_get("hub-e", path)
 
+    def test_reasoning_effort_env_wires_into_model_settings(self):
+        with mock.patch.dict("os.environ", {"AI_REASONING_EFFORT": "none"}):
+            self.assertEqual(
+                analyst._model_settings().get("openai_reasoning_effort"), "none")
+        with mock.patch.dict("os.environ", {}, clear=True):
+            self.assertNotIn("openai_reasoning_effort", analyst._model_settings())
+
     def test_gnmi_get_coerces_none_response(self):
         # pygnmi yields None for empty notifications; a None tool return
         # becomes a null tool message, which Ollama's OpenAI-compat
