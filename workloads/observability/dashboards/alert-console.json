@@ -677,7 +677,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"argo-events\"} |= \"INCIDENT_ANALYSIS_V1\"",
+          "expr": "{namespace=\"argo-events\"} |= \"INCIDENT_ANALYSIS_V1 {\"",
           "refId": "A"
         }
       ],
