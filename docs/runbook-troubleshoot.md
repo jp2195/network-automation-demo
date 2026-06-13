@@ -343,3 +343,20 @@ re-apply the topology if you've edited the spec.
    `kubectl -n argo-events logs <ai-analyze pod> | grep INCIDENT_ANALYSIS_V1`.
    Small local models occasionally fail structured output — rerun the
    incident with a stronger model.
+
+## Drift audit never fires
+
+`kubectl -n argo-events get cwf drift-audit` exists but no
+`drift-audit-*` workflows ever appear and `status.lastScheduledTime`
+is empty: the cron controller validated the `workflowTemplateRef` in
+the instant before its WorkflowTemplate informer saw the `drift-audit`
+WFT (a same-sync race on a fresh cluster), marked the CronWorkflow
+`SpecError`, and never re-validates on its own. Confirm with
+`kubectl -n argo logs deploy/argo-workflows-workflow-controller | grep "invalid cron"`.
+Recovery is any update that touches the resource:
+
+    kubectl -n argo-events annotate cronworkflow drift-audit \
+      revalidate="$(date +%s)" --overwrite
+
+The manifest carries a `sync-wave: "1"` annotation so ArgoCD applies it
+after the WorkflowTemplates, which prevents the race on normal syncs.
