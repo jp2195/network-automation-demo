@@ -17,6 +17,12 @@ spec:
         name: workflow-scripts
   templates:
     - name: analyze
+      # One retry: small local models stochastically fail a run
+      # (reasoning/repetition loops) that a fresh attempt converges;
+      # bounded by the same activeDeadlineSeconds either way.
+      retryStrategy:
+        limit: "1"
+        retryPolicy: OnFailure
       inputs:
         parameters:
           - name: alert
