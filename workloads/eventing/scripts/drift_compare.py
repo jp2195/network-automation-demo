@@ -125,6 +125,11 @@ def build_alerts(drifts, now_fn=None):
                 "description": f"{d['detail']} — out-of-band change vs the "
                                f"rendered SSOT (spec/atlanta.yaml).",
             },
+            # Explicit startsAt: Alertmanager defaults a missing
+            # startsAt to endsAt, which dates the incident 12 minutes
+            # in the future — wrecking the ledger first_seen, the SLA
+            # math, and the postmortem's Loki window (smoke-found).
+            "startsAt": now.isoformat(),
             "endsAt": ends,
         })
     return alerts
