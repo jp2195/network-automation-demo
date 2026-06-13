@@ -1,53 +1,203 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Atlas DOT — Scenario Console</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atlas DOT — Scenario Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <header>
-    <h1>Atlas DOT — Scenario Console</h1>
-    <div id="strip" class="strip">loading status…</div>
+<body data-view="mission" data-theme="dark">
+
+  <!-- ============== TOP BAR ============== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/>
+          <path d="M5 8v2a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V8M12 13v3"/>
+        </svg>
+      </span>
+      <div>
+        <h1>Atlas DOT — Scenario Console</h1>
+        <div class="sub">Network Automation · Lab Fabric</div>
+      </div>
+    </div>
+
+    <!-- reactive metrics -->
+    <div class="statusbar" id="statusbar">
+      <div class="tile" id="tile-nodes"><span class="t-label">Nodes up</span><span class="t-val">—</span><span class="pulse"></span></div>
+      <div class="tile" id="tile-links"><span class="t-label">Links down</span><span class="t-val">—</span><span class="pulse"></span></div>
+      <div class="tile" id="tile-alerts"><span class="t-label">Alerts firing</span><span class="t-val">—</span><span class="pulse"></span></div>
+      <div class="tile" id="tile-workflows"><span class="t-label">Workflows</span><span class="t-val">—</span><span class="pulse"></span></div>
+    </div>
+
+    <div class="switches">
+      <div class="seg" role="group" aria-label="View">
+        <button data-set-view="terminal" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg>
+          Terminal
+        </button>
+        <button data-set-view="mission" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          Mission
+        </button>
+      </div>
+      <div class="seg" role="group" aria-label="Theme">
+        <button data-set-theme="dark" aria-pressed="true">Dark</button>
+        <button data-set-theme="light" aria-pressed="false">Light</button>
+      </div>
+    </div>
   </header>
 
-  <main>
-    <section class="card">
-      <h2>Cut / Restore a link</h2>
-      <label>Node <select id="cut-node"></select></label>
-      <label>Interface <select id="cut-iface"></select></label>
-      <button data-act="disable" class="cut">Cut (disable)</button>
-      <button data-act="enable" class="restore">Restore (enable)</button>
-      <div class="result" id="cut-result"></div>
+  <!-- ============== STAGE ============== -->
+  <main class="stage">
+
+    <!-- controls -->
+    <section class="controls" aria-label="Scenario controls">
+
+      <!-- running banner spans both columns -->
+      <div class="runbar span2" id="runbar">
+        <span class="spin"></span>
+        <span id="runlabel">running scenario</span>
+        <button class="stop" id="stopRun">abort</button>
+      </div>
+
+      <!-- Cut / Restore -->
+      <div class="module">
+        <div class="mod-head">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg></span>
+          <h2>Cut / restore a link</h2>
+          <span class="hint">admin-down</span>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label class="lbl" for="cutNode">Node</label>
+            <select id="cutNode"></select>
+          </div>
+          <div class="field">
+            <label class="lbl" for="cutIntf">Interface</label>
+            <select id="cutIntf"></select>
+          </div>
+        </div>
+        <div class="btnrow">
+          <button class="btn btn-danger" id="btnCut">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>
+            Cut (disable)
+          </button>
+          <button class="btn btn-ok" id="btnRestore">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 4v4h-4"/></svg>
+            Restore (enable)
+          </button>
+        </div>
+      </div>
+
+      <!-- Gray failure -->
+      <div class="module">
+        <div class="mod-head">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 5 4-12 2 7h6"/></svg></span>
+          <h2>Gray failure</h2>
+          <span class="hint">degrade</span>
+        </div>
+        <div class="field">
+          <label class="lbl" for="grayLink">Link</label>
+          <select id="grayLink"></select>
+        </div>
+        <div class="btnrow">
+          <button class="btn btn-danger" id="btnGrayStart">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v18l14-9z"/></svg>
+            Start
+          </button>
+          <button class="btn btn-ok" id="btnGrayEnd">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="5" width="12" height="14" rx="2"/></svg>
+            End
+          </button>
+        </div>
+      </div>
+
+      <!-- Maintenance -->
+      <div class="module">
+        <div class="mod-head">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 0 5.4-5.4l-2.3 2.3-2-2 2.3-2.3z"/></svg></span>
+          <h2>Maintenance window</h2>
+          <span class="hint">suppress alerts</span>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label class="lbl" for="maintNode">Node</label>
+            <select id="maintNode"></select>
+          </div>
+          <div class="field">
+            <label class="lbl" for="maintHours">Hours</label>
+            <input type="number" id="maintHours" value="2" min="1" max="48" step="1">
+          </div>
+        </div>
+        <div class="btnrow">
+          <button class="btn btn-accent" id="btnMaintOpen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            Open
+          </button>
+          <button class="btn btn-ghost" id="btnMaintClose">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            Close
+          </button>
+        </div>
+      </div>
+
+      <!-- Canned scenarios -->
+      <div class="module">
+        <div class="mod-head">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>
+          <h2>Canned scenarios</h2>
+          <span class="hint">scripted</span>
+        </div>
+        <div class="scenarios">
+          <button class="scn" data-scn="hurricane">
+            <span class="scn-cmd">make <b>scenario-hurricane</b></span>
+            <span class="scn-desc">Regional storm · power loss · auto-reroute</span>
+          </button>
+          <button class="scn" data-scn="backhoe">
+            <span class="scn-cmd">make <b>scenario-backhoe</b></span>
+            <span class="scn-desc">Fiber cut · LFA fast-reroute · repair</span>
+          </button>
+          <button class="scn" data-scn="cabinet">
+            <span class="scn-cmd">make <b>scenario-cabinet</b></span>
+            <span class="scn-desc">Cabinet power · UPS drain · generator</span>
+          </button>
+          <button class="scn" data-scn="flap">
+            <span class="scn-cmd">make <b>scenario-flap</b></span>
+            <span class="scn-desc">Interface flapping · damping engages</span>
+          </button>
+        </div>
+      </div>
+
     </section>
 
-    <section class="card">
-      <h2>Gray failure</h2>
-      <label>Link <select id="gray-link"></select></label>
-      <button data-act="start" class="cut">Start</button>
-      <button data-act="end" class="restore">End</button>
-      <div class="result" id="gray-result"></div>
+    <!-- log / terminal -->
+    <section class="logwrap" aria-label="Event log">
+      <div class="loghead">
+        <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <h2>event log</h2>
+        <span class="meta">
+          <span id="logcount">0 lines</span>
+          <button class="clearlog" id="clearLog">clear</button>
+        </span>
+      </div>
+      <ol class="log" id="log"></ol>
+      <div class="cmdline">
+        <span class="prompt">atlas@console ~ %</span>
+        <span class="cmd" id="cmdpreview"></span>
+        <span class="caret"></span>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>Maintenance window</h2>
-      <label>Node <select id="maint-node"></select></label>
-      <label>Hours <input id="maint-hours" type="number" value="2" min="1" max="24" step="1"></label>
-      <button data-act="start" class="cut">Open</button>
-      <button data-act="end" class="restore">Close</button>
-      <div class="result" id="maint-result"></div>
-    </section>
-
-    <section class="card muted">
-      <h2>Canned scenarios (CLI)</h2>
-      <p>Run from a terminal — these multi-step storylines aren't wired to the console in v1:</p>
-      <pre>make scenario-hurricane
-make scenario-backhoe
-make scenario-cabinet
-make scenario-flap</pre>
-    </section>
   </main>
+
+  <p class="foot">Simulated lab fabric (clabernetes) · drives real workflows · no production devices</p>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
 
   <script src="app.js"></script>
 </body>

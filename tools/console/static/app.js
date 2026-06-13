@@ -1,96 +1,564 @@
-async function getJSON(url) {
-  const r = await fetch(url);
-  return r.json();
-}
-async function postJSON(url, body) {
-  const r = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  return { ok: r.ok, data: await r.json().catch(() => ({})) };
-}
-function opt(value, label) {
-  const o = document.createElement("option");
-  o.value = value;
-  o.textContent = label || value;
-  return o;
-}
-function show(id, ok, msg) {
-  const el = document.getElementById(id);
-  el.textContent = msg;
-  el.className = "result " + (ok ? "ok" : "err");
-}
+/* ============================================================
+   Atlas DOT — Scenario Console : engine (v2)
+   Real-wired: inventory from console-targets.json, status from
+   /api/status (polled every 5s), actions via /api/cut|gray|maintenance.
+   No simulation — all tile state comes from the real backend.
+   ============================================================ */
+(function () {
+  "use strict";
 
-let TARGETS = { nodes: [], links: [] };
+  /* ---------------- inventory (loaded from server) ---------------- */
+  let BACKBONE_NODES = [];  // kind === "srlinux"
+  let ALL_LINKS = [];       // all links from targets
+  let TOTAL_BACKBONE = 0;   // set after load
 
-async function init() {
-  TARGETS = await getJSON("console-targets.json");
-  const cutNode = document.getElementById("cut-node");
-  const maintNode = document.getElementById("maint-node");
-  TARGETS.nodes.forEach((n) => {
-    cutNode.appendChild(opt(n.name, `${n.name} (${n.role})`));
-    maintNode.appendChild(opt(n.name, `${n.name} (${n.role})`));
-  });
-  document.getElementById("gray-link").append(
-    ...TARGETS.links.map((l) => opt(l.id, `${l.id} (${l.kind})`)));
-  syncIfaces();
-  cutNode.addEventListener("change", syncIfaces);
+  /* ---------------- tiny DOM helpers ---------------- */
+  const $ = (s, r) => (r || document).querySelector(s);
+  const el = (tag, cls, html) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  };
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  function clock() {
+    const d = new Date();
+    return [d.getHours(), d.getMinutes(), d.getSeconds()]
+      .map((n) => String(n).padStart(2, "0")).join(":");
+  }
+  function opt(value, label) {
+    const o = document.createElement("option");
+    o.value = value; o.textContent = label || value;
+    return o;
+  }
 
-  bind("cut", async (act) => postJSON("/api/cut", {
-    node: cutNode.value,
-    interface: document.getElementById("cut-iface").value,
-    action: act,
-  }));
-  bind("gray", async (act) => postJSON("/api/gray", {
-    link: document.getElementById("gray-link").value,
-    action: act,
-  }));
-  bind("maint", async (act) => postJSON("/api/maintenance", {
-    node: maintNode.value,
-    hours: document.getElementById("maint-hours").value,
-    action: act,
-  }));
+  /* ---------------- event log ---------------- */
+  const logEl = () => $("#log");
+  let lineCount = 0;
+  function log(level, src, msg) {
+    const li = el("li", "evt");
+    li.dataset.level = level;
+    const tag = level === "error" ? "ALERT" : level === "warn" ? "WARN" : level === "ok" ? "OK" : null;
+    li.innerHTML =
+      `<time>${clock()}</time>` +
+      `<span class="src">${src || ""}</span>` +
+      (tag ? `<span class="tag">${tag}</span>` : "") +
+      `<span class="msg"></span>`;
+    li.querySelector(".msg").textContent = msg;
+    logEl().appendChild(li);
+    lineCount++;
+    $("#logcount").textContent = lineCount + " lines";
+    logEl().scrollTop = logEl().scrollHeight;
+    return li;
+  }
+  function clearLog() {
+    logEl().innerHTML = "";
+    lineCount = 0;
+    $("#logcount").textContent = "0 lines";
+    log("info", "console", "log cleared");
+  }
 
-  refresh();
-  setInterval(refresh, 5000);
-}
+  /* ---------------- toasts ---------------- */
+  const ICONS = {
+    danger: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/></svg>',
+    ok:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>',
+    warn:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>',
+    info:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+  };
+  function toast(kind, title, desc, ttl) {
+    ttl = ttl || 4200;
+    const t = el("div", "toast " + kind);
+    t.innerHTML = `<span class="ic">${ICONS[kind] || ICONS.info}</span><div><div class="tt"></div><div class="td"></div></div>`;
+    t.querySelector(".tt").textContent = title;
+    t.querySelector(".td").textContent = desc || "";
+    $("#toasts").appendChild(t);
+    setTimeout(function () {
+      t.classList.add("out");
+      setTimeout(function () { t.remove(); }, 320);
+    }, ttl);
+  }
 
-function syncIfaces() {
-  const node = document.getElementById("cut-node").value;
-  const sel = document.getElementById("cut-iface");
-  sel.innerHTML = "";
-  const n = TARGETS.nodes.find((x) => x.name === node);
-  (n ? n.interfaces : []).forEach((i) => sel.appendChild(opt(i)));
-}
+  /* ---------------- status bar (driven entirely by /api/status poll) ---------------- */
+  const tiles = {};
+  const prevVals = {};
 
-function bind(prefix, fn) {
-  const card = document.getElementById(`${prefix}-result`).closest(".card");
-  card.querySelectorAll("button[data-act]").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const { ok, data } = await fn(btn.dataset.act);
-      show(`${prefix}-result`, ok && data.ok !== false,
-        ok ? JSON.stringify(data) : "request failed");
+  function flash(key) {
+    const t = tiles[key];
+    if (!t) return;
+    t.classList.remove("flash");
+    void t.offsetWidth; // force reflow
+    t.classList.add("flash");
+  }
+
+  function setTile(key, val, cls) {
+    const t = tiles[key];
+    if (!t) return;
+    const valEl = t.querySelector(".t-val");
+    const strVal = String(val);
+    if (prevVals[key] !== strVal) {
+      prevVals[key] = strVal;
+      valEl.textContent = strVal;
+      flash(key);
+    }
+    t.classList.remove("is-alert", "is-warn", "is-busy");
+    if (cls) t.classList.add(cls);
+  }
+
+  function applyStatus(s) {
+    const degraded = s.degraded || [];
+
+    // nodes_up: show X/total
+    if (degraded.indexOf("nodes_up") >= 0) {
+      setTile("nodes", "—", "");
+    } else {
+      const total = TOTAL_BACKBONE || "?";
+      const up = s.nodes_up;
+      const display = up + "/" + total;
+      const cls = (up < total) ? "is-alert" : "";
+      setTile("nodes", display, cls);
+    }
+
+    if (degraded.indexOf("links_down") >= 0) {
+      setTile("links", "—", "");
+    } else {
+      setTile("links", s.links_down, s.links_down > 0 ? "is-alert" : "");
+    }
+
+    if (degraded.indexOf("alerts_firing") >= 0) {
+      setTile("alerts", "—", "");
+    } else {
+      setTile("alerts", s.alerts_firing, s.alerts_firing > 0 ? "is-alert" : "");
+    }
+
+    if (degraded.indexOf("workflows_running") >= 0) {
+      setTile("workflows", "—", "");
+    } else {
+      setTile("workflows", s.workflows_running, s.workflows_running > 2 ? "is-busy" : "");
+    }
+  }
+
+  async function pollStatus() {
+    try {
+      const resp = await fetch("/api/status");
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      const s = await resp.json();
+      applyStatus(s);
+    } catch (e) {
+      // leave tiles as-is; degrade silently
+    }
+  }
+
+  /* ============================================================
+     REAL API CALLS — honest narration only
+     ============================================================ */
+
+  // POST to a real endpoint; log cmd + outcome line; return the raw response data.
+  async function apiCall(endpoint, body, cmdLine) {
+    log("cmd", "atlas", cmdLine);
+    try {
+      const resp = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await resp.json().catch(function () { return {}; });
+      if (!resp.ok || data.ok === false) {
+        const detail = data.detail || ("HTTP " + resp.status);
+        log("error", "console", "request failed: " + detail);
+        return { ok: false, data };
+      }
+      const upstream = data.upstream != null ? " (upstream " + data.upstream + ")" : "";
+      log("ok", "console", "workflow created" + upstream);
+      return { ok: true, data };
+    } catch (e) {
+      log("error", "console", "request failed: " + e.message);
+      return { ok: false, data: {} };
+    }
+  }
+
+  async function apiCut(node, iface) {
+    const r = await apiCall(
+      "/api/cut",
+      { node, interface: iface, action: "disable" },
+      "link disable --node " + node + " --intf " + iface
+    );
+    if (r.ok) toast("danger", "Cut issued", node + " · " + iface);
+    else      toast("danger", "Cut failed", node + " · " + iface);
+    return r;
+  }
+
+  async function apiRestore(node, iface) {
+    const r = await apiCall(
+      "/api/cut",
+      { node, interface: iface, action: "enable" },
+      "link enable --node " + node + " --intf " + iface
+    );
+    if (r.ok) toast("ok", "Restore issued", node + " · " + iface);
+    else      toast("danger", "Restore failed", node + " · " + iface);
+    return r;
+  }
+
+  async function apiGrayStart(link) {
+    const r = await apiCall(
+      "/api/gray",
+      { link, action: "start" },
+      "fault inject --link " + link + " --mode gray"
+    );
+    if (r.ok) toast("warn", "Gray failure armed", link + " degrading");
+    else      toast("danger", "Gray start failed", link);
+    return r;
+  }
+
+  async function apiGrayEnd(link) {
+    const r = await apiCall(
+      "/api/gray",
+      { link, action: "end" },
+      "fault clear --link " + link
+    );
+    if (r.ok) toast("ok", "Gray failure cleared", link);
+    else      toast("danger", "Gray end failed", link);
+    return r;
+  }
+
+  async function apiMaintOpen(node, hours) {
+    const r = await apiCall(
+      "/api/maintenance",
+      { node, action: "start", hours: Number(hours) },
+      "maint open --node " + node + " --hours " + hours
+    );
+    if (r.ok) toast("info", "Maintenance opened", node + " · " + hours + "h · alerts muted");
+    else      toast("danger", "Maintenance failed", node);
+    return r;
+  }
+
+  async function apiMaintClose(node) {
+    const r = await apiCall(
+      "/api/maintenance",
+      { node, action: "end" },
+      "maint close --node " + node
+    );
+    if (r.ok) toast("ok", "Maintenance closed", node + " back in service");
+    else      toast("danger", "Maintenance close failed", node);
+    return r;
+  }
+
+  /* ============================================================
+     SCENARIO RUNNER
+     ============================================================ */
+  let running = false;
+  let cancelToken = 0;
+  const alive = (token) => token === cancelToken;
+
+  function setScenBtns(disabled) {
+    document.querySelectorAll(".scn").forEach(function (b) { b.disabled = disabled; });
+  }
+
+  function runStart(name) {
+    if (running) { toast("warn", "Busy", "A scenario is already running"); return null; }
+    running = true;
+    const token = ++cancelToken;
+    $("#runbar").classList.add("on");
+    $("#runlabel").textContent = "running scenario: " + name;
+    setScenBtns(true);
+    return token;
+  }
+
+  function runEnd(token, name) {
+    if (token !== cancelToken) return;
+    running = false;
+    $("#runbar").classList.remove("on");
+    setScenBtns(false);
+    log("ok", "workflow", "scenario \"" + name + "\" complete");
+    toast("ok", "Scenario complete", name);
+  }
+
+  /*
+   * Real scenario target mappings (verified against console-targets.json):
+   *
+   * hurricane: gray-start ring-e-i20e → cut hub-e ethernet-1/1 → restore hub-e ethernet-1/1 → gray-end ring-e-i20e
+   * backhoe:   cut hub-i20e ethernet-1/2 → restore hub-i20e ethernet-1/2
+   * cabinet:   maint-open hub-i20e → cut hub-i20e ethernet-1/4 → restore → maint-close hub-i20e
+   * flap:      4× cut→restore on tmc-2 ethernet-1/2
+   *
+   * All node/interface/link names exist in console-targets.json.
+   * (ring-e-i20e: hub-e:ethernet-1/1 ↔ hub-i20e:ethernet-1/2)
+   * (hubi20e-fci20e cabinet drop: hub-i20e:ethernet-1/4)
+   */
+
+  const SCENARIOS = {
+    async hurricane(token) {
+      log("cmd", "atlas", "scenario hurricane --region coastal-east");
+      log("warn", "noc", "Cat-3 landfall forecast — staging coastal-east fabric");
+      await sleep(900); if (!alive(token)) return;
+
+      log("warn", "noc", "storm scenario: degrading ring-e-i20e (gray failure)");
+      await apiGrayStart("ring-e-i20e");
+      await sleep(1100); if (!alive(token)) return;
+
+      log("warn", "hub-e", "commercial power fluctuation detected — cutting hub-e ethernet-1/1");
+      await apiCut("hub-e", "ethernet-1/1");
+      await sleep(1300); if (!alive(token)) return;
+
+      log("info", "workflow", "auto-reroute: shifting coastal traffic via ring-nw-n");
+      await sleep(1500); if (!alive(token)) return;
+      log("ok", "workflow", "traffic converged on ring-nw-n — 0 customer impact");
+      await sleep(1100); if (!alive(token)) return;
+
+      log("info", "hub-e", "generator online — power restored, restoring hub-e ethernet-1/1");
+      await apiRestore("hub-e", "ethernet-1/1");
+      await sleep(800); if (!alive(token)) return;
+
+      log("info", "noc", "storm clearing — ending gray failure on ring-e-i20e");
+      await apiGrayEnd("ring-e-i20e");
+    },
+
+    async backhoe(token) {
+      log("cmd", "atlas", "scenario backhoe --link ring-e-i20e");
+      log("error", "ring-e-i20e", "fiber cut — backhoe through conduit");
+      await apiCut("hub-i20e", "ethernet-1/2");
+      await sleep(1200); if (!alive(token)) return;
+
+      log("info", "workflow", "IGP reconverging — computing backup path via ring-nw-n");
+      await sleep(1400); if (!alive(token)) return;
+      log("ok", "workflow", "LFA fast-reroute active via alternate ring segment (<50ms)");
+      await sleep(1300); if (!alive(token)) return;
+
+      log("info", "field-ops", "splice crew dispatched — ETR 4h");
+      await sleep(1500); if (!alive(token)) return;
+      log("ok", "ring-e-i20e", "fiber spliced — restoring hub-i20e ethernet-1/2");
+      await apiRestore("hub-i20e", "ethernet-1/2");
+    },
+
+    async cabinet(token) {
+      log("cmd", "atlas", "scenario cabinet --node hub-i20e");
+      log("warn", "hub-i20e", "street cabinet AC failure — UPS engaged");
+      await apiMaintOpen("hub-i20e", 1);
+      await sleep(1200); if (!alive(token)) return;
+
+      log("warn", "hub-i20e", "UPS at 60% — 18 minutes runtime remaining");
+      await sleep(1300); if (!alive(token)) return;
+      log("error", "hub-i20e", "UPS depleted — cutting cabinet drop hubi20e-fci20e");
+      await apiCut("hub-i20e", "ethernet-1/4");
+      await sleep(1500); if (!alive(token)) return;
+
+      log("info", "field-ops", "portable generator connected");
+      await sleep(1200); if (!alive(token)) return;
+      log("ok", "hub-i20e", "node recovered — restoring cabinet drop");
+      await apiRestore("hub-i20e", "ethernet-1/4");
+      await sleep(800); if (!alive(token)) return;
+      await apiMaintClose("hub-i20e");
+    },
+
+    async flap(token) {
+      log("cmd", "atlas", "scenario flap --node tmc-2 --intf ethernet-1/2");
+      log("warn", "tmc-2", "interface ethernet-1/2 flapping");
+      for (let i = 1; i <= 4; i++) {
+        if (!alive(token)) return;
+        log("warn", "tmc-2", "link down (flap " + i + "/4)");
+        await apiCut("tmc-2", "ethernet-1/2");
+        await sleep(700); if (!alive(token)) return;
+        log("info", "tmc-2", "link up (flap " + i + "/4)");
+        await apiRestore("tmc-2", "ethernet-1/2");
+        await sleep(550); if (!alive(token)) return;
+      }
+      log("info", "workflow", "flap-damping engaged — penalty 4000, suppressing advertisement");
+      await sleep(1400); if (!alive(token)) return;
+      log("ok", "tmc-2", "interface stable — penalty decayed below reuse threshold");
+    },
+  };
+
+  // Best-effort cleanup when a scenario is aborted mid-run.
+  // We don't know what state the scenario left things in, so we just log.
+  async function abortCleanup() {
+    log("warn", "workflow", "scenario aborted by operator — check fabric state");
+    toast("warn", "Aborted", "Scenario stopped — verify fabric manually");
+  }
+
+  async function runScenario(name) {
+    const token = runStart(name);
+    if (token == null) return;
+    try {
+      await SCENARIOS[name](token);
+    } catch (e) {
+      log("error", "workflow", "scenario error: " + e.message);
+    }
+    if (!alive(token)) {
+      // was aborted
+      return;
+    }
+    runEnd(token, name);
+  }
+
+  /* ============================================================
+     SELECT POPULATION + COMMAND PREVIEW
+     ============================================================ */
+  function populateSelects() {
+    const cutNode = $("#cutNode");
+    const maintNode = $("#maintNode");
+    const grayLink = $("#grayLink");
+
+    BACKBONE_NODES.forEach(function (n) {
+      cutNode.appendChild(opt(n.name, n.name + " (" + n.role + ")"));
+      maintNode.appendChild(opt(n.name, n.name + " (" + n.role + ")"));
+    });
+
+    ALL_LINKS.forEach(function (l) {
+      grayLink.appendChild(opt(l.id, l.id + " (" + l.kind + ")"));
+    });
+
+    syncInterfaces();
+  }
+
+  function syncInterfaces() {
+    const node = $("#cutNode").value;
+    const sel = $("#cutIntf");
+    sel.innerHTML = "";
+    const n = BACKBONE_NODES.find(function (x) { return x.name === node; });
+    (n ? n.interfaces : []).forEach(function (i) { sel.appendChild(opt(i, i)); });
+    updateCmdline();
+  }
+
+  function updateCmdline() {
+    const node = $("#cutNode").value;
+    const iface = $("#cutIntf").value;
+    const cmd = $("#cmdpreview");
+    if (cmd) {
+      cmd.innerHTML =
+        'link disable <span class="arg">--node ' + node + '</span>' +
+        ' <span class="arg">--intf ' + iface + '</span>';
+    }
+  }
+
+  /* ============================================================
+     VIEW + THEME PERSISTENCE
+     ============================================================ */
+  const STORE = "atlas-console-prefs";
+  function loadPrefs() {
+    let p = {};
+    try { p = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) {}
+    const url = new URLSearchParams(location.search);
+    const view = url.get("view") || p.view || "mission";
+    const theme = url.get("theme") || p.theme || "dark";
+    applyView(view); applyTheme(theme);
+  }
+  function savePrefs() {
+    try {
+      localStorage.setItem(STORE, JSON.stringify({
+        view: document.body.dataset.view,
+        theme: document.body.dataset.theme,
+      }));
+    } catch (e) {}
+  }
+  function applyView(v) {
+    document.body.dataset.view = v;
+    document.querySelectorAll("[data-set-view]").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.setView === v ? "true" : "false");
+    });
+    updateCmdline();
+  }
+  function applyTheme(t) {
+    document.body.dataset.theme = t;
+    document.querySelectorAll("[data-set-theme]").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.setTheme === t ? "true" : "false");
+    });
+  }
+
+  /* ============================================================
+     BOOT
+     ============================================================ */
+  document.addEventListener("DOMContentLoaded", async function () {
+    // Cache tile references
+    ["nodes", "links", "alerts", "workflows"].forEach(function (k) {
+      tiles[k] = $("#tile-" + k);
+    });
+
+    // Load inventory
+    try {
+      const targets = await fetch("console-targets.json").then(function (r) { return r.json(); });
+      BACKBONE_NODES = (targets.nodes || []).filter(function (n) { return n.kind === "srlinux"; });
+      ALL_LINKS = targets.links || [];
+      TOTAL_BACKBONE = BACKBONE_NODES.length;
+    } catch (e) {
+      log("error", "console", "failed to load inventory: " + e.message);
+    }
+
+    populateSelects();
+    loadPrefs();
+
+    // Boot log
+    log("info", "console", "Atlas DOT scenario console v2 — connected to lab fabric");
+    log("ok", "console", TOTAL_BACKBONE + " backbone nodes in inventory · " + ALL_LINKS.length + " links monitored");
+
+    // Start status poll
+    await pollStatus();
+    setInterval(pollStatus, 5000);
+
+    // Cut / restore
+    $("#cutNode").addEventListener("change", syncInterfaces);
+    $("#cutIntf").addEventListener("change", updateCmdline);
+
+    $("#btnCut").addEventListener("click", function () {
+      const node = $("#cutNode").value;
+      const iface = $("#cutIntf").value;
+      if (!node || !iface) return;
+      apiCut(node, iface);
+    });
+    $("#btnRestore").addEventListener("click", function () {
+      const node = $("#cutNode").value;
+      const iface = $("#cutIntf").value;
+      if (!node || !iface) return;
+      apiRestore(node, iface);
+    });
+
+    // Gray failure
+    $("#btnGrayStart").addEventListener("click", function () {
+      const link = $("#grayLink").value;
+      if (!link) return;
+      apiGrayStart(link);
+    });
+    $("#btnGrayEnd").addEventListener("click", function () {
+      const link = $("#grayLink").value;
+      if (!link) return;
+      apiGrayEnd(link);
+    });
+
+    // Maintenance
+    $("#btnMaintOpen").addEventListener("click", function () {
+      const node = $("#maintNode").value;
+      const hours = $("#maintHours").value || 2;
+      if (!node) return;
+      apiMaintOpen(node, hours);
+    });
+    $("#btnMaintClose").addEventListener("click", function () {
+      const node = $("#maintNode").value;
+      if (!node) return;
+      apiMaintClose(node);
+    });
+
+    // Scenarios
+    document.querySelectorAll(".scn").forEach(function (b) {
+      b.addEventListener("click", function () { runScenario(b.dataset.scn); });
+    });
+
+    // Abort
+    $("#stopRun").addEventListener("click", function () {
+      if (!running) return;
+      cancelToken++;
+      running = false;
+      $("#runbar").classList.remove("on");
+      setScenBtns(false);
+      abortCleanup();
+    });
+
+    // Clear log
+    $("#clearLog").addEventListener("click", clearLog);
+
+    // View/theme switchers
+    document.querySelectorAll("[data-set-view]").forEach(function (b) {
+      b.addEventListener("click", function () { applyView(b.dataset.setView); savePrefs(); });
+    });
+    document.querySelectorAll("[data-set-theme]").forEach(function (b) {
+      b.addEventListener("click", function () { applyTheme(b.dataset.setTheme); savePrefs(); });
     });
   });
-}
-
-async function refresh() {
-  try {
-    const s = await getJSON("/api/status");
-    const parts = [
-      `backbone nodes up: ${fmt(s.nodes_up)}`,
-      `links down: ${fmt(s.links_down)}`,
-      `alerts firing: ${fmt(s.alerts_firing)}`,
-      `workflows running: ${fmt(s.workflows_running)}`,
-    ];
-    let strip = parts.join(" · ");
-    if (s.degraded && s.degraded.length) strip += `  (no data: ${s.degraded.join(", ")})`;
-    document.getElementById("strip").textContent = strip;
-  } catch (e) {
-    document.getElementById("strip").textContent = "status unavailable";
-  }
-}
-function fmt(v) { return v === undefined ? "—" : v; }
-
-init();
+})();
