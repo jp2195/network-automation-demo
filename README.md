@@ -14,6 +14,13 @@ agencies), analyzed for downstream impact, and turned into an actionable
 Slack message that **updates in place when the alert resolves** — driven by
 a 3-step Argo Workflow with an alert-fingerprint-keyed ledger in Valkey.
 
+![Atlas DOT scenario console](docs/assets/console-mission-dark.png)
+
+> The **scenario console** — a privilege-free Go service that drives real
+> fault-injection workflows (cut a link, degrade a link, open a maintenance
+> window, or run a scripted scenario) and reflects live fabric state. Every
+> button fires a real Argo Workflow; nothing is simulated.
+
 ## Topology
 
 12 nodes, fictional Atlas DOT Region 7 Atlanta Metro:
@@ -23,6 +30,12 @@ a 3-step Argo Workflow with an alert-fingerprint-keyed ledger in Valkey.
 - 4 field-cabinet routers — FRR (Linux) eBGP into the SR-MPLS core
 
 15 links total: an I-285 perimeter ring, TMC redundant uplinks, and per-cabinet drops.
+
+![Atlanta metro geomap](docs/assets/grafana-geomap.png)
+
+> The fabric on a real map (Grafana Geomap) — backbone ring, hub aggregators,
+> and field cabinets across the Atlanta metro. Nodes turn red the moment an
+> interface goes oper-down.
 
 ## Stack
 
@@ -159,6 +172,11 @@ curl -s localhost:5001/v2/_catalog
 
 ## Demo flow
 
+![Geomap reacting to a fiber cut](docs/assets/grafana-fault.gif)
+
+> A link cut from the console (or `make demo-cut`) propagating through the
+> stack — gNMI telemetry → Prometheus alert → the node going red on the map.
+
 Once IS-IS has converged across the 8 SR Linux backbone nodes and
 snmp_exporter is reaching all 4 cabinets:
 
@@ -279,6 +297,22 @@ health grid, the AI analysis, device logs) as a ConfigMap in the
 `incident-dashboards` namespace — discovered by the Grafana sidecar and placed
 in the **Incidents** folder — and deletes it on resolve. No Grafana API token
 needed; the lane holds only namespaced ConfigMap create/delete.
+
+![Per-incident dashboard with AI analysis](docs/assets/grafana-incident-interface.png)
+
+> An auto-generated per-incident dashboard. Link-state timeline, traffic, and a
+> downstream "did redundancy hold?" grid — with the **AI analyst's** structured
+> finding (root cause, recommendation, confidence) rendered in-panel. The
+> analysis above was produced by a local model via Ollama at zero cost.
+
+### Scenario console
+
+A point-and-click way to drive the whole demo. Pick a link and cut it, degrade
+a link into a gray failure, open a maintenance window, or run a scripted
+scenario — every button fires a real Argo Workflow, and the status tiles and
+event log reflect live fabric state (no fabricated telemetry).
+
+![Scenario console running a scripted scenario](docs/assets/console-scenario.gif)
 
 See [`FEATURES.md`](FEATURES.md) for a plain-language walkthrough of each of
 these with the exact command to try it.

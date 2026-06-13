@@ -32,3 +32,6 @@ docs/superpowers/
 # Local secret overrides — see SECRETS.md
 secrets.local/
 *.secret.yaml
+
+# Playwright MCP scratch (screenshots/snapshots captured during dev)
+.playwright-mcp/

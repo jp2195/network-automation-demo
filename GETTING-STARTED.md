@@ -270,6 +270,7 @@ load immediately, wait a minute — the software may still be starting.)
 
 | What | Address | How to log in |
 |---|---|---|
+| **Scenario console** (point-and-click demo) | <http://console.127-0-0-1.nip.io:8080> | no login |
 | **Grafana** (dashboards & graphs) | <http://grafana.127-0-0-1.nip.io:8080> | `admin` / `admin` |
 | **ArgoCD** (shows all the pieces) | <http://argocd.127-0-0-1.nip.io:8080> | `admin` / run `make status` for the password |
 | **NetBox** (the network "source of truth") | <http://netbox.127-0-0-1.nip.io:8080> | `admin` / `admin` |
@@ -283,6 +284,15 @@ uses a self-signed certificate; the `http://…:8080` versions above avoid that.
 
 **Start at Grafana.** Open the **Geomap** or **Overview** dashboard to see the
 simulated Atlanta-metro fiber network, all green and healthy.
+
+![Grafana network overview](docs/assets/grafana-network-overview.png)
+
+**Then open the Scenario console** — this is the easiest way to drive the demo.
+It has a dark "Mission" view and a "Terminal" view (toggle top-right):
+
+![Scenario console — Mission view](docs/assets/console-mission-dark.png)
+
+![Scenario console — Terminal view](docs/assets/console-terminal-dark.png)
 
 ---
 
@@ -302,6 +312,15 @@ make demo-cut NODE=hub-i20e INTERFACE=ethernet-1/4
 # ...watch Grafana go red, then:
 make demo-restore NODE=hub-i20e INTERFACE=ethernet-1/4
 ```
+
+Or do it all from the console — click a scripted scenario and watch the status
+tiles and event log react in real time:
+
+![Console running a scenario](docs/assets/console-scenario.gif)
+
+…and the fabric lighting up red on the map as the fault propagates:
+
+![Geomap reacting to a cut](docs/assets/grafana-fault.gif)
 
 ---
 
