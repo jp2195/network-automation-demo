@@ -123,7 +123,7 @@ class TestBuildDashboard(unittest.TestCase):
     def test_context_panel_carries_cable_facts(self):
         text = json.dumps(self.dash["panels"])
         for needle in ("FOC-CAB-I20E", "I-20 East", "8h", "adot-region-7",
-                       "high"):
+                       "HIGH"):  # severity rendered as a badge (🔴 HIGH)
             self.assertIn(needle, text)
 
     def test_no_link_id_skips_link_panels_but_builds(self):
