@@ -64,8 +64,9 @@ def _logs_options():
 
 
 def _stat(pid, title, x, y, w, h, expr, mappings, steps):
-    # Value-mapped stat: shows mapped text (e.g. "UP"/"DOWN") with a
-    # coloured background, not a bare metric number.
+    # Value-mapped status chip: the panel title bar names the device; the
+    # body shows just the mapped status ("● UP") in a colour, at a capped
+    # font size so it reads as a chip rather than a ballooning number.
     return _panel(
         pid, title, x, y, w, h, type="stat", datasource=_PROM,
         targets=[{"datasource": _PROM, "expr": expr, "refId": "A",
@@ -77,7 +78,8 @@ def _stat(pid, title, x, y, w, h, expr, mappings, steps):
         }, "overrides": []},
         options={"reduceOptions": {"calcs": ["lastNotNull"]},
                  "colorMode": "value", "graphMode": "none",
-                 "textMode": "value_and_name", "justifyMode": "center"})
+                 "textMode": "value", "justifyMode": "center",
+                 "text": {"valueSize": 22}})
 
 
 def build_dashboard(enrichment, impact, fp):
