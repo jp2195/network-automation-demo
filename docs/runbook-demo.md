@@ -298,3 +298,19 @@ read-only and publishes a structured `IncidentAnalysis`.
 The agent is advisory forever: its tools are structurally read-only
 (gNMI Get-only module, allowlisted inputs) and remediation stays in the
 deterministic lane.
+
+## Per-incident dashboard (auto-generated)
+
+Every firing alert gets its own Grafana dashboard, torn down on
+resolve — look in the **Incidents** folder.
+
+1. `make demo-cut NODE=hub-i20e INTERFACE=ethernet-1/4`
+2. Within ~30s of the alert firing, Grafana grows an
+   `INCIDENT — SRLInterfaceOperDown on hub-i20e (<fp>)` dashboard:
+   incident context (cable/SLA/agencies), link state + traffic, a
+   downstream-health grid (SRL oper-state and cabinet SNMP
+   reachability — watch whether the ring redundancy held), the live
+   AI analysis (self-populates when the advisory lane finishes), and
+   the device log stream.
+3. `make demo-restore NODE=hub-i20e INTERFACE=ethernet-1/4` — when the
+   resolve processes, the dashboard disappears.
