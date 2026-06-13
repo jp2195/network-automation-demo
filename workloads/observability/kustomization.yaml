@@ -10,6 +10,7 @@ resources:
   - alertmanagerconfig.yaml
   - gray-failure-rules.yaml
   - alloy-syslog-svc.yaml
+  - rbac-incident-dashboards.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
