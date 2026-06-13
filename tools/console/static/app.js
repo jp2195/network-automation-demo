@@ -79,7 +79,7 @@ async function refresh() {
   try {
     const s = await getJSON("/api/status");
     const parts = [
-      `nodes up: ${fmt(s.nodes_up)}`,
+      `backbone nodes up: ${fmt(s.nodes_up)}`,
       `links down: ${fmt(s.links_down)}`,
       `alerts firing: ${fmt(s.alerts_firing)}`,
       `workflows running: ${fmt(s.workflows_running)}`,
