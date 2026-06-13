@@ -168,15 +168,18 @@ def build_dashboard(enrichment, impact, fp):
 
 
 def main():
-    enrichment = json.loads(os.environ["ENRICHMENT_JSON"])
-    impact = json.loads(os.environ["IMPACT_JSON"])
-    alert = enrichment.get("alert", {})
-    fp = safe_fp(alert.get("fingerprint"))
-    if not fp:
-        print("no usable fingerprint — skipping incident dashboard")
-        return
-    name = cm_name(fp)
+    # The whole body is advisory: a malformed env var (or any other
+    # failure) must never fail the deterministic pipeline, so even the
+    # JSON parse lives inside the guard.
     try:
+        enrichment = json.loads(os.environ["ENRICHMENT_JSON"])
+        impact = json.loads(os.environ["IMPACT_JSON"])
+        alert = enrichment.get("alert", {})
+        fp = safe_fp(alert.get("fingerprint"))
+        if not fp:
+            print("no usable fingerprint — skipping incident dashboard")
+            return
+        name = cm_name(fp)
         if alert.get("status", "firing") == "firing":
             dash = build_dashboard(enrichment, impact, fp)
             k8s_api.create_configmap(

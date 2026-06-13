@@ -187,7 +187,8 @@ def main():
     if alert.get("status", "firing") != "firing":
         print("resolved event — analysis runs on firing alerts only")
         return
-    fingerprint = re.sub(r"[^A-Za-z0-9]", "", alert.get("fingerprint") or "")
+    fingerprint = re.sub(r"[^A-Za-z0-9]", "",
+                         alert.get("fingerprint") or "").lower()
     if not fingerprint:
         print("alert carries no fingerprint — skipping analysis")
         return

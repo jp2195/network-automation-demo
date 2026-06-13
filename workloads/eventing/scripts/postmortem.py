@@ -254,7 +254,7 @@ def main():
     # Alertmanager fingerprints are hex; strip anything else so the value
     # is safe to interpolate into LogQL filters and the stdout audit line
     # (a stray quote/newline would break the query or split the log line).
-    fingerprint = re.sub(r"[^A-Za-z0-9]", "", fingerprint)
+    fingerprint = re.sub(r"[^A-Za-z0-9]", "", fingerprint).lower()
     if not fingerprint:
         sys.exit("fingerprint has no safe characters — cannot key the postmortem")
 
