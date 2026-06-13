@@ -15,7 +15,7 @@ _SA_DIR = "/var/run/secrets/kubernetes.io/serviceaccount"
 _API = "https://kubernetes.default.svc"
 
 
-def _request(method, path, body=None):
+def _request(method, path, body=None, content_type="application/json"):
     with open(f"{_SA_DIR}/token") as f:
         token = f.read().strip()
     ctx = ssl.create_default_context(cafile=f"{_SA_DIR}/ca.crt")
@@ -23,7 +23,7 @@ def _request(method, path, body=None):
         _API + path,
         data=json.dumps(body).encode() if body is not None else None,
         headers={"Authorization": f"Bearer {token}",
-                 "Content-Type": "application/json"},
+                 "Content-Type": content_type},
         method=method,
     )
     try:
@@ -66,3 +66,27 @@ def delete_configmap(namespace, name):
         "DELETE", f"/api/v1/namespaces/{namespace}/configmaps/{name}")
     if status not in (200, 202, 404):
         raise RuntimeError(f"configmap delete failed: {status} {resp}")
+
+
+def get_configmap(namespace, name):
+    """Return the ConfigMap object, or None if it doesn't exist."""
+    status, resp = _request(
+        "GET", f"/api/v1/namespaces/{namespace}/configmaps/{name}")
+    if status == 404:
+        return None
+    if status != 200:
+        raise RuntimeError(f"configmap get failed: {status} {resp}")
+    return resp
+
+
+def patch_configmap_data(namespace, name, data):
+    """Merge-patch the .data of a ConfigMap. Returns True on success,
+    False if the ConfigMap is absent (404)."""
+    status, resp = _request(
+        "PATCH", f"/api/v1/namespaces/{namespace}/configmaps/{name}",
+        body={"data": data}, content_type="application/merge-patch+json")
+    if status == 404:
+        return False
+    if status != 200:
+        raise RuntimeError(f"configmap patch failed: {status} {resp}")
+    return True

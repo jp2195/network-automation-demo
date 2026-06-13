@@ -225,6 +225,18 @@ def main():
     print(render_marker_line(result.output, fingerprint))
     _maybe_slack(result.output, alert)
 
+    # Best-effort: render the analysis into this incident's dashboard
+    # (if one exists). Decoupled — the marker line above is the durable
+    # contract; this is pure enhancement and never affects exit status.
+    try:
+        import incident_dashboard
+        if incident_dashboard.inject_analysis(fingerprint,
+                                               result.output.model_dump()):
+            print(f"rendered analysis into incident dashboard {fingerprint}",
+                  file=sys.stderr)
+    except Exception as e:
+        print(f"dashboard injection skipped (non-fatal): {e}", file=sys.stderr)
+
 
 if __name__ == "__main__":
     main()

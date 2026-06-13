@@ -115,10 +115,61 @@ class TestBuildDashboard(unittest.TestCase):
         # cabinet downstream → SNMP reachability stat
         self.assertIn('up{job=\\"snmp-frr-cabinets\\", node=\\"fc-i20e\\"}', text)
 
-    def test_ai_panel_pins_marker_and_fp(self):
-        text = json.dumps(self.dash["panels"])
-        self.assertIn("INCIDENT_ANALYSIS_V1 {", text)
-        self.assertIn("ab12cd34", text)
+    def test_ai_panel_is_placeholder_with_stable_id(self):
+        # The AI section starts as a placeholder text panel carrying the
+        # stable id the analyst lane patches once its analysis is ready.
+        ai = [p for p in self.dash["panels"]
+              if p.get("id") == incident_dashboard.AI_PANEL_ID]
+        self.assertEqual(len(ai), 1)
+        self.assertEqual(ai[0]["type"], "text")
+        self.assertIn("investigating", json.dumps(ai[0]))
+
+    def test_analysis_markdown_renders_fields(self):
+        md = incident_dashboard.analysis_markdown({
+            "summary": "Interface admin-disabled.",
+            "probable_root_cause": "Out-of-band shutdown.",
+            "recommendation": "Re-enable via SSOT.",
+            "confidence": 0.9,
+            "evidence": [{"source": "gnmi", "query": "/interface[x]",
+                          "observation": "admin-state disable"}]})
+        for needle in ("AI analysis", "confidence 90%", "admin-disabled",
+                       "Out-of-band", "Re-enable", "gnmi", "admin-state disable"):
+            self.assertIn(needle, md)
+
+    def test_inject_analysis_swaps_panel_and_patches(self):
+        # Build a real dashboard, stash it in a fake CM, inject, confirm
+        # the AI panel became a rendered markdown panel.
+        dash = incident_dashboard.build_dashboard(_ENRICHMENT, _IMPACT, "abc123")
+        store = {"data": {"incident-abc123.json": json.dumps(dash)}}
+        patched = {}
+
+        def fake_get(ns, name):
+            return store
+
+        def fake_patch(ns, name, data):
+            patched["data"] = data
+            return True
+
+        with mock.patch.object(incident_dashboard.k8s_api, "get_configmap",
+                               fake_get):
+            with mock.patch.object(incident_dashboard.k8s_api,
+                                   "patch_configmap_data", fake_patch):
+                ok = incident_dashboard.inject_analysis(
+                    "abc123", {"summary": "S", "probable_root_cause": "RC",
+                               "recommendation": "R", "confidence": 0.5,
+                               "evidence": []})
+        self.assertTrue(ok)
+        newdash = json.loads(patched["data"]["incident-abc123.json"])
+        ai = [p for p in newdash["panels"]
+              if p.get("id") == incident_dashboard.AI_PANEL_ID][0]
+        self.assertEqual(ai["type"], "text")
+        self.assertIn("AI analysis", json.dumps(ai))
+
+    def test_inject_analysis_noop_when_no_dashboard(self):
+        with mock.patch.object(incident_dashboard.k8s_api, "get_configmap",
+                               lambda ns, name: None):
+            self.assertFalse(
+                incident_dashboard.inject_analysis("abc123", {"summary": "x"}))
 
     def test_context_panel_carries_cable_facts(self):
         text = json.dumps(self.dash["panels"])

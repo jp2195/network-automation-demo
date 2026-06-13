@@ -22,6 +22,10 @@ from constants import AI_ANALYSIS_MARKER, CABINET_NAME_PREFIX
 DASHBOARD_NAMESPACE = "incident-dashboards"
 FOLDER = "Incidents"
 
+# Stable id for the AI section so the analyst lane can find and replace
+# it with a rendered panel once its analysis is ready (inject_analysis).
+AI_PANEL_ID = 900
+
 _PROM = {"type": "prometheus", "uid": "prometheus"}
 _LOKI = {"type": "loki", "uid": "loki"}
 
@@ -72,7 +76,7 @@ def _stat(pid, title, x, y, w, h, expr, mappings, steps):
             "thresholds": {"mode": "absolute", "steps": steps},
         }, "overrides": []},
         options={"reduceOptions": {"calcs": ["lastNotNull"]},
-                 "colorMode": "background", "graphMode": "none",
+                 "colorMode": "value", "graphMode": "none",
                  "textMode": "value_and_name", "justifyMode": "center"})
 
 
@@ -90,22 +94,31 @@ def build_dashboard(enrichment, impact, fp):
 
     panels, pid, y = [], 1, 0
 
-    # Header banner — alert identity + severity + cable/agency context.
-    banner = [f"# {alert.get('name', 'Incident')} — {device}",
-              f"### {sev_badge}  ·  link `{link_id or 'n/a'}`"]
+    # Header — a bold title line over a tidy fact strip. Markdown keeps it
+    # dependency-free (no query) while reading like an incident header.
+    n_ag = len(agencies)
+    ag_str = (f"{n_ag} agenc{'y' if n_ag == 1 else 'ies'} affected"
+              if n_ag else "no agency isolation (ring redundancy held)")
+    facts = [sev_badge, f"link `{link_id or 'n/a'}`"]
+    if cable.get("sla"):
+        facts.append(f"SLA {cable['sla']}")
+    facts.append(ag_str)
+    header = [f"# 🚨 {alert.get('name', 'Incident')} — {device}",
+              "&nbsp;&nbsp;·&nbsp;&nbsp;".join(facts)]
     if cable.get("label"):
-        banner.append(
-            f"**Cable** `{cable['label']}` · {cable.get('provider', '?')} · "
-            f"corridor {cable.get('corridor', '?')} · SLA "
-            f"{cable.get('sla', '?')} · circuit {cable.get('circuit_id', '?')}")
-    banner.append("**Agencies affected:** "
-                  + (", ".join(agencies) if agencies else "none — ring redundancy held"))
-    panels.append(_panel(pid, "", 0, y, 24, 5, type="text",
+        header.append(
+            f"`{cable['label']}` · {cable.get('provider', '?')} · "
+            f"corridor {cable.get('corridor', '?')}"
+            + (f" · circuit {cable['circuit_id']}"
+               if cable.get("circuit_id") else ""))
+    if agencies:
+        header.append("**Agencies:** " + ", ".join(agencies))
+    panels.append(_panel(pid, "", 0, y, 24, 4, type="text",
                          transparent=True,
                          options={"mode": "markdown",
-                                  "content": "\n\n".join(banner)}))
+                                  "content": "\n\n".join(header)}))
     pid += 1
-    y += 5
+    y += 4
 
     _OPER = _mappings({"1": ("● UP", "green"), "2": ("● DOWN", "red")})
     _OPER_STEPS = [{"color": "green", "value": None},
@@ -178,31 +191,32 @@ def build_dashboard(enrichment, impact, fp):
         panels.append(_row(pid, "Downstream health — did the redundancy hold?", y))
         pid += 1
         y += 1
-        cols = min(len(grid), 4)
-        w = max(6, 24 // cols)
+        cols = min(len(grid), 6)
+        w = max(4, 24 // cols)
         x = 0
         for title, expr, mp, steps in grid:
-            panels.append(_stat(pid, title, x, y, w, 5, expr, mp, steps))
+            panels.append(_stat(pid, title, x, y, w, 4, expr, mp, steps))
             pid += 1
             x += w
             if x + w > 24:
-                x, y = 0, y + 5
+                x, y = 0, y + 4
         if x:
-            y += 5
+            y += 4
 
     sfp = safe_fp(fp)
     panels.append(_row(pid, "Diagnostics", y))
     pid += 1
     y += 1
+    # AI section — starts as a placeholder note; the analyst lane
+    # replaces this exact panel (by AI_PANEL_ID) with a rendered
+    # markdown panel once its analysis is ready (inject_analysis).
     panels.append(_panel(
-        pid, "AI analyst — IncidentAnalysis (appears when ready)",
-        0, y, 24, 9, type="logs", datasource=_LOKI,
-        targets=[{"datasource": _LOKI, "refId": "A",
-                  "expr": (f'{{namespace="argo-events"}} '
-                           f'|= "{AI_ANALYSIS_MARKER} {{" |= "{sfp}"')}],
-        options=_logs_options()))
-    pid += 1
-    y += 9
+        AI_PANEL_ID, "AI analyst", 0, y, 24, 6, type="text",
+        transparent=True,
+        options={"mode": "markdown",
+                 "content": "_⏳ AI analyst is investigating — its findings "
+                            "will appear here when ready._"}))
+    y += 6
 
     if re.fullmatch(r"[a-z0-9.-]+", device):
         panels.append(_panel(
@@ -227,6 +241,58 @@ def build_dashboard(enrichment, impact, fp):
         "templating": {"list": []},
         "links": [],
     }
+
+
+def analysis_markdown(analysis):
+    """Render an IncidentAnalysis dict as Grafana-panel markdown."""
+    conf = analysis.get("confidence")
+    conf_str = f" · confidence {conf:.0%}" if isinstance(conf, (int, float)) \
+        else ""
+    lines = [f"### 🤖 AI analysis{conf_str}", "",
+             (analysis.get("summary") or "").strip() or "_no summary_", ""]
+    if analysis.get("probable_root_cause"):
+        lines += [f"**Probable root cause** — {analysis['probable_root_cause']}",
+                  ""]
+    if analysis.get("recommendation"):
+        lines += [f"**Recommendation** — {analysis['recommendation']}", ""]
+    evidence = analysis.get("evidence") or []
+    if evidence:
+        lines += ["| source | query | observation |", "|---|---|---|"]
+        for e in evidence:
+            q = str(e.get("query", "")).replace("|", "\\|")
+            obs = str(e.get("observation", "")).replace("|", "\\|")
+            lines.append(f"| {e.get('source', '')} | `{q}` | {obs} |")
+    return "\n".join(lines)
+
+
+def inject_analysis(fp, analysis):
+    """Best-effort: replace the placeholder AI panel in this incident's
+    dashboard with the rendered analysis. No-op (returns False) if the
+    dashboard ConfigMap isn't present — the lanes stay decoupled, this is
+    pure enhancement. Never raises."""
+    sfp = safe_fp(fp)
+    name = cm_name(sfp)
+    try:
+        cm = k8s_api.get_configmap(DASHBOARD_NAMESPACE, name)
+        if not cm:
+            return False
+        key = f"{name}.json"
+        dash = json.loads(cm["data"][key])
+        for p in dash.get("panels", []):
+            if p.get("id") == AI_PANEL_ID:
+                p["type"] = "text"
+                p["options"] = {"mode": "markdown",
+                                "content": analysis_markdown(analysis)}
+                p["title"] = "AI analyst — IncidentAnalysis"
+                break
+        else:
+            return False
+        return k8s_api.patch_configmap_data(
+            DASHBOARD_NAMESPACE, name, {key: json.dumps(dash)})
+    except Exception as e:
+        print(f"incident dashboard analysis injection skipped: {e}",
+              file=sys.stderr)
+        return False
 
 
 def main():
