@@ -42,6 +42,15 @@ spec:
                   value: "{{tasks.enrich.outputs.result}}"
                 - name: impact
                   value: "{{tasks.analyze.outputs.result}}"
+          - name: dashboard
+            template: dashboard
+            dependencies: [analyze]
+            arguments:
+              parameters:
+                - name: enrichment
+                  value: "{{tasks.enrich.outputs.result}}"
+                - name: impact
+                  value: "{{tasks.analyze.outputs.result}}"
           - name: postmortem
             template: postmortem
             dependencies: [notify]
@@ -128,6 +137,33 @@ spec:
             memory: 64Mi
           limits:
             memory: 128Mi
+
+    - name: dashboard
+      inputs:
+        parameters:
+          - name: enrichment
+          - name: impact
+      script:
+        image: atlas-demo-registry:5001/eventing-py:latest
+        command: [python3]
+        source: |
+          import sys, runpy
+          sys.path.insert(0, "/scripts")
+          runpy.run_path("/scripts/incident_dashboard.py", run_name="__main__")
+        env:
+          - name: ENRICHMENT_JSON
+            value: "{{inputs.parameters.enrichment}}"
+          - name: IMPACT_JSON
+            value: "{{inputs.parameters.impact}}"
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
+        resources:
+          requests:
+            cpu: 50m
+            memory: 96Mi
+          limits:
+            memory: 192Mi
 
     - name: notify
       inputs:

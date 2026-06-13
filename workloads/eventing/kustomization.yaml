@@ -47,3 +47,5 @@ configMapGenerator:
       - scripts/gnmi_readonly.py
       - scripts/analyst_tools.py
       - scripts/analyst.py
+      - scripts/k8s_api.py
+      - scripts/incident_dashboard.py
