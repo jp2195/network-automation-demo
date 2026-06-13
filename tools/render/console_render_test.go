@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -37,7 +38,7 @@ func TestWriteConsoleTargets(t *testing.T) {
 	if _, ok := byName["hub-i20e"]; !ok {
 		t.Errorf("hub-i20e missing from targets")
 	}
-	if !contains(byName["hub-i20e"], "ethernet-1/4") {
+	if !slices.Contains(byName["hub-i20e"], "ethernet-1/4") {
 		t.Errorf("hub-i20e should expose ethernet-1/4, got %v", byName["hub-i20e"])
 	}
 	if _, ok := byName["fc-i20e"]; !ok {
@@ -46,20 +47,12 @@ func TestWriteConsoleTargets(t *testing.T) {
 	ids := func() string {
 		var b strings.Builder
 		for _, l := range ct.Links {
-			b.WriteString(l.ID + " ")
+			b.WriteString(l.ID)
+			b.WriteString(" ")
 		}
 		return b.String()
 	}()
 	if !strings.Contains(ids, "ring-e-i20e") {
 		t.Errorf("link ring-e-i20e missing; got %s", ids)
 	}
-}
-
-func contains(xs []string, x string) bool {
-	for _, v := range xs {
-		if v == x {
-			return true
-		}
-	}
-	return false
 }
