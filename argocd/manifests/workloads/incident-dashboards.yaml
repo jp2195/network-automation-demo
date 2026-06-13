@@ -1,0 +1,4 @@
+name: incident-dashboards
+namespace: incident-dashboards
+syncWave: "2"
+appPath: workloads/incident-dashboards

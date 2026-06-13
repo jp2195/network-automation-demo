@@ -1,0 +1,11 @@
+# Dedicated namespace for auto-generated per-incident Grafana dashboards.
+# Isolating them here means the eventing pipeline's ServiceAccount can hold
+# blanket configmap create+delete (RBAC cannot name-scope create, and the
+# incident ConfigMap names are dynamic — incident-<fingerprint>) WITHOUT
+# any reach into the standing Grafana/Prometheus ConfigMaps in monitoring.
+# The Grafana sidecar discovers dashboards across all namespaces
+# (searchNamespace: ALL), so they render the same as any other.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: incident-dashboards

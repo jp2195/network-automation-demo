@@ -370,5 +370,5 @@ after the WorkflowTemplates, which prevents the race on normal syncs.
   a logged `incident dashboard step failed` line is the signature.
 - **Never went away** — the resolve was lost (e.g. eventing was down
   when the alert cleared). Dashboards are plain ConfigMaps:
-  `kubectl -n monitoring get cm -l grafana_dashboard=1 | grep incident-`
-  then `kubectl -n monitoring delete cm incident-<fp>`.
+  `kubectl -n incident-dashboards get cm | grep incident-`
+  then `kubectl -n incident-dashboards delete cm incident-<fp>`.

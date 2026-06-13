@@ -164,7 +164,7 @@ class TestMainBranches(unittest.TestCase):
         self.assertEqual(len(calls), 1)
         kind, args, kwargs = calls[0]
         self.assertEqual(kind, "create")
-        self.assertEqual(args[0], "monitoring")
+        self.assertEqual(args[0], "incident-dashboards")
         self.assertEqual(args[1], "incident-abc123")
         self.assertEqual(kwargs["labels"], {"grafana_dashboard": "1"})
         self.assertEqual(kwargs["annotations"], {"grafana_folder": "Incidents"})
@@ -173,7 +173,8 @@ class TestMainBranches(unittest.TestCase):
 
     def test_resolved_deletes_cm(self):
         calls = self._run("resolved")
-        self.assertEqual(calls, [("delete", ("monitoring", "incident-abc123"),
+        self.assertEqual(calls, [("delete",
+                                  ("incident-dashboards", "incident-abc123"),
                                   {})])
 
     def test_no_fingerprint_is_noop(self):
