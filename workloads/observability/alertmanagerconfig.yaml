@@ -7,7 +7,14 @@ metadata:
 spec:
   route:
     receiver: argo-events
-    groupBy: ["alertname", "interface_name", "source"]
+    # node/interface are the POST-relabel label names (gNMIc relabels
+    # source→node, interface_name→interface). Stale pre-relabel keys
+    # here silently group by alertname alone, so a both-ends incident
+    # lands two alerts in ONE webhook payload — and the eventing
+    # pipeline reads alerts[0] only, dropping the second alert's firing
+    # and resolve (smoke-found 2026-06-13). With the real labels every
+    # group is a single alert and alerts[0] is exact by construction.
+    groupBy: ["alertname", "node", "interface"]
     groupWait: 1s
     groupInterval: 30s
     repeatInterval: 1h
