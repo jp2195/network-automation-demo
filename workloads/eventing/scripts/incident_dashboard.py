@@ -165,3 +165,35 @@ def build_dashboard(enrichment, impact, fp):
         "templating": {"list": []},
         "links": [],
     }
+
+
+def main():
+    enrichment = json.loads(os.environ["ENRICHMENT_JSON"])
+    impact = json.loads(os.environ["IMPACT_JSON"])
+    alert = enrichment.get("alert", {})
+    fp = safe_fp(alert.get("fingerprint"))
+    if not fp:
+        print("no usable fingerprint — skipping incident dashboard")
+        return
+    name = cm_name(fp)
+    try:
+        if alert.get("status", "firing") == "firing":
+            dash = build_dashboard(enrichment, impact, fp)
+            k8s_api.create_configmap(
+                DASHBOARD_NAMESPACE, name,
+                data={f"{name}.json": json.dumps(dash)},
+                labels={"grafana_dashboard": "1"},
+                annotations={"grafana_folder": FOLDER})
+            print(f"incident dashboard created: {DASHBOARD_NAMESPACE}/{name} "
+                  f"(uid incident-{fp})")
+        else:
+            k8s_api.delete_configmap(DASHBOARD_NAMESPACE, name)
+            print(f"incident dashboard removed: {DASHBOARD_NAMESPACE}/{name}")
+    except Exception as e:
+        # Advisory surface — never fail the deterministic pipeline.
+        print(f"incident dashboard step failed (non-fatal): {e}",
+              file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()
