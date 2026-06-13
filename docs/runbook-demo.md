@@ -10,8 +10,8 @@ Run all of these before you stand in front of an audience.
 ```bash
 # 1. cluster + apps healthy
 kubectl -n argocd get applications --no-headers | awk '$2!="Synced" || $3!="Healthy"'
-# expected: only dom-synth (it ships automated:false — manual sync). The other
-# 20 of 21 Applications auto-sync to Synced/Healthy.
+# expected: empty — all 21 Applications auto-sync to Synced/Healthy.
+# (netbox-seed shows Progressing for a minute while its seed Job runs.)
 
 # 2. all 12 lab pods ready
 kubectl -n clabernetes get pods | awk '/atlanta/ && !/1\/1.*Running/'
