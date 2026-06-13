@@ -29,6 +29,9 @@ var wftRemediationTmpl string
 //go:embed templates/wft-ai-analyst.yaml.tmpl
 var wftAIAnalystTmpl string
 
+//go:embed templates/wft-gray-failure.yaml.tmpl
+var wftGrayFailureTmpl string
+
 // WriteWFTCutFiber emits the cut-fiber WorkflowTemplate. The clabernetes
 // FQDN baked into the gnmic -a flag is parameterised from
 // spec.Metadata.Name so renaming the cluster doesn't break the demo.
@@ -86,6 +89,15 @@ func WriteWFTAIAnalyst(w io.Writer, s *Spec) error {
 		"@@CLUSTER@@", s.Metadata.Name,
 		"@@ISIS_INSTANCE@@", ISISInstance,
 	).Replace(wftAIAnalystTmpl)
+	_, err := fmt.Fprintf(w, "%s\n%s", renderBanner, body)
+	return err
+}
+
+// WriteWFTGrayFailure emits the gray-failure WorkflowTemplate. The console
+// lane POSTs a gray-failure event; sensor-gray-failure turns it into this
+// Workflow, which runs gray_key.py to write/clear the dom-synth Valkey key.
+func WriteWFTGrayFailure(w io.Writer, s *Spec) error {
+	body := strings.NewReplacer("@@EVENTING_IMAGE@@", ImageEventingPy).Replace(wftGrayFailureTmpl)
 	_, err := fmt.Fprintf(w, "%s\n%s", renderBanner, body)
 	return err
 }

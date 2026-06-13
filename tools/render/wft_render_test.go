@@ -22,6 +22,7 @@ func TestWFTOutputsHaveNoSentinels(t *testing.T) {
 		"WriteWFTRemediation":       WriteWFTRemediation,
 		"WriteWFTDriftAudit":        WriteWFTDriftAudit,
 		"WriteWFTAIAnalyst":         WriteWFTAIAnalyst,
+		"WriteWFTGrayFailure":       WriteWFTGrayFailure,
 	}
 	for name, fn := range writers {
 		var buf bytes.Buffer
@@ -33,7 +34,7 @@ func TestWFTOutputsHaveNoSentinels(t *testing.T) {
 			i := strings.Index(out, "@@")
 			t.Errorf("%s: unreplaced sentinel near %q", name, out[i:min(i+30, len(out))])
 		}
-		if !strings.Contains(out, ImageEventingPy) && (name == "WriteWFTEnrichedNotify" || name == "WriteWFTIncidentCollector" || name == "WriteWFTRemediation" || name == "WriteWFTDriftAudit") {
+		if !strings.Contains(out, ImageEventingPy) && (name == "WriteWFTEnrichedNotify" || name == "WriteWFTIncidentCollector" || name == "WriteWFTRemediation" || name == "WriteWFTDriftAudit" || name == "WriteWFTGrayFailure") {
 			t.Errorf("%s: eventing image %q missing from output", name, ImageEventingPy)
 		}
 		if !strings.Contains(out, ImageGNMIC) && (name == "WriteWFTRemediation" || name == "WriteWFTDriftAudit") {

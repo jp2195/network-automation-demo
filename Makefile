@@ -96,6 +96,7 @@ render-check:
 	  workloads/eventing/wft-remediation.yaml \
 	  workloads/eventing/wft-drift-audit.yaml \
 	  workloads/eventing/wft-ai-analyst.yaml \
+	  workloads/eventing/wft-gray-failure.yaml \
 	  workloads/eventing/scripts/drift_expected.json \
 	  workloads/versions.yaml \
 	  workloads/netbox/seed/seed.json \
