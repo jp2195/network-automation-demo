@@ -72,7 +72,14 @@ takeaway.
 
 ## Prerequisites
 
-- Docker (or [OrbStack](https://orbstack.dev) on macOS)
+> **New to Docker / Kubernetes / the command line?** Start with
+> **[GETTING-STARTED.md](GETTING-STARTED.md)** — a step-by-step, per-OS
+> (macOS / Windows / Linux) install-and-run walkthrough written for newcomers.
+> The rest of this README assumes you're already comfortable with these tools.
+
+- Docker (or [OrbStack](https://orbstack.dev) on macOS). **Windows:** run
+  everything inside [WSL 2](https://learn.microsoft.com/windows/wsl/) with the
+  Docker Desktop WSL backend — see [GETTING-STARTED.md](GETTING-STARTED.md).
 - [`k3d`](https://k3d.io) ≥ v5.6
 - `kubectl`
 - `helm`
@@ -101,15 +108,17 @@ make down      # tear the cluster down
 make render    # re-render workloads/* from spec/atlanta.yaml
 ```
 
-UIs after sync settles:
+UIs after sync settles (Traefik serves every ingress on both `:8080` plain
+HTTP and `:8443` HTTPS — the `http://…:8080` URLs below avoid the self-signed
+TLS warning):
 
 | URL | Notes |
 |---|---|
 | <http://argocd.127-0-0-1.nip.io:8080> | admin / `make status` shows password |
-| <https://netbox.127-0-0-1.nip.io:8443> | admin/admin (selfsigned TLS) |
-| <https://grafana.127-0-0-1.nip.io:8443> | admin/admin |
-| <https://workflows.127-0-0-1.nip.io:8443> | server-mode, no auth |
-| <https://clabernetes.127-0-0-1.nip.io:8443> | clabernetes UI |
+| <http://netbox.127-0-0-1.nip.io:8080> | admin/admin |
+| <http://grafana.127-0-0-1.nip.io:8080> | admin/admin |
+| <http://workflows.127-0-0-1.nip.io:8080> | server-mode, no auth |
+| <http://clabernetes.127-0-0-1.nip.io:8080> | clabernetes UI |
 
 ### Pre-baked images
 
@@ -245,6 +254,31 @@ make postmortem                      # list stored postmortems
 make postmortem FP=<fingerprint>     # print one (also saved to /tmp)
 ```
 
+### AI incident analyst (optional)
+
+A parallel, **advisory-only** lane: a Pydantic-AI agent investigates the same
+alert through structurally read-only tools (PromQL, LogQL, NetBox GET, gNMI
+Get, SNMP GET) and emits a structured `IncidentAnalysis` (summary, probable
+root cause, recommendation, confidence, evidence). It is **off** until you
+create the optional `ai-analyst` Secret — point it at any OpenAI-compatible
+endpoint (OpenAI, Anthropic, Gemini) or a local Ollama for zero cost; absent,
+the lane no-ops and the deterministic pipeline is unaffected. The analysis
+lands on the **Alert console** dashboard, is folded into the postmortem, and is
+rendered onto the per-incident dashboard. It is advisory forever — it never
+executes remediation. Setup recipes + tuning knobs: [`SECRETS.md`](SECRETS.md).
+
+### Per-incident dashboard
+
+On every firing alert, the enriched-notify pipeline auto-generates a Grafana
+dashboard for that one incident (link state timeline, traffic, a downstream-
+health grid, the AI analysis, device logs) as a ConfigMap in the
+`incident-dashboards` namespace — discovered by the Grafana sidecar and placed
+in the **Incidents** folder — and deletes it on resolve. No Grafana API token
+needed; the lane holds only namespaced ConfigMap create/delete.
+
+See [`FEATURES.md`](FEATURES.md) for a plain-language walkthrough of each of
+these with the exact command to try it.
+
 ## Slack
 
 Without real Slack credentials the workflow's notify step prints the
@@ -315,12 +349,21 @@ Commit the diff. ArgoCD syncs.
 
 ## More docs
 
+- **[`GETTING-STARTED.md`](GETTING-STARTED.md)** — newcomer-friendly,
+  per-OS (macOS / Windows / Linux) install-and-run walkthrough. Start here if
+  you're new to Docker/Kubernetes.
+- **[`FEATURES.md`](FEATURES.md)** — plain-language tour of every feature
+  (the self-enriching alert, closed-loop remediation, config-drift audit,
+  postmortems, the AI analyst, the per-incident dashboard, scenarios,
+  maintenance windows) with the exact command to try each one.
 - [`docs/architecture.md`](docs/architecture.md) — layered architecture,
   why each piece is here, the gNMI / SNMP / DOM split, eventing flow.
 - [`docs/runbook-demo.md`](docs/runbook-demo.md) — pre-demo checklist,
   the live demo script (≈10 min), optional Slack hook-up.
 - [`docs/runbook-troubleshoot.md`](docs/runbook-troubleshoot.md) —
   symptom → diagnosis lookup table, subtle gotchas, hard reset.
+- [`SECRETS.md`](SECRETS.md) — optional Slack and AI-analyst credentials,
+  and how the demo degrades gracefully without them.
 
 ## License
 

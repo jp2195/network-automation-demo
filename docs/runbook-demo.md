@@ -11,7 +11,7 @@ Run all of these before you stand in front of an audience.
 # 1. cluster + apps healthy
 kubectl -n argocd get applications --no-headers | awk '$2!="Synced" || $3!="Healthy"'
 # expected: only dom-synth (it ships automated:false — manual sync). The other
-# 18 of 19 Applications auto-sync to Synced/Healthy.
+# 19 of 20 Applications auto-sync to Synced/Healthy.
 
 # 2. all 12 lab pods ready
 kubectl -n clabernetes get pods | awk '/atlanta/ && !/1\/1.*Running/'
