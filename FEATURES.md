@@ -308,12 +308,27 @@ raise the usual incident; closing the window restores normal alerting.
 
 ---
 
-## On the roadmap (not built yet)
+## 10. Scenario console (drive the demo from a browser)
 
-- **Scenario console** — a web page with buttons to trigger all the scenarios
-  above and a live status strip, so you can drive the whole demo from a browser
-  instead of the terminal. Designed but not yet implemented, so it has no
-  commands or page today.
+**What it is.** A web page at <http://console.127-0-0-1.nip.io:8080> with
+buttons to cut/restore a link, start/stop a gray failure, and open/close a
+maintenance window — plus a live status strip (nodes up · links down ·
+alerts firing · workflows running) that refreshes every 5 seconds.
+
+**Why it matters.** You can run the whole demo from one browser tab while
+Grafana narrates on another — no terminal needed. The console itself has
+**no power to touch devices**: each button just asks the existing pipeline
+to act, so it's safe to hand to anyone.
+
+**How to try it.** Open the URL, pick a node + interface, click **Cut** —
+watch Grafana go red — then **Restore**. Try **Gray failure** on a link and
+a **Maintenance window** on a node.
+
+**What you'll see.** The same workflows that the `make` commands trigger,
+fired from the browser; the status strip tracks the network live.
+
+> The multi-step canned scenarios (hurricane/backhoe/flap/cabinet) stay on
+> the CLI (`make scenario-*`) for now — the console shows their commands.
 
 ---
 

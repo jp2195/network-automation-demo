@@ -119,10 +119,11 @@ TLS warning):
 | <http://grafana.127-0-0-1.nip.io:8080> | admin/admin |
 | <http://workflows.127-0-0-1.nip.io:8080> | server-mode, no auth |
 | <http://clabernetes.127-0-0-1.nip.io:8080> | clabernetes UI |
+| <http://console.127-0-0-1.nip.io:8080> | scenario console, no auth |
 
 ### Pre-baked images
 
-`make up` (and `make build` standalone) builds and pushes four pre-baked
+`make up` (and `make build` standalone) builds and pushes five pre-baked
 images into the k3d-bundled distribution registry:
 
 - `localhost:5001/eventing-py:latest` — Python + slack-sdk + valkey + eventing scripts.
@@ -132,6 +133,9 @@ images into the k3d-bundled distribution registry:
   tool deps (pygnmi Get-only, SNMP, PromQL/LogQL/NetBox over stdlib) for the
   advisory AI lane. A no-op unless you create the optional `ai-analyst`
   Secret (see `SECRETS.md`).
+- `localhost:5001/console:latest` — the scenario console (Go static
+  binary on distroless): drives cut/restore, gray-failure, and
+  maintenance from the browser and shows a live status strip.
 
 Note the two endpoints for the SAME registry:
 
@@ -140,7 +144,7 @@ Note the two endpoints for the SAME registry:
   `image:` field, because that's how the registry resolves from inside
   the cluster.
 
-These four images deliberately stay on `:latest`: `make build` rebuilds and
+These five images deliberately stay on `:latest`: `make build` rebuilds and
 pushes them on every `make up`, and the registry lives and dies with the k3d
 cluster, so a pinned tag would only add a version-bump step to the edit loop
 without making anything more reproducible. Upstream images (SR Linux, FRR,
