@@ -144,6 +144,10 @@ class BuildAlertsTests(unittest.TestCase):
         self.assertEqual(labels["node"], "hub-e")
         self.assertEqual(labels["interface"], "ethernet-1/2")
         self.assertIn("endsAt", alerts[0])
+        # startsAt must be explicit and earlier than endsAt: AM defaults
+        # a missing startsAt to endsAt, dating the incident in the future.
+        self.assertIn("startsAt", alerts[0])
+        self.assertLess(alerts[0]["startsAt"], alerts[0]["endsAt"])
         self.assertIn("SSOT", alerts[0]["annotations"]["description"])
 
 
