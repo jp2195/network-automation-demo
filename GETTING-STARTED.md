@@ -251,7 +251,7 @@ make status
 ```
 
 You're looking for the Applications to become **Synced / Healthy**. There are
-**20** of them. **19 will go Synced/Healthy on their own**; one called
+**21** of them. **20 will go Synced/Healthy on their own**; one called
 `dom-synth` stays "OutOfSync" on purpose (it's set to manual) — that's
 expected, not a problem.
 
