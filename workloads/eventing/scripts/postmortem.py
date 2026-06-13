@@ -26,6 +26,7 @@ import json
 import os
 import re
 import sys
+import time
 from datetime import datetime, timezone
 
 from constants import (
@@ -291,10 +292,21 @@ def main():
                 loki_url, '{namespace="clabernetes"} |~ "(?i)commit|admin-state"',
                 start, end)
             log_lines = [(ts, ln) for ts, ln in raw if device_name in ln][:20]
-        analysis = extract_ai_analysis(loki_query_range(
-            loki_url,
-            f'{{namespace="argo-events"}} |= "{AI_ANALYSIS_MARKER}" |= "{fingerprint}"',
-            start, end + 300))
+        # Short incidents can resolve before the (async, advisory)
+        # analyst finishes — its marker then lands in Loki minutes after
+        # the resolve. This is the final workflow step, so a bounded
+        # wait costs nothing downstream: poll up to ~2 minutes, querying
+        # to "now" so a late marker is still picked up.
+        for attempt in range(7):
+            analysis = extract_ai_analysis(loki_query_range(
+                loki_url,
+                f'{{namespace="argo-events"}} |= "{AI_ANALYSIS_MARKER}" |= "{fingerprint}"',
+                start, max(end + 300, time.time())))
+            if analysis is not None or attempt == 6:
+                break
+            print(f"no analysis yet (attempt {attempt + 1}/7) — waiting 20s "
+                  f"for the advisory lane", file=sys.stderr)
+            time.sleep(20)
 
     md = build_markdown(
         enrichment, impact, notify_result,
