@@ -28,9 +28,18 @@ def _request(method, path, body=None):
     )
     try:
         with urllib.request.urlopen(req, timeout=10, context=ctx) as r:
-            return r.status, json.loads(r.read() or b"{}")
+            return r.status, _json_or_empty(r.read())
     except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read() or b"{}")
+        return e.code, _json_or_empty(e.read())
+
+
+def _json_or_empty(raw):
+    # An intermediary (proxy/LB) can return non-JSON error bodies; the
+    # (status, body) contract must hold regardless.
+    try:
+        return json.loads(raw or b"{}")
+    except ValueError:
+        return {}
 
 
 def create_configmap(namespace, name, data, labels, annotations):
