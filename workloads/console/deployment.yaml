@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: console
+  labels:
+    app.kubernetes.io/name: console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: console
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: console
+    spec:
+      containers:
+        - name: console
+          image: atlas-demo-registry:5001/console:latest
+          env:
+            - name: LISTEN_ADDR
+              value: ":8080"
+            - name: WEBHOOK_URL
+              value: http://webhook-eventsource-svc.argo-events.svc.cluster.local:12000
+            - name: PROM_URL
+              value: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+            - name: ARGO_API
+              value: http://argo-workflows-server.argo.svc.cluster.local:2746
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /console-targets.json
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 25m, memory: 32Mi}
+            limits:   {memory: 64Mi}

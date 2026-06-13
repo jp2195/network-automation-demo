@@ -1,0 +1,4 @@
+name: console
+namespace: argo-events
+syncWave: "3"
+appPath: workloads/console
