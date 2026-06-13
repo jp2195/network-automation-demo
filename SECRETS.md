@@ -81,6 +81,53 @@ kubectl create secret generic ai-analyst \
   --from-literal=temperature='0.2'
 ```
 
+### Where to run the model — host, Docker, or cloud
+
+The analyst only needs a URL; it does not care where the model runs. The
+cluster itself stays GPU-free — **run the model outside the cluster** and point
+the Secret at it. (Giving the k3d cluster direct GPU access is heavy plumbing —
+NVIDIA container toolkit + a CUDA-enabled k3s node image — and deliberately out
+of scope here.)
+
+| Where | When to choose it | `base_url` to use |
+|---|---|---|
+| **Cloud endpoint** (OpenAI / Anthropic / Gemini) | Best analysis quality, zero local setup, you don't mind per-call cost | the provider URL above |
+| **Ollama on the host** *(recommended local default — the verified recipe above)* | Free, simplest, uses your host GPU if Ollama already does | `http://host.k3d.internal:11434/v1` |
+| **Ollama (or vLLM) in a Docker container** | You'd rather not install a model server on the host, want GPU isolation, or want to pin a specific image | publish a host port and use `http://host.k3d.internal:<port>/v1` |
+
+**Docker sidecar (Ollama with GPU), no host install:**
+
+```
+docker run -d --gpus=all -p 11434:11434 -v ollama:/root/.ollama \
+  -e OLLAMA_HOST=0.0.0.0 -e OLLAMA_CONTEXT_LENGTH=16384 \
+  --name ollama ollama/ollama
+docker exec ollama ollama pull qwen3.5:9b
+```
+
+Then use the **same Secret as the host recipe** (`base_url=http://host.k3d.internal:11434/v1`).
+Publishing the port (`-p 11434:11434`) is what makes `host.k3d.internal`
+reach it; that's more reliable than trying to resolve a container name from
+inside a pod.
+
+**vLLM (GPU, OpenAI-compatible):** vLLM serves an OpenAI-style `/v1` API, so it
+works exactly like the above. It's higher-throughput but VRAM-hungry and is
+overkill for this lane's one structured call per incident — reach for it only
+if you already run it.
+
+```
+docker run -d --gpus=all -p 8000:8000 \
+  vllm/vllm-openai --model Qwen/Qwen2.5-7B-Instruct --api-key local
+```
+
+Secret: `base_url=http://host.k3d.internal:8000/v1`, `api_key=local`,
+`model=Qwen/Qwen2.5-7B-Instruct`. vLLM has a large native context, so you can
+drop `reasoning_effort`/`temperature` unless the chosen model is a thinker.
+
+> Quality note from testing: among local models, `qwen3.6:35b` gave the
+> sharpest analyses, `qwen3.5:9b` was a solid lighter choice, and the Gemma
+> family worked but shallower. Bigger isn't always better — tool-use diligence
+> matters more than raw size. A cloud frontier model still beats all of them.
+
 ### Optional tuning keys
 
 All optional; omitted keys are simply not sent to the endpoint:
