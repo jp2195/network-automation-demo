@@ -100,6 +100,7 @@ render-check:
 	  workloads/versions.yaml \
 	  workloads/netbox/seed/seed.json \
 	  workloads/dom-synth/links.json \
+	  tools/console/static/console-targets.json \
 	"; \
 	for f in $$files \
 	         $$(ls workloads/topology/startup-configs/* 2>/dev/null) \

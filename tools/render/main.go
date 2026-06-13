@@ -132,6 +132,13 @@ func main() {
 	renderTo(filepath.Join(*outDir, "workloads", "versions.yaml"), "",
 		func(w io.Writer) error { return WriteVersions(w) })
 
+	consoleStatic := filepath.Join(*outDir, "tools/console/static")
+	if err := os.MkdirAll(consoleStatic, 0o755); err != nil {
+		log.Fatal(err)
+	}
+	renderTo(filepath.Join(consoleStatic, "console-targets.json"), "",
+		func(w io.Writer) error { return WriteConsoleTargets(w, spec) })
+
 	dashboardsDir := filepath.Join(*outDir, "workloads", "observability", "dashboards")
 	renderTo(filepath.Join(dashboardsDir, "geomap.json"), "",
 		func(w io.Writer) error { return WriteGeomap(w, spec) })

@@ -1,0 +1,210 @@
+{
+  "nodes": [
+    {
+      "name": "tmc-1",
+      "kind": "srlinux",
+      "role": "tmc",
+      "interfaces": [
+        "ethernet-1/1",
+        "ethernet-1/2",
+        "ethernet-1/3"
+      ]
+    },
+    {
+      "name": "tmc-2",
+      "kind": "srlinux",
+      "role": "tmc",
+      "interfaces": [
+        "ethernet-1/1",
+        "ethernet-1/2",
+        "ethernet-1/3"
+      ]
+    },
+    {
+      "name": "hub-n",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "interfaces": [
+        "ethernet-1/1",
+        "ethernet-1/2",
+        "ethernet-1/3",
+        "ethernet-1/4"
+      ]
+    },
+    {
+      "name": "hub-e",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "interfaces": [
+        "ethernet-1/1",
+        "ethernet-1/2",
+        "ethernet-1/3"
+      ]
+    },
+    {
+      "name": "hub-i20e",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "interfaces": [
+        "ethernet-1/1",
+        "ethernet-1/2",
+        "ethernet-1/4"
+      ]
+    },
+    {
+      "name": "hub-nw",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "interfaces": [
+        "ethernet-1/1",
+        "ethernet-1/2",
+        "ethernet-1/3",
+        "ethernet-1/4"
+      ]
+    },
+    {
+      "name": "hub-sw",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "interfaces": [
+        "ethernet-1/1",
+        "ethernet-1/2",
+        "ethernet-1/3",
+        "ethernet-1/4"
+      ]
+    },
+    {
+      "name": "hub-i20w",
+      "kind": "srlinux",
+      "role": "corridor-hub",
+      "interfaces": [
+        "ethernet-1/1",
+        "ethernet-1/2"
+      ]
+    },
+    {
+      "name": "fc-n",
+      "kind": "frr",
+      "role": "field-cabinet",
+      "interfaces": [
+        "eth1"
+      ]
+    },
+    {
+      "name": "fc-nw",
+      "kind": "frr",
+      "role": "field-cabinet",
+      "interfaces": [
+        "eth1"
+      ]
+    },
+    {
+      "name": "fc-i20e",
+      "kind": "frr",
+      "role": "field-cabinet",
+      "interfaces": [
+        "eth1"
+      ]
+    },
+    {
+      "name": "fc-sw",
+      "kind": "frr",
+      "role": "field-cabinet",
+      "interfaces": [
+        "eth1"
+      ]
+    }
+  ],
+  "links": [
+    {
+      "id": "ring-n-e",
+      "kind": "backbone",
+      "a": "hub-n:ethernet-1/1",
+      "b": "hub-e:ethernet-1/2"
+    },
+    {
+      "id": "ring-e-i20e",
+      "kind": "backbone",
+      "a": "hub-e:ethernet-1/1",
+      "b": "hub-i20e:ethernet-1/2"
+    },
+    {
+      "id": "ring-i20e-sw",
+      "kind": "backbone",
+      "a": "hub-i20e:ethernet-1/1",
+      "b": "hub-sw:ethernet-1/2"
+    },
+    {
+      "id": "ring-sw-i20w",
+      "kind": "backbone",
+      "a": "hub-sw:ethernet-1/1",
+      "b": "hub-i20w:ethernet-1/2"
+    },
+    {
+      "id": "ring-i20w-nw",
+      "kind": "backbone",
+      "a": "hub-i20w:ethernet-1/1",
+      "b": "hub-nw:ethernet-1/2"
+    },
+    {
+      "id": "ring-nw-n",
+      "kind": "backbone",
+      "a": "hub-nw:ethernet-1/1",
+      "b": "hub-n:ethernet-1/2"
+    },
+    {
+      "id": "tmc1-hubnw",
+      "kind": "backbone",
+      "a": "tmc-1:ethernet-1/1",
+      "b": "hub-nw:ethernet-1/3"
+    },
+    {
+      "id": "tmc1-hubsw",
+      "kind": "backbone",
+      "a": "tmc-1:ethernet-1/2",
+      "b": "hub-sw:ethernet-1/3"
+    },
+    {
+      "id": "tmc2-hubn",
+      "kind": "backbone",
+      "a": "tmc-2:ethernet-1/1",
+      "b": "hub-n:ethernet-1/3"
+    },
+    {
+      "id": "tmc2-hube",
+      "kind": "backbone",
+      "a": "tmc-2:ethernet-1/2",
+      "b": "hub-e:ethernet-1/3"
+    },
+    {
+      "id": "tmc1-tmc2",
+      "kind": "backbone",
+      "a": "tmc-1:ethernet-1/3",
+      "b": "tmc-2:ethernet-1/3"
+    },
+    {
+      "id": "hubn-fcn",
+      "kind": "cabinet",
+      "a": "hub-n:ethernet-1/4",
+      "b": "fc-n:eth1"
+    },
+    {
+      "id": "hubnw-fcnw",
+      "kind": "cabinet",
+      "a": "hub-nw:ethernet-1/4",
+      "b": "fc-nw:eth1"
+    },
+    {
+      "id": "hubi20e-fci20e",
+      "kind": "cabinet",
+      "a": "hub-i20e:ethernet-1/4",
+      "b": "fc-i20e:eth1"
+    },
+    {
+      "id": "hubsw-fcsw",
+      "kind": "cabinet",
+      "a": "hub-sw:ethernet-1/4",
+      "b": "fc-sw:eth1"
+    }
+  ]
+}
