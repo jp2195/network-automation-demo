@@ -220,9 +220,21 @@ def build_markdown(enrichment, impact, notify_result, *, series=(), log_lines=()
     return "\n".join(p for p in parts if p) + "\n"
 
 
-def store(client, fingerprint, markdown):
-    client.set(POSTMORTEM_KEY_PREFIX + fingerprint, markdown,
-               ex=POSTMORTEM_TTL_SECONDS)
+def store(client, fingerprint, markdown, degraded=False):
+    """Persist the report. A degraded report (no ledger → zero duration,
+    collapsed log window) must never clobber a good one already stored
+    for this fingerprint — Alertmanager can emit a second resolved
+    episode for the same alert after the ledger was consumed
+    (smoke-found 2026-06-13)."""
+    key = POSTMORTEM_KEY_PREFIX + fingerprint
+    if degraded and client.set(key, markdown, ex=POSTMORTEM_TTL_SECONDS,
+                               nx=True) is None:
+        print(f"degraded postmortem for {fingerprint} skipped — a stored "
+              f"report already exists", file=sys.stderr)
+        return False
+    if not degraded:
+        client.set(key, markdown, ex=POSTMORTEM_TTL_SECONDS)
+    return True
 
 
 def main():
@@ -292,7 +304,8 @@ def main():
     import valkey
     client = valkey.from_url(os.environ["VALKEY_URL"], decode_responses=True)
     try:
-        store(client, fingerprint, md)
+        store(client, fingerprint, md,
+              degraded=not notify_result.get("ledger_found", True))
     except Exception as e:
         # Don't lose the artifact — it lands in the step log at least.
         print(md, file=sys.stderr)

@@ -186,6 +186,20 @@ class TestStore(unittest.TestCase):
         ttl = client.ttl(key)
         self.assertTrue(0 < ttl <= POSTMORTEM_TTL_SECONDS)
 
+    def test_degraded_never_clobbers_existing(self):
+        client = fakeredis.FakeRedis(decode_responses=True)
+        self.assertTrue(store(client, "fp1", "# good\n"))
+        self.assertFalse(store(client, "fp1", "# degraded\n", degraded=True))
+        self.assertEqual(client.get(POSTMORTEM_KEY_PREFIX + "fp1"), "# good\n")
+        # degraded still stores when nothing exists yet
+        self.assertTrue(store(client, "fp2", "# degraded\n", degraded=True))
+        self.assertEqual(client.get(POSTMORTEM_KEY_PREFIX + "fp2"),
+                         "# degraded\n")
+        # a non-degraded report may overwrite (fresh real incident)
+        self.assertTrue(store(client, "fp1", "# newer good\n"))
+        self.assertEqual(client.get(POSTMORTEM_KEY_PREFIX + "fp1"),
+                         "# newer good\n")
+
 
 class TestMainGate(unittest.TestCase):
     def test_firing_is_noop(self):
