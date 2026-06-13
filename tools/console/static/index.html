@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas DOT — Scenario Console</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Atlas DOT — Scenario Console</h1>
+    <div id="strip" class="strip">loading status…</div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Cut / Restore a link</h2>
+      <label>Node <select id="cut-node"></select></label>
+      <label>Interface <select id="cut-iface"></select></label>
+      <button data-act="disable" class="cut">Cut (disable)</button>
+      <button data-act="enable" class="restore">Restore (enable)</button>
+      <div class="result" id="cut-result"></div>
+    </section>
+
+    <section class="card">
+      <h2>Gray failure</h2>
+      <label>Link <select id="gray-link"></select></label>
+      <button data-act="start" class="cut">Start</button>
+      <button data-act="end" class="restore">End</button>
+      <div class="result" id="gray-result"></div>
+    </section>
+
+    <section class="card">
+      <h2>Maintenance window</h2>
+      <label>Node <select id="maint-node"></select></label>
+      <label>Hours <input id="maint-hours" type="number" value="2" min="1" max="24"></label>
+      <button data-act="start" class="cut">Open</button>
+      <button data-act="end" class="restore">Close</button>
+      <div class="result" id="maint-result"></div>
+    </section>
+
+    <section class="card muted">
+      <h2>Canned scenarios (CLI)</h2>
+      <p>Run from a terminal — these multi-step storylines aren't wired to the console in v1:</p>
+      <pre>make scenario-hurricane
+make scenario-backhoe
+make scenario-cabinet
+make scenario-flap</pre>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
