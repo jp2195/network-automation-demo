@@ -1,0 +1,26 @@
+# Lets the eventing pipeline (operate-workflow-sa in argo-events)
+# manage per-incident Grafana dashboard ConfigMaps in monitoring.
+# Create-by-name cannot be constrained by RBAC; the grant is therefore
+# verb-minimal (no list/watch/update on other CMs is needed; get is
+# omitted on purpose — the lane only creates and deletes).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: incident-dashboards
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: incident-dashboards
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: incident-dashboards
+subjects:
+  - kind: ServiceAccount
+    name: operate-workflow-sa
+    namespace: argo-events
