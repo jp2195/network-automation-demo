@@ -1,10 +1,11 @@
 # Lets the eventing pipeline (operate-workflow-sa in argo-events) manage
 # per-incident Grafana dashboard ConfigMaps in THIS namespace only.
-# create+delete cannot be name-scoped in RBAC (create has no name yet;
+# create/delete cannot be name-scoped in RBAC (create has no name yet;
 # delete by resourceNames would block create), so the grant is blanket on
 # configmaps — but this namespace holds nothing else, so the blast radius
-# is exactly the incident dashboards. No get/list/watch: the lane writes
-# by known name and never enumerates.
+# is exactly the incident dashboards. get+patch let the AI analyst lane
+# render its findings into the dashboard once ready (no list/watch — the
+# lanes write/read by known name and never enumerate).
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -12,7 +13,7 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["configmaps"]
-    verbs: ["create", "delete"]
+    verbs: ["create", "delete", "get", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
