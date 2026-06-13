@@ -310,25 +310,31 @@ raise the usual incident; closing the window restores normal alerting.
 
 ## 10. Scenario console (drive the demo from a browser)
 
-**What it is.** A web page at <http://console.127-0-0-1.nip.io:8080> with
-buttons to cut/restore a link, start/stop a gray failure, and open/close a
-maintenance window — plus a live status strip (nodes up · links down ·
-alerts firing · workflows running) that refreshes every 5 seconds.
+**What it is.** A NOC-style web console at <http://console.127-0-0-1.nip.io:8080>:
+a reactive status bar (nodes up · links down · alerts firing · workflows,
+polled live and turning red when something's wrong), control cards to
+cut/restore a link, start/stop a gray failure, and open/close a maintenance
+window, **one-click canned scenarios** (hurricane / backhoe / cabinet / flap),
+a streaming event log, and toasts. It ships in two looks — **Mission** (NOC
+dashboard) and **Terminal** (CLI/phosphor) × **Dark/Light** — toggled in the
+top bar and remembered.
 
 **Why it matters.** You can run the whole demo from one browser tab while
-Grafana narrates on another — no terminal needed. The console itself has
-**no power to touch devices**: each button just asks the existing pipeline
-to act, so it's safe to hand to anyone.
+Grafana narrates on another — no terminal needed. The console has **no power
+to touch devices**: every button just asks the existing pipeline to act
+(it POSTs events; the workflows do the work), so it's safe to hand to anyone.
+Everything it shows is real — the status tiles come straight from Prometheus/
+Argo and the log records the actual commands and their outcomes (no faked
+telemetry).
 
 **How to try it.** Open the URL, pick a node + interface, click **Cut** —
-watch Grafana go red — then **Restore**. Try **Gray failure** on a link and
-a **Maintenance window** on a node.
+watch the tiles flash red and Grafana light up — then **Restore**. Try a
+**Gray failure** on a link, a **Maintenance window** on a node, or click a
+**canned scenario** to run a real multi-step storyline (it fires the real
+cut/gray/restore sequence, with an abort button while it runs).
 
-**What you'll see.** The same workflows that the `make` commands trigger,
-fired from the browser; the status strip tracks the network live.
-
-> The multi-step canned scenarios (hurricane/backhoe/flap/cabinet) stay on
-> the CLI (`make scenario-*`) for now — the console shows their commands.
+**What you'll see.** The same workflows the `make` commands trigger, fired
+from the browser; the status bar and event log track the real network live.
 
 ---
 
