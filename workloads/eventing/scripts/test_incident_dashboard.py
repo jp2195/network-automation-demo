@@ -142,5 +142,56 @@ class TestBuildDashboard(unittest.TestCase):
             seen.add(key)
 
 
+class TestMainBranches(unittest.TestCase):
+    def _run(self, status, fp="abc123"):
+        enr = json.loads(json.dumps(_ENRICHMENT))
+        enr["alert"]["status"] = status
+        enr["alert"]["fingerprint"] = fp
+        calls = []
+        with mock.patch.object(incident_dashboard.k8s_api, "create_configmap",
+                               lambda *a, **k: calls.append(("create", a, k))):
+            with mock.patch.object(incident_dashboard.k8s_api,
+                                   "delete_configmap",
+                                   lambda *a, **k: calls.append(("delete", a, k))):
+                with mock.patch.dict("os.environ", {
+                        "ENRICHMENT_JSON": json.dumps(enr),
+                        "IMPACT_JSON": json.dumps(_IMPACT)}):
+                    incident_dashboard.main()
+        return calls
+
+    def test_firing_creates_labeled_cm(self):
+        calls = self._run("firing")
+        self.assertEqual(len(calls), 1)
+        kind, args, kwargs = calls[0]
+        self.assertEqual(kind, "create")
+        self.assertEqual(args[0], "monitoring")
+        self.assertEqual(args[1], "incident-abc123")
+        self.assertEqual(kwargs["labels"], {"grafana_dashboard": "1"})
+        self.assertEqual(kwargs["annotations"], {"grafana_folder": "Incidents"})
+        body = json.loads(kwargs["data"]["incident-abc123.json"])
+        self.assertEqual(body["uid"], "incident-abc123")
+
+    def test_resolved_deletes_cm(self):
+        calls = self._run("resolved")
+        self.assertEqual(calls, [("delete", ("monitoring", "incident-abc123"),
+                                  {})])
+
+    def test_no_fingerprint_is_noop(self):
+        calls = self._run("firing", fp="!!!")
+        self.assertEqual(calls, [])
+
+    def test_api_failure_does_not_raise(self):
+        # advisory surface: a dashboard hiccup must not fail the pipeline
+        enr = json.loads(json.dumps(_ENRICHMENT))
+        def boom(*a, **k):
+            raise RuntimeError("api down")
+        with mock.patch.object(incident_dashboard.k8s_api,
+                               "create_configmap", boom):
+            with mock.patch.dict("os.environ", {
+                    "ENRICHMENT_JSON": json.dumps(enr),
+                    "IMPACT_JSON": json.dumps(_IMPACT)}):
+                incident_dashboard.main()  # must not raise
+
+
 if __name__ == "__main__":
     unittest.main()
