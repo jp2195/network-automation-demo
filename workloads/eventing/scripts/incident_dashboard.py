@@ -41,15 +41,39 @@ def _panel(pid, title, x, y, w, h, **extra):
     return p
 
 
-def _stat(pid, title, x, y, w, h, expr):
+def _row(pid, title, y):
+    return _panel(pid, title, 0, y, 24, 1, type="row", collapsed=False,
+                  panels=[])
+
+
+def _mappings(pairs):
+    # pairs: {"1": ("UP", "green"), ...} → Grafana value-mapping block.
+    return [{"type": "value", "options": {
+        v: {"text": t, "color": c, "index": i}
+        for i, (v, (t, c)) in enumerate(pairs.items())}}]
+
+
+def _logs_options():
+    return {"showTime": True, "wrapLogMessage": True, "sortOrder": "Descending",
+            "dedupStrategy": "none", "showCommonLabels": False,
+            "showLabels": False, "enableLogDetails": True}
+
+
+def _stat(pid, title, x, y, w, h, expr, mappings, steps):
+    # Value-mapped stat: shows mapped text (e.g. "UP"/"DOWN") with a
+    # coloured background, not a bare metric number.
     return _panel(
         pid, title, x, y, w, h, type="stat", datasource=_PROM,
-        targets=[{"datasource": _PROM, "expr": expr, "refId": "A"}],
-        fieldConfig={"defaults": {"thresholds": {"mode": "absolute", "steps": [
-            {"color": "green", "value": None},
-            {"color": "red", "value": 2}]}}, "overrides": []},
+        targets=[{"datasource": _PROM, "expr": expr, "refId": "A",
+                  "instant": True}],
+        fieldConfig={"defaults": {
+            "mappings": mappings,
+            "color": {"mode": "thresholds"},
+            "thresholds": {"mode": "absolute", "steps": steps},
+        }, "overrides": []},
         options={"reduceOptions": {"calcs": ["lastNotNull"]},
-                 "colorMode": "background"})
+                 "colorMode": "background", "graphMode": "none",
+                 "textMode": "value_and_name", "justifyMode": "center"})
 
 
 def build_dashboard(enrichment, impact, fp):
@@ -59,32 +83,58 @@ def build_dashboard(enrichment, impact, fp):
     link_id = alert.get("link_id") or ""
     link_ok = bool(re.fullmatch(r"[A-Za-z0-9_-]+", link_id))
 
+    sev = (impact.get("severity_class") or "?").lower()
+    sev_badge = {"high": "🔴 HIGH", "medium": "🟠 MEDIUM",
+                 "warning": "🟡 WARNING", "low": "🟢 LOW"}.get(sev, f"⚪ {sev}")
+    agencies = impact.get("affected_agencies") or []
+
     panels, pid, y = [], 1, 0
 
-    ctx_lines = [f"**Alert** {alert.get('name', '?')} on **{device}** "
-                 f"(severity class: {impact.get('severity_class', '?')})"]
+    # Header banner — alert identity + severity + cable/agency context.
+    banner = [f"# {alert.get('name', 'Incident')} — {device}",
+              f"### {sev_badge}  ·  link `{link_id or 'n/a'}`"]
     if cable.get("label"):
-        ctx_lines.append(
-            f"**Cable** `{cable['label']}` — {cable.get('provider', '?')}, "
-            f"corridor {cable.get('corridor', '?')}, SLA "
-            f"{cable.get('sla', '?')}, circuit "
-            f"{cable.get('circuit_id', '?')}")
-    agencies = impact.get("affected_agencies") or []
-    ctx_lines.append("**Agencies affected:** "
-                     + (", ".join(agencies) if agencies else "none"))
-    panels.append(_panel(pid, "Incident context", 0, y, 24, 4,
-                         type="text", options={"mode": "markdown",
-                                               "content": "\n\n".join(ctx_lines)}))
+        banner.append(
+            f"**Cable** `{cable['label']}` · {cable.get('provider', '?')} · "
+            f"corridor {cable.get('corridor', '?')} · SLA "
+            f"{cable.get('sla', '?')} · circuit {cable.get('circuit_id', '?')}")
+    banner.append("**Agencies affected:** "
+                  + (", ".join(agencies) if agencies else "none — ring redundancy held"))
+    panels.append(_panel(pid, "", 0, y, 24, 5, type="text",
+                         transparent=True,
+                         options={"mode": "markdown",
+                                  "content": "\n\n".join(banner)}))
     pid += 1
-    y += 4
+    y += 5
+
+    _OPER = _mappings({"1": ("● UP", "green"), "2": ("● DOWN", "red")})
+    _OPER_STEPS = [{"color": "green", "value": None},
+                   {"color": "red", "value": 2}]
+    _REACH = _mappings({"0": ("● UNREACHABLE", "red"),
+                        "1": ("● REACHABLE", "green")})
+    _REACH_STEPS = [{"color": "red", "value": None},
+                    {"color": "green", "value": 1}]
 
     if link_ok:
+        panels.append(_row(pid, "Link health", y))
+        pid += 1
+        y += 1
+        # state-timeline: coloured UP/DOWN bands over the window — far
+        # more legible than a 1/2 line plot.
         panels.append(_panel(
             pid, f"Link state — {link_id}", 0, y, 12, 8,
-            type="timeseries", datasource=_PROM,
+            type="state-timeline", datasource=_PROM,
             targets=[{"datasource": _PROM, "refId": "A",
                       "expr": f'link:oper_state_with_meta{{link_id="{link_id}"}}',
-                      "legendFormat": "{{node}}/{{interface}}"}]))
+                      "legendFormat": "{{node}}/{{interface}}"}],
+            fieldConfig={"defaults": {"mappings": _OPER,
+                                      "color": {"mode": "thresholds"},
+                                      "thresholds": {"mode": "absolute",
+                                                     "steps": _OPER_STEPS}},
+                         "overrides": []},
+            options={"mergeValues": True, "showValue": "never",
+                     "rowHeight": 0.9, "legend": {"displayMode": "list",
+                                                  "placement": "bottom"}}))
         pid += 1
         panels.append(_panel(
             pid, f"Link traffic — {link_id}", 12, y, 12, 8,
@@ -95,13 +145,20 @@ def build_dashboard(enrichment, impact, fp):
                  "legendFormat": "in {{node}}"},
                 {"datasource": _PROM, "refId": "B",
                  "expr": f'link:rate_out_bps:1m{{link_id="{link_id}"}}',
-                 "legendFormat": "out {{node}}"}]))
+                 "legendFormat": "out {{node}}"}],
+            fieldConfig={"defaults": {
+                "unit": "bps",
+                "custom": {"drawStyle": "line", "lineInterpolation": "smooth",
+                           "fillOpacity": 12, "showPoints": "never"}},
+                "overrides": []},
+            options={"legend": {"displayMode": "list", "placement": "bottom"},
+                     "tooltip": {"mode": "multi"}}))
         pid += 1
         y += 8
 
     # Downstream health grid — did the redundancy hold?
     downstream = impact.get("downstream_devices") or []
-    x = 0
+    grid = []
     for d in downstream[:8]:
         name = d.get("device") or ""
         iface = d.get("interface") or ""
@@ -109,36 +166,43 @@ def build_dashboard(enrichment, impact, fp):
            not re.fullmatch(r"[A-Za-z0-9./-]+", iface):
             continue
         if name.startswith(CABINET_NAME_PREFIX):
-            expr = f'up{{job="snmp-frr-cabinets", node="{name}"}}'
-            # up: 1 = reachable (green), 0 = dark — invert threshold
-            p = _stat(pid, f"{name} (SNMP reach)", x, y, 6, 4, expr)
-            p["fieldConfig"]["defaults"]["thresholds"]["steps"] = [
-                {"color": "red", "value": None},
-                {"color": "green", "value": 1}]
+            grid.append((f"{name} · SNMP",
+                         f'up{{job="snmp-frr-cabinets", node="{name}"}}',
+                         _REACH, _REACH_STEPS))
         else:
-            expr = (f'srl_nokia_interfaces_interface_oper_state'
-                    f'{{node="{name}", interface="{iface}"}}')
-            p = _stat(pid, f"{name} {iface}", x, y, 6, 4, expr)
-        panels.append(p)
+            grid.append((f"{name} · {iface}",
+                         f'srl_nokia_interfaces_interface_oper_state'
+                         f'{{node="{name}", interface="{iface}"}}',
+                         _OPER, _OPER_STEPS))
+    if grid:
+        panels.append(_row(pid, "Downstream health — did the redundancy hold?", y))
         pid += 1
-        x += 6
-        if x >= 24:
-            x, y = 0, y + 4
-    if x:
-        y += 4
+        y += 1
+        cols = min(len(grid), 4)
+        w = max(6, 24 // cols)
+        x = 0
+        for title, expr, mp, steps in grid:
+            panels.append(_stat(pid, title, x, y, w, 5, expr, mp, steps))
+            pid += 1
+            x += w
+            if x + w > 24:
+                x, y = 0, y + 5
+        if x:
+            y += 5
 
     sfp = safe_fp(fp)
+    panels.append(_row(pid, "Diagnostics", y))
+    pid += 1
+    y += 1
     panels.append(_panel(
         pid, "AI analyst — IncidentAnalysis (appears when ready)",
-        0, y, 24, 8, type="logs", datasource=_LOKI,
+        0, y, 24, 9, type="logs", datasource=_LOKI,
         targets=[{"datasource": _LOKI, "refId": "A",
                   "expr": (f'{{namespace="argo-events"}} '
                            f'|= "{AI_ANALYSIS_MARKER} {{" |= "{sfp}"')}],
-        options={"showTime": True, "wrapLogMessage": True,
-                 "sortOrder": "Descending", "dedupStrategy": "none",
-                 "showCommonLabels": False, "showLabels": False}))
+        options=_logs_options()))
     pid += 1
-    y += 8
+    y += 9
 
     if re.fullmatch(r"[a-z0-9.-]+", device):
         panels.append(_panel(
@@ -146,9 +210,7 @@ def build_dashboard(enrichment, impact, fp):
             type="logs", datasource=_LOKI,
             targets=[{"datasource": _LOKI, "refId": "A",
                       "expr": f'{{namespace="clabernetes"}} |= "{device}"'}],
-            options={"showTime": True, "wrapLogMessage": True,
-                     "sortOrder": "Descending", "dedupStrategy": "none",
-                     "showCommonLabels": False, "showLabels": False}))
+            options=_logs_options()))
 
     return {
         "uid": f"incident-{sfp}",
