@@ -251,11 +251,11 @@ make status
 ```
 
 You're looking for the Applications to become **Synced / Healthy**. There are
-**21** of them. **20 will go Synced/Healthy on their own**; one called
-`dom-synth` stays "OutOfSync" on purpose (it's set to manual) — that's
-expected, not a problem.
+**21** of them, and they all sync on their own — give it a few minutes.
+(`netbox-seed` shows "Progressing" briefly while it loads the network
+inventory; that's normal and clears itself.)
 
-To watch them settle, you can run this until only `dom-synth` is left:
+To watch them settle, run this until every row says `Synced` / `Healthy`:
 
 ```bash
 kubectl -n argocd get applications

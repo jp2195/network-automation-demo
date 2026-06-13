@@ -170,8 +170,8 @@ argocd/
 generators (one for platform, one for workloads) template one Application per
 stub. Each owns one logical chunk. The `topology`, `gnmic`, and `snmp` stubs
 carry `ignoreDifferences` blocks so clabernetes' admission webhook defaults and
-the Prometheus operator's stored `action: replace` don't register as drift; the
-`dom-synth` stub sets `automated: false` (manual sync).
+the Prometheus operator's stored `action: replace` don't register as drift. All
+stubs auto-sync (prune + selfHeal).
 
 ## Trade-offs / scope
 
