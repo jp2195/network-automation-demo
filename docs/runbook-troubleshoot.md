@@ -365,7 +365,7 @@ after the WorkflowTemplates, which prevents the race on normal syncs.
 
 - **Never appeared** — check the `dashboard` step of the
   `enrich-notify-*` workflow (`kubectl -n argo-events logs <pod>`);
-  RBAC errors mean `workloads/observability/rbac-incident-dashboards.yaml`
+  RBAC errors mean `workloads/incident-dashboards/rbac.yaml`
   isn't applied. The step is non-fatal by design: pipeline success with
   a logged `incident dashboard step failed` line is the signature.
 - **Never went away** — the resolve was lost (e.g. eventing was down

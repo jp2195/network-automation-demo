@@ -2,9 +2,9 @@
 
 The eventing image deliberately has no kubectl and no kubernetes
 package; the only API surface this lane needs is ConfigMap
-create/delete in the monitoring namespace, authorized by the pod's
-mounted ServiceAccount token (see workloads/observability/
-rbac-incident-dashboards.yaml for the grant).
+create/delete in the incident-dashboards namespace, authorized by the
+pod's mounted ServiceAccount token (see
+workloads/incident-dashboards/rbac.yaml for the grant).
 """
 
 import json
