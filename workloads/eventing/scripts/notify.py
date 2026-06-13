@@ -261,6 +261,10 @@ def main():
     json.dump({"posted": not unconfigured, "status": "resolved",
                "downtime_seconds": int(downtime_secs),
                "first_seen": ledger_record.get("first_seen"),
+               # False = this resolve ran on the no-ledger fallback (e.g.
+               # a duplicate resolved episode) — postmortem treats the
+               # report as degraded and won't clobber a stored one.
+               "ledger_found": bool(raw),
                "fingerprint": fingerprint}, sys.stdout)
 
 
