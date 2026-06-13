@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: gray-failure
+spec:
+  template:
+    serviceAccountName: operate-workflow-sa
+  dependencies:
+    - name: gray
+      eventSourceName: webhook
+      eventName: gray-failure
+  triggers:
+    - template:
+        name: gray-failure
+        k8s:
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: gray-failure-
+              spec:
+                serviceAccountName: operate-workflow-sa
+                workflowTemplateRef:
+                  name: gray-failure
+                arguments:
+                  parameters:
+                    - name: link
+                      value: ""
+                    - name: action
+                      value: start
+          parameters:
+            - src:
+                dependencyName: gray
+                dataKey: body.link
+              dest: spec.arguments.parameters.0.value
+            - src:
+                dependencyName: gray
+                dataKey: body.action
+                value: start
+              dest: spec.arguments.parameters.1.value

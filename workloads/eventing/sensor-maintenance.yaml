@@ -1,0 +1,89 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: maintenance
+spec:
+  template:
+    serviceAccountName: operate-workflow-sa
+  dependencies:
+    - name: start
+      eventSourceName: webhook
+      eventName: maintenance
+      filters:
+        data:
+          - path: body.action
+            type: string
+            value:
+              - start
+    - name: end
+      eventSourceName: webhook
+      eventName: maintenance
+      filters:
+        data:
+          - path: body.action
+            type: string
+            value:
+              - end
+  triggers:
+    - template:
+        conditions: "start"
+        name: maintenance-on
+        k8s:
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: maintenance-on-
+              spec:
+                serviceAccountName: operate-workflow-sa
+                workflowTemplateRef:
+                  name: maintenance-on
+                arguments:
+                  parameters:
+                    - name: node
+                      value: ""
+                    - name: duration_hours
+                      value: "2"
+                    - name: comment
+                      value: "console maintenance"
+          parameters:
+            - src:
+                dependencyName: start
+                dataKey: body.node
+              dest: spec.arguments.parameters.0.value
+            - src:
+                dependencyName: start
+                dataKey: body.hours
+                value: "2"
+              dest: spec.arguments.parameters.1.value
+            - src:
+                dependencyName: start
+                dataKey: body.comment
+                value: "console maintenance"
+              dest: spec.arguments.parameters.2.value
+    - template:
+        conditions: "end"
+        name: maintenance-off
+        k8s:
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: maintenance-off-
+              spec:
+                serviceAccountName: operate-workflow-sa
+                workflowTemplateRef:
+                  name: maintenance-off
+                arguments:
+                  parameters:
+                    - name: node
+                      value: ""
+          parameters:
+            - src:
+                dependencyName: end
+                dataKey: body.node
+              dest: spec.arguments.parameters.0.value

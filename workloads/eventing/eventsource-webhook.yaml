@@ -16,3 +16,11 @@ spec:
       port: "12000"
       endpoint: /manual-cut
       method: POST
+    gray-failure:
+      port: "12000"
+      endpoint: /gray-failure
+      method: POST
+    maintenance:
+      port: "12000"
+      endpoint: /maintenance
+      method: POST

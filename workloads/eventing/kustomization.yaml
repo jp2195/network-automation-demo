@@ -11,6 +11,8 @@ resources:
   - sensor-manual-cut.yaml
   - sensor-remediation.yaml
   - sensor-ai-analyst.yaml
+  - sensor-gray-failure.yaml
+  - sensor-maintenance.yaml
   - wft-enriched-notify.yaml
   - wft-cut-fiber.yaml
   - wft-maintenance.yaml
@@ -19,6 +21,7 @@ resources:
   - wft-drift-audit.yaml
   - cron-drift-audit.yaml
   - wft-ai-analyst.yaml
+  - wft-gray-failure.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
@@ -49,3 +52,4 @@ configMapGenerator:
       - scripts/analyst.py
       - scripts/k8s_api.py
       - scripts/incident_dashboard.py
+      - scripts/gray_key.py
