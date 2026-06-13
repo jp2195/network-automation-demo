@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -44,7 +45,9 @@ func envOr(k, def string) string {
 func writeJSON(w http.ResponseWriter, code int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(v)
+	if err := json.NewEncoder(w).Encode(v); err != nil {
+		log.Printf("writeJSON encode: %v", err)
+	}
 }
 
 func (s *server) forward(w http.ResponseWriter, r *http.Request, endpoint string, allow map[string]bool) {
@@ -138,36 +141,63 @@ func (s *server) argoRunning() (int, error) {
 }
 
 func (s *server) handleStatus(w http.ResponseWriter, r *http.Request) {
-	out := map[string]any{"degraded": []string{}}
-	deg := func(name string) {
-		out["degraded"] = append(out["degraded"].([]string), name)
+	// Fan the four upstream calls out concurrently: under a degraded
+	// cluster a sequential walk could exceed the browser's 5s poll
+	// interval (4 × client timeout) and pile up requests. Each probe
+	// writes its own field; failures land in degraded[]. Run in parallel,
+	// then assemble — no shared-map races.
+	type probe struct {
+		field string
+		fn    func() (int, error)
 	}
-	if v, err := s.promScalar(`count(count by (node)(srl_nokia_interfaces_interface_oper_state == 1)) or vector(0)`); err == nil {
-		out["nodes_up"] = v
-	} else {
-		deg("nodes_up")
+	probes := []probe{
+		{"nodes_up", func() (int, error) {
+			return s.promScalar(`count(count by (node)(srl_nokia_interfaces_interface_oper_state == 1)) or vector(0)`)
+		}},
+		{"links_down", func() (int, error) {
+			return s.promScalar(`count(link:oper_state_with_meta == 2) or vector(0)`)
+		}},
+		{"alerts_firing", func() (int, error) {
+			return s.promScalar(`count(ALERTS{alertstate="firing",alertname!="Watchdog",alertname!="InfoInhibitor"}) or vector(0)`)
+		}},
+		{"workflows_running", s.argoRunning},
 	}
-	if v, err := s.promScalar(`count(link:oper_state_with_meta == 2) or vector(0)`); err == nil {
-		out["links_down"] = v
-	} else {
-		deg("links_down")
+	type result struct {
+		field string
+		val   int
+		err   error
 	}
-	if v, err := s.promScalar(`count(ALERTS{alertstate="firing",alertname!="Watchdog",alertname!="InfoInhibitor"}) or vector(0)`); err == nil {
-		out["alerts_firing"] = v
-	} else {
-		deg("alerts_firing")
+	results := make([]result, len(probes))
+	var wg sync.WaitGroup
+	for i, p := range probes {
+		wg.Add(1)
+		go func(i int, p probe) {
+			defer wg.Done()
+			v, err := p.fn()
+			results[i] = result{p.field, v, err}
+		}(i, p)
 	}
-	if v, err := s.argoRunning(); err == nil {
-		out["workflows_running"] = v
-	} else {
-		deg("workflows_running")
+	wg.Wait()
+
+	out := map[string]any{}
+	degraded := []string{}
+	for _, r := range results {
+		if r.err == nil {
+			out[r.field] = r.val
+		} else {
+			degraded = append(degraded, r.field)
+		}
 	}
+	out["degraded"] = degraded
 	writeJSON(w, 200, out)
 }
 
 func (s *server) routes() http.Handler {
 	mux := http.NewServeMux()
-	sub, _ := fs.Sub(staticFS, "static")
+	sub, err := fs.Sub(staticFS, "static")
+	if err != nil {
+		log.Fatalf("static embed: %v", err)
+	}
 	mux.Handle("/", http.FileServer(http.FS(sub)))
 	mux.HandleFunc("/api/cut", s.handleCut)
 	mux.HandleFunc("/api/gray", s.handleGray)
@@ -184,6 +214,13 @@ func main() {
 		client:  &http.Client{Timeout: 8 * time.Second},
 	}
 	addr := envOr("LISTEN_ADDR", ":8080")
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           s.routes(),
+		ReadHeaderTimeout: 10 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
 	log.Printf("scenario console listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, s.routes()))
+	log.Fatal(srv.ListenAndServe())
 }
