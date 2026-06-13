@@ -19,7 +19,7 @@ import sys
 import k8s_api
 from constants import AI_ANALYSIS_MARKER, CABINET_NAME_PREFIX
 
-DASHBOARD_NAMESPACE = "monitoring"
+DASHBOARD_NAMESPACE = "incident-dashboards"
 FOLDER = "Incidents"
 
 _PROM = {"type": "prometheus", "uid": "prometheus"}
