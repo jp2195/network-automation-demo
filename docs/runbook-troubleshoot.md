@@ -360,3 +360,15 @@ Recovery is any update that touches the resource:
 
 The manifest carries a `sync-wave: "1"` annotation so ArgoCD applies it
 after the WorkflowTemplates, which prevents the race on normal syncs.
+
+## Incident dashboard never appeared / never went away
+
+- **Never appeared** — check the `dashboard` step of the
+  `enrich-notify-*` workflow (`kubectl -n argo-events logs <pod>`);
+  RBAC errors mean `workloads/observability/rbac-incident-dashboards.yaml`
+  isn't applied. The step is non-fatal by design: pipeline success with
+  a logged `incident dashboard step failed` line is the signature.
+- **Never went away** — the resolve was lost (e.g. eventing was down
+  when the alert cleared). Dashboards are plain ConfigMaps:
+  `kubectl -n monitoring get cm -l grafana_dashboard=1 | grep incident-`
+  then `kubectl -n monitoring delete cm incident-<fp>`.
