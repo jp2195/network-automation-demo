@@ -108,7 +108,7 @@
     const degraded = s.degraded || [];
 
     // nodes_up: show X/total
-    if (degraded.indexOf("nodes_up") >= 0) {
+    if (degraded.indexOf("nodes_up") >= 0 || s.nodes_up == null) {
       setTile("nodes", "—", "");
     } else {
       const total = TOTAL_BACKBONE || "?";
@@ -183,7 +183,7 @@
       "link disable --node " + node + " --intf " + iface
     );
     if (r.ok) toast("danger", "Cut issued", node + " · " + iface);
-    else      toast("danger", "Cut failed", node + " · " + iface);
+    else      toast("warn", "Cut failed", node + " · " + iface);
     return r;
   }
 
@@ -194,7 +194,7 @@
       "link enable --node " + node + " --intf " + iface
     );
     if (r.ok) toast("ok", "Restore issued", node + " · " + iface);
-    else      toast("danger", "Restore failed", node + " · " + iface);
+    else      toast("warn", "Restore failed", node + " · " + iface);
     return r;
   }
 
@@ -205,7 +205,7 @@
       "fault inject --link " + link + " --mode gray"
     );
     if (r.ok) toast("warn", "Gray failure armed", link + " degrading");
-    else      toast("danger", "Gray start failed", link);
+    else      toast("warn", "Gray start failed", link);
     return r;
   }
 
@@ -216,7 +216,7 @@
       "fault clear --link " + link
     );
     if (r.ok) toast("ok", "Gray failure cleared", link);
-    else      toast("danger", "Gray end failed", link);
+    else      toast("warn", "Gray end failed", link);
     return r;
   }
 
@@ -227,7 +227,7 @@
       "maint open --node " + node + " --hours " + hours
     );
     if (r.ok) toast("info", "Maintenance opened", node + " · " + hours + "h · alerts muted");
-    else      toast("danger", "Maintenance failed", node);
+    else      toast("warn", "Maintenance failed", node);
     return r;
   }
 
@@ -238,7 +238,7 @@
       "maint close --node " + node
     );
     if (r.ok) toast("ok", "Maintenance closed", node + " back in service");
-    else      toast("danger", "Maintenance close failed", node);
+    else      toast("warn", "Maintenance close failed", node);
     return r;
   }
 
@@ -288,82 +288,85 @@
   const SCENARIOS = {
     async hurricane(token) {
       log("cmd", "atlas", "scenario hurricane --region coastal-east");
-      log("warn", "noc", "Cat-3 landfall forecast — staging coastal-east fabric");
+      log("info", "scenario", "hurricane — degrading the I-20 East ring, then cutting hub-e");
+      log("info", "scenario", "watch the Geomap / status tiles for the real effect");
       await sleep(900); if (!alive(token)) return;
 
-      log("warn", "noc", "storm scenario: degrading ring-e-i20e (gray failure)");
+      log("info", "scenario", "step 1 — gray failure on ring-e-i20e");
       await apiGrayStart("ring-e-i20e");
       await sleep(1100); if (!alive(token)) return;
 
-      log("warn", "hub-e", "commercial power fluctuation detected — cutting hub-e ethernet-1/1");
+      log("info", "scenario", "step 2 — cut hub-e ethernet-1/1");
       await apiCut("hub-e", "ethernet-1/1");
       await sleep(1300); if (!alive(token)) return;
 
-      log("info", "workflow", "auto-reroute: shifting coastal traffic via ring-nw-n");
+      log("info", "scenario", "holding the outage — check Grafana for the fabric response");
       await sleep(1500); if (!alive(token)) return;
-      log("ok", "workflow", "traffic converged on ring-nw-n — 0 customer impact");
       await sleep(1100); if (!alive(token)) return;
 
-      log("info", "hub-e", "generator online — power restored, restoring hub-e ethernet-1/1");
+      log("info", "scenario", "step 3 — restore hub-e ethernet-1/1");
       await apiRestore("hub-e", "ethernet-1/1");
       await sleep(800); if (!alive(token)) return;
 
-      log("info", "noc", "storm clearing — ending gray failure on ring-e-i20e");
+      log("info", "scenario", "step 4 — clear the gray failure on ring-e-i20e");
       await apiGrayEnd("ring-e-i20e");
     },
 
     async backhoe(token) {
       log("cmd", "atlas", "scenario backhoe --link ring-e-i20e");
-      log("error", "ring-e-i20e", "fiber cut — backhoe through conduit");
+      log("info", "scenario", "fiber-cut drill on the I-20 East ring — cut then repair");
+      log("info", "scenario", "watch the Geomap / status tiles for the real effect");
+      log("info", "scenario", "step 1 — cut hub-i20e ethernet-1/2");
       await apiCut("hub-i20e", "ethernet-1/2");
       await sleep(1200); if (!alive(token)) return;
 
-      log("info", "workflow", "IGP reconverging — computing backup path via ring-nw-n");
+      log("info", "scenario", "outage in place — check Grafana for the fabric response");
       await sleep(1400); if (!alive(token)) return;
-      log("ok", "workflow", "LFA fast-reroute active via alternate ring segment (<50ms)");
       await sleep(1300); if (!alive(token)) return;
 
-      log("info", "field-ops", "splice crew dispatched — ETR 4h");
+      log("info", "scenario", "simulating splice repair time before restore");
       await sleep(1500); if (!alive(token)) return;
-      log("ok", "ring-e-i20e", "fiber spliced — restoring hub-i20e ethernet-1/2");
+      log("info", "scenario", "step 2 — restore hub-i20e ethernet-1/2");
       await apiRestore("hub-i20e", "ethernet-1/2");
     },
 
     async cabinet(token) {
       log("cmd", "atlas", "scenario cabinet --node hub-i20e");
-      log("warn", "hub-i20e", "street cabinet AC failure — UPS engaged");
+      log("info", "scenario", "cabinet drill — maintenance window, then cut the cabinet drop");
+      log("info", "scenario", "watch the Geomap / status tiles for the real effect");
+      log("info", "scenario", "step 1 — open maintenance on hub-i20e (alerts muted)");
       await apiMaintOpen("hub-i20e", 1);
       await sleep(1200); if (!alive(token)) return;
 
-      log("warn", "hub-i20e", "UPS at 60% — 18 minutes runtime remaining");
       await sleep(1300); if (!alive(token)) return;
-      log("error", "hub-i20e", "UPS depleted — cutting cabinet drop hubi20e-fci20e");
+      log("info", "scenario", "step 2 — cut the cabinet drop hub-i20e ethernet-1/4");
       await apiCut("hub-i20e", "ethernet-1/4");
       await sleep(1500); if (!alive(token)) return;
 
-      log("info", "field-ops", "portable generator connected");
+      log("info", "scenario", "outage in place — check Grafana for the fabric response");
       await sleep(1200); if (!alive(token)) return;
-      log("ok", "hub-i20e", "node recovered — restoring cabinet drop");
+      log("info", "scenario", "step 3 — restore the cabinet drop");
       await apiRestore("hub-i20e", "ethernet-1/4");
       await sleep(800); if (!alive(token)) return;
+      log("info", "scenario", "step 4 — close maintenance on hub-i20e");
       await apiMaintClose("hub-i20e");
     },
 
     async flap(token) {
       log("cmd", "atlas", "scenario flap --node tmc-2 --intf ethernet-1/2");
-      log("warn", "tmc-2", "interface ethernet-1/2 flapping");
+      log("info", "scenario", "interface flap ×4 on tmc-2 ethernet-1/2");
+      log("info", "scenario", "watch the Geomap / status tiles for the real effect");
       for (let i = 1; i <= 4; i++) {
         if (!alive(token)) return;
-        log("warn", "tmc-2", "link down (flap " + i + "/4)");
+        log("info", "scenario", "flap " + i + "/4 — cut tmc-2 ethernet-1/2");
         await apiCut("tmc-2", "ethernet-1/2");
         await sleep(700); if (!alive(token)) return;
-        log("info", "tmc-2", "link up (flap " + i + "/4)");
+        log("info", "scenario", "flap " + i + "/4 — restore tmc-2 ethernet-1/2");
         await apiRestore("tmc-2", "ethernet-1/2");
         await sleep(550); if (!alive(token)) return;
       }
-      log("info", "workflow", "flap-damping engaged — penalty 4000, suppressing advertisement");
+      log("info", "scenario", "flap sequence done — check Grafana for the fabric response");
       await sleep(1400); if (!alive(token)) return;
-      log("ok", "tmc-2", "interface stable — penalty decayed below reuse threshold");
     },
   };
 
