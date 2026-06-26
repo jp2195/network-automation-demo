@@ -4,6 +4,6 @@ syncWave: "0"
 chart:
   repo: ghcr.io/srl-labs/clabernetes
   name: clabernetes
-  version: 0.5.0
+  version: 0.6.0
   releaseName: clabernetes
   values: platform/values/clabernetes.yaml
