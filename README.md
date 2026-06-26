@@ -52,8 +52,12 @@ a 3-step Argo Workflow with an alert-fingerprint-keyed ledger in Valkey.
 | Notifications | Slack (`slack-sdk` bot, `chat.update` on resolve) |
 | Certs | cert-manager (selfsigned ClusterIssuer, traefik ingresses on `*.127-0-0-1.nip.io`) |
 
-Working set ≈ 25 GB on a 32 GB+ laptop. ARM64 hosts work — SR Linux
-(`ghcr.io/nokia/srlinux`) is multi-arch.
+Working set ≈ 25 GB on a 32 GB+ laptop. Apple Silicon / ARM64 is
+tested — the whole stack runs **natively** on arm64 (no x86 emulation):
+clabernetes 0.6.0 ships multi-arch manager/launcher images, and the node
+images are multi-arch too (SR Linux `ghcr.io/nokia/srlinux` 25.3.3, FRR
+10.6.1). Verified end-to-end on an Apple Silicon Mac via k3d — full
+platform up, `atlanta` topology ready, all 12 nodes `aarch64`.
 
 ## Telemetry sources — the legacy / modern split
 
