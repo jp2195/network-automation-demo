@@ -3,7 +3,7 @@
         scenario-gray-failure scenario-gray-failure-end \
         maintenance-start maintenance-end maintenance-list \
         remediation-mode remediation-approve remediation-status \
-        drift-check postmortem help
+        drift-check postmortem measure ready help
 
 CLUSTER_NAME ?= atlas-demo
 TOPO_NS      ?= clabernetes
@@ -20,8 +20,8 @@ help:
 	@echo "  build        Build + push the pre-baked images to the k3d registry (localhost:5001)"
 	@echo "  demo-cut             Disable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-restore         Re-enable an interface on an SR Linux node (NODE=, INTERFACE= required)"
-	@echo "  demo-cut-cabinet     Disable an interface on an FRR cabinet via vtysh (NODE=, INTERFACE= required)"
-	@echo "  demo-restore-cabinet Re-enable an interface on an FRR cabinet via vtysh (NODE=, INTERFACE= required)"
+	@echo "  demo-cut-cabinet     Carrier-loss on an FRR cabinet uplink (NODE=, INTERFACE= required) — fires CabinetInterfaceOperDown"
+	@echo "  demo-restore-cabinet Restore carrier on an FRR cabinet uplink (NODE=, INTERFACE= required)"
 	@echo "  scenario-list        List the canned demo outage scenarios"
 	@echo "  scenario-hurricane   Two ring segments fail in series, ~2.5 min"
 	@echo "  scenario-backhoe     One random backbone strand cut for ~2 min"
@@ -37,6 +37,8 @@ help:
 	@echo "  remediation-status   Show remediation mode and active cost-outs"
 	@echo "  drift-check          Run the config drift audit now (CronWorkflow runs it every 5m)"
 	@echo "  postmortem           List stored postmortems, or print+save one (FP=<fingerprint>)"
+	@echo "  measure              Run N cut->detect->notify cycles, emit CSV+stats (N=, LANE=gnmi|snmp)"
+	@echo "  ready                Functional readiness gate (telemetry/eventing/cabinets), exits non-zero if not ready"
 
 up: preflight
 	@echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"
@@ -188,20 +190,48 @@ demo-restore: _require_cut_vars
 	    "echo -e 'enter candidate\nset / interface $(INTERFACE) admin-state enable\ncommit now' | sr_cli"
 
 # --- FRR cabinet failure injection (legacy-edge / SNMP-driven demo lane) ---
+# Inject a real carrier loss, not an admin shutdown. CabinetInterfaceOperDown
+# fires on ifOperStatus==down AND ifAdminStatus==up (a link failure, not
+# maintenance). A vtysh `shutdown` drops admin too, so the alert never fires.
+# Downing the pod-side veth (<node>-<iface>, e.g. fc-n-eth1) drops carrier on
+# the cabinet interface while admin stays up — the exact condition the alert
+# requires. The loss does not cross the VXLAN back to the SR Linux side.
 
 demo-cut-cabinet: _require_cut_vars
 	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
-	  echo "==> Shutting down $(INTERFACE) on $(NODE) ($$POD) via vtysh"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- docker exec $(NODE) \
-	    vtysh -c "configure terminal" -c "interface $(INTERFACE)" -c "shutdown" -c "end" -c "write memory"
+	  echo "==> Carrier loss on $(NODE) $(INTERFACE) ($$POD): down pod-side veth $(NODE)-$(INTERFACE)"; \
+	  kubectl -n $(TOPO_NS) exec $$POD -- ip link set $(NODE)-$(INTERFACE) down
 
 demo-restore-cabinet: _require_cut_vars
 	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
 	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
-	  echo "==> Bringing up $(INTERFACE) on $(NODE) ($$POD) via vtysh"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- docker exec $(NODE) \
-	    vtysh -c "configure terminal" -c "interface $(INTERFACE)" -c "no shutdown" -c "end" -c "write memory"
+	  echo "==> Restore carrier on $(NODE) $(INTERFACE) ($$POD): up pod-side veth $(NODE)-$(INTERFACE)"; \
+	  kubectl -n $(TOPO_NS) exec $$POD -- ip link set $(NODE)-$(INTERFACE) up
+
+# --- Readiness gate -------------------------------------------------------
+# Functional readiness (telemetry flowing, eventing wired, cabinets polling),
+# not just ArgoCD "Healthy". Exits non-zero if the lab isn't demo-ready.
+ready:
+	@bin/ready.sh
+
+# --- Measurement harness (paper results table) ---------------------------
+# Run N cut->detect->enriched-notify cycles and emit a CSV + summary stats.
+# Rotates distinct interfaces by default (independent runs, no cherry-picking).
+#   make measure N=10 LANE=gnmi
+#   make measure N=10 LANE=snmp
+#   make measure N=10 LANE=gnmi IFACES="hub-n:ethernet-1/2 hub-e:ethernet-1/2"
+#   make measure N=10 LANE=gnmi NODE=hub-n INTERFACE=ethernet-1/1   # pin one
+measure:
+	@bin/measure.sh -n $(or $(N),10) -l $(or $(LANE),gnmi) \
+	  $(if $(NODE),-N $(NODE)) $(if $(INTERFACE),-i $(INTERFACE)) \
+	  $(if $(IFACES),-I "$(IFACES)") $(if $(OUT),-o $(OUT))
+
+# Gray-failure detectability: streaming (measured) vs 5-min polling vs traps.
+#   make measure-gray DURATIONS="180 360 600"
+measure-gray:
+	@bin/measure-gray.sh $(if $(DURATIONS),-D "$(DURATIONS)") $(if $(LINKS),-l "$(LINKS)") \
+	  $(if $(POLL),-p $(POLL)) $(if $(OUT),-o $(OUT))
 
 # --- Pre-canned demo scenarios -------------------------------------------
 
