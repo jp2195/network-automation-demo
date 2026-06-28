@@ -14,10 +14,57 @@ import os
 import sys
 
 from netbox_client import Client
+from prom import prom_query
 from constants import (
-    CABINET_NAME_PREFIX,
+    ROLE_FIELD_CABINET, CABINET_NAME_PREFIX,
+    LINK_KIND_BACKBONE, LINK_KIND_CABINET,
     SEVERITY_HIGH, SEVERITY_LOW, SEVERITY_MEDIUM, SEVERITY_WARNING,
 )
+
+
+def compute_backup_path(alert):
+    """Derive the modeled backup path from the ring topology + LIVE oper-state.
+
+    The contribution here is that the alternate path is not asserted — it is
+    derived from the source-of-truth model (which links form the corridor ring)
+    and then cross-checked against live telemetry:
+
+      * A backbone (ring) link reroutes via the corridor ring. That backup is
+        intact unless ANOTHER backbone ring link is also down right now, in
+        which case it is reported as degraded.
+      * A cabinet uplink is single-homed — there is no modeled backup, and we
+        say so explicitly rather than implying resilience that doesn't exist.
+
+    Returns a dict {available, via, state, detail} for the notification.
+    """
+    link_kind = alert.get("link_kind")
+    link_id = alert.get("link_id")
+
+    if link_kind == LINK_KIND_CABINET:
+        return {"available": False, "via": None, "state": "none",
+                "detail": "single-homed field cabinet — no alternate path"}
+    if link_kind != LINK_KIND_BACKBONE:
+        return {"available": None, "via": None, "state": "unknown", "detail": ""}
+
+    prom_url = os.environ.get("PROM_URL")
+    other_down = []
+    if prom_url:
+        rows = prom_query(
+            prom_url,
+            '(srl_nokia_interfaces_interface_oper_state == 2)'
+            ' * on(node, interface) group_left(link_id)'
+            ' link_membership_info{link_kind="%s"}' % LINK_KIND_BACKBONE,
+        )
+        other_down = sorted({
+            r.get("metric", {}).get("link_id")
+            for r in rows
+            if r.get("metric", {}).get("link_id") not in (None, link_id)
+        })
+    if other_down:
+        return {"available": True, "via": "corridor ring", "state": "degraded",
+                "detail": "ring also degraded at: " + ", ".join(other_down)}
+    return {"available": True, "via": "corridor ring", "state": "up",
+            "detail": "corridor ring intact"}
 
 
 _nb = Client()
@@ -63,19 +110,31 @@ def main():
     # a list value as repeated query params via urlencode(doseq=True).
     affected_devices = sorted({affected_device, *(d["device"] for d in downstream)})
     agencies = set()
+    roles = {}
     if affected_devices:
         dev_resp = get("/api/dcim/devices/", name=affected_devices, limit=200)
         for d in dev_resp.get("results", []):
+            # Modeled role from the source of truth — drives severity below.
+            roles[d.get("name")] = (d.get("role") or {}).get("slug")
             # Agencies are device tags (a cabinet serves several); total them.
             for tag in d.get("tags", []):
                 if tag.get("slug"):
                     agencies.add(tag["slug"])
 
+    def is_field_cabinet(dev):
+        # Decide by the MODELED NetBox role, not the device name. Fall back to
+        # the name prefix only when the SoT returned no role (degraded
+        # enrichment, e.g. NetBox unreachable) so severity still escalates.
+        role = roles.get(dev)
+        if role:
+            return role == ROLE_FIELD_CABINET
+        return dev.startswith(CABINET_NAME_PREFIX)
+
     alert = enrichment.get("alert", {}) or {}
     alert_severity = alert.get("severity", "")
 
     severity_class = SEVERITY_LOW
-    if any(d["device"].startswith(CABINET_NAME_PREFIX) for d in downstream):
+    if any(is_field_cabinet(d["device"]) for d in downstream):
         severity_class = SEVERITY_HIGH
     elif len(downstream) > 1:
         severity_class = SEVERITY_MEDIUM
@@ -90,6 +149,7 @@ def main():
         "downstream_devices": downstream,
         "affected_agencies": sorted(a for a in agencies if a),
         "severity_class": severity_class,
+        "backup_path": compute_backup_path(alert),
     }
     json.dump(impact, sys.stdout)
 

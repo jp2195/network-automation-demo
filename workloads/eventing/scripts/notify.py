@@ -96,6 +96,17 @@ def _firing_blocks(enrichment, impact):
         downstream = ", ".join(d["device"] for d in impact["downstream_devices"])
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text":
             f"*Downstream impact*\n{downstream}"}})
+    backup = impact.get("backup_path") or {}
+    if backup.get("state") and backup.get("state") != "unknown":
+        if backup.get("available"):
+            tag = "UP" if backup.get("state") == "up" else "DEGRADED"
+            text = f"modeled backup via {backup.get('via') or 'alternate path'} ({tag})"
+            if tag == "DEGRADED" and backup.get("detail"):
+                text += f" — {backup['detail']}"
+        else:
+            text = f"none — {backup.get('detail', 'no alternate path')}"
+        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text":
+            f"*Backup path*\n{text}"}})
     if impact.get("affected_agencies"):
         agencies = ", ".join(impact["affected_agencies"])
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text":
