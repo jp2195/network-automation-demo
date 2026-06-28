@@ -240,6 +240,11 @@ for ((run=1; run<=N; run++)); do
       [[ -z "$w" ]] && continue
       ph=$(kubectl -n argo-events get "$w" -o jsonpath='{.status.phase}' 2>/dev/null || true)
       if [[ "$ph" == "Succeeded" ]]; then
+        # Match THIS incident's workflow by node — the alert parameter carries
+        # the labels. Without this, a concurrently-running lane's workflow (e.g.
+        # gNMI while measuring SNMP) gets grabbed, corrupting notify_s/enrich_s.
+        ap=$(kubectl -n argo-events get "$w" -o jsonpath='{.spec.arguments.parameters[?(@.name=="alert")].value}' 2>/dev/null)
+        echo "$ap" | grep -q "\"node\":\"$NODE\"" || continue
         WF=$w
         WF_START_ISO=$(kubectl -n argo-events get "$w" -o jsonpath='{.status.startedAt}' 2>/dev/null)
         WF_FIN_ISO=$(kubectl   -n argo-events get "$w" -o jsonpath='{.status.finishedAt}' 2>/dev/null)
