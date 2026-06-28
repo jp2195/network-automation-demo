@@ -128,6 +128,9 @@ spec:
                 # be pinned at config-time — the Secret is the source of truth.
                 name: netbox-api
                 key: token
+          # Backup-path derivation cross-checks the ring's LIVE oper-state.
+          - name: PROM_URL
+            value: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
         volumeMounts:
           - name: scripts
             mountPath: /scripts
