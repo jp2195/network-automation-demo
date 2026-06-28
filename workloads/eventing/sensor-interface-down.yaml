@@ -18,6 +18,7 @@ spec:
               - SRLInterfaceFlapping
               - SRLOpticalDegrading
               - SRLInterfaceErrorsHigh
+              - CabinetInterfaceOperDown
               - ConfigDrift
   triggers:
     - template:

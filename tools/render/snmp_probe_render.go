@@ -19,7 +19,11 @@ func WriteSNMPProbe(w io.Writer, s *Spec) error {
 	p("    release: kps")
 	p("spec:")
 	p("  jobName: snmp-frr-cabinets")
-	p("  interval: 30s")
+	// 300s (5 min) is the representative enterprise SNMP polling cadence for
+	// up/down on critical gear (best practice is 3-5 min; generic NMS default is
+	// 5 min). 30s would be unrealistically aggressive — a "legacy" lane that
+	// polls every 30s isn't legacy. This is the conservative, defensible baseline.
+	p("  interval: 300s")
 	p("  scrapeTimeout: 25s")
 	p("  module: if_mib")
 	p("  prober:")
