@@ -118,6 +118,10 @@ spec:
                 name: slack-bot
                 key: channel_id
                 optional: true
+          # Lets the analyst thread its reply under the incident card the
+          # enriched-notify Workflow posted (ts stored at incident:<fingerprint>).
+          - name: VALKEY_URL
+            value: valkey://valkey.valkey.svc.cluster.local:6379/2
         resources:
           requests: {cpu: 100m, memory: 192Mi}
           limits:   {memory: 512Mi}

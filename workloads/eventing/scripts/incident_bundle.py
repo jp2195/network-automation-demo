@@ -51,7 +51,6 @@ def build_summary():
     lines = [f"🔍 *Forensic snapshot* — `{AFFECTED}` · {LINK_ID}"]
     if REPORT_DOM and REPORT_DOM.strip():
         lines.append("```\n" + REPORT_DOM.strip() + "\n```")
-    lines.append("_Full interface-state bundle attached below._")
     return "\n".join(lines)
 
 
@@ -117,16 +116,20 @@ def post_slack(summary, full, channel=None, thread_ts=None):
         client.files_upload_v2(
             channel=target_channel, thread_ts=thread_ts,
             filename=f"incident-bundle-{AFFECTED}.md", title="Forensic bundle",
-            content=full, initial_comment=summary)
+            content=full,
+            initial_comment=summary + "\n_Full interface-state bundle attached._")
         print(f"posted incident bundle (file) thread_ts={thread_ts}", flush=True)
         return True
     except Exception as e:
         # Falls here if the bot lacks files:write — degrade to the concise
-        # summary inline. The raw JSON still never hits the channel.
+        # summary inline. The raw JSON still never hits the channel; point to
+        # the workflow logs rather than promising an attachment that isn't there.
         print(f"file upload unavailable ({e}); posting summary only",
               file=sys.stderr, flush=True)
 
-    kwargs = {"channel": target_channel, "text": summary, "mrkdwn": True}
+    kwargs = {"channel": target_channel,
+              "text": summary + "\n_Full interface-state in the workflow logs._",
+              "mrkdwn": True}
     if thread_ts:
         kwargs["thread_ts"] = thread_ts
     resp = client.chat_postMessage(**kwargs)

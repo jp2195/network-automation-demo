@@ -22,7 +22,7 @@ from constants import (
 )
 
 
-def compute_backup_path(alert):
+def compute_backup_path(alert, affected_role=None):
     """Derive the modeled backup path from the ring topology + LIVE oper-state.
 
     The contribution here is that the alternate path is not asserted — it is
@@ -40,7 +40,13 @@ def compute_backup_path(alert):
     link_kind = alert.get("link_kind")
     link_id = alert.get("link_id")
 
-    if link_kind == LINK_KIND_CABINET:
+    # A single-homed field cabinet has no alternate path — say so explicitly;
+    # the fragile legacy edge is the point. The SNMP cabinet alert carries no
+    # link_kind/link_id labels, so also key off the modeled affected role and
+    # the cabinet-specific alertname.
+    if (link_kind == LINK_KIND_CABINET
+            or affected_role == ROLE_FIELD_CABINET
+            or alert.get("name") == "CabinetInterfaceOperDown"):
         return {"available": False, "via": None, "state": "none",
                 "detail": "single-homed field cabinet — no alternate path"}
     if link_kind != LINK_KIND_BACKBONE:
@@ -134,7 +140,10 @@ def main():
     alert_severity = alert.get("severity", "")
 
     severity_class = SEVERITY_LOW
-    if any(is_field_cabinet(d["device"]) for d in downstream):
+    # A field cabinet is high-impact whether it's the AFFECTED device (its only
+    # uplink failed → the cabinet and its agencies go dark) or DOWNSTREAM of the
+    # failure. Either way the legacy edge loses connectivity.
+    if is_field_cabinet(affected_device) or any(is_field_cabinet(d["device"]) for d in downstream):
         severity_class = SEVERITY_HIGH
     elif len(downstream) > 1:
         severity_class = SEVERITY_MEDIUM
@@ -149,7 +158,7 @@ def main():
         "downstream_devices": downstream,
         "affected_agencies": sorted(a for a in agencies if a),
         "severity_class": severity_class,
-        "backup_path": compute_backup_path(alert),
+        "backup_path": compute_backup_path(alert, roles.get(affected_device)),
     }
     json.dump(impact, sys.stdout)
 
