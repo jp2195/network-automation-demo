@@ -23,7 +23,10 @@ REPORT_RING_B   = env("REPORT_RING_B", "")
 REPORT_DOM      = env("REPORT_DOM", "")
 
 
-def build_text():
+def build_full():
+    """The complete bundle — DOM snapshot + per-node interface-state JSON.
+    This is large (raw gNMI dumps), so it rides as an ATTACHED FILE, never
+    inline in the channel."""
     parts = [
         f"# Incident forensic bundle — {AFFECTED} / {LINK_ID}",
         f"_collected at {datetime.now(timezone.utc).isoformat(timespec='seconds')}_",
@@ -37,6 +40,19 @@ def build_text():
             parts.append("")
             parts.append(r)
     return "\n".join(parts)
+
+
+def build_summary():
+    """The concise, skimmable thread reply. The optical DOM snapshot is small
+    and useful at a glance, so it goes inline wrapped in a code fence (Slack
+    renders the pipe table as aligned monospace; it does NOT render markdown
+    tables). The raw per-node interface-state JSON is deliberately left out of
+    the channel — it lives in the attached file."""
+    lines = [f"🔍 *Forensic snapshot* — `{AFFECTED}` · {LINK_ID}"]
+    if REPORT_DOM and REPORT_DOM.strip():
+        lines.append("```\n" + REPORT_DOM.strip() + "\n```")
+    lines.append("_Full interface-state bundle attached below._")
+    return "\n".join(lines)
 
 
 def slack_unconfigured():
@@ -86,7 +102,7 @@ def lookup_thread_ts():
     return None, None
 
 
-def post_slack(text, channel=None, thread_ts=None):
+def post_slack(summary, full, channel=None, thread_ts=None):
     try:
         from slack_sdk import WebClient
     except ImportError:
@@ -94,27 +110,40 @@ def post_slack(text, channel=None, thread_ts=None):
         return False
     client = WebClient(token=os.environ["SLACK_BOT_TOKEN"])
     target_channel = channel or os.environ["SLACK_CHANNEL_ID"]
-    # Slack's max message size is 40000 chars; trim if needed.
-    payload = text if len(text) < 38000 else text[:38000] + "\n…(truncated)"
-    kwargs = {"channel": target_channel, "text": payload, "mrkdwn": True}
+
+    # Preferred: a tidy summary as the thread reply, with the full raw bundle
+    # attached as a file (one click / download, not an inline JSON wall).
+    try:
+        client.files_upload_v2(
+            channel=target_channel, thread_ts=thread_ts,
+            filename=f"incident-bundle-{AFFECTED}.md", title="Forensic bundle",
+            content=full, initial_comment=summary)
+        print(f"posted incident bundle (file) thread_ts={thread_ts}", flush=True)
+        return True
+    except Exception as e:
+        # Falls here if the bot lacks files:write — degrade to the concise
+        # summary inline. The raw JSON still never hits the channel.
+        print(f"file upload unavailable ({e}); posting summary only",
+              file=sys.stderr, flush=True)
+
+    kwargs = {"channel": target_channel, "text": summary, "mrkdwn": True}
     if thread_ts:
         kwargs["thread_ts"] = thread_ts
     resp = client.chat_postMessage(**kwargs)
-    print(f"posted incident bundle ts={resp['ts']} thread_ts={thread_ts}", flush=True)
+    print(f"posted incident bundle (summary) ts={resp['ts']} thread_ts={thread_ts}", flush=True)
     return True
 
 
 def main():
-    text = build_text()
+    summary, full = build_summary(), build_full()
     if slack_unconfigured():
         print("slack not configured — printing bundle to stderr",
               file=sys.stderr, flush=True)
-        print(text, file=sys.stderr)
+        print(full, file=sys.stderr)
         return
     channel, thread_ts = lookup_thread_ts()
-    posted = post_slack(text, channel=channel, thread_ts=thread_ts)
-    if not posted:
-        print(text, file=sys.stderr)
+    if not post_slack(summary, full, channel=channel, thread_ts=thread_ts):
+        print(full, file=sys.stderr)
 
 
 if __name__ == "__main__":
