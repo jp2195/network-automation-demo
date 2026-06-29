@@ -153,9 +153,29 @@ def render_marker_line(analysis, fingerprint):
     return f"{AI_ANALYSIS_MARKER} {json.dumps(payload, separators=(',', ':'))}"
 
 
-def _maybe_slack(analysis, alert):
+def _incident_thread(fingerprint):
+    """The enriched-notify Workflow stores its incident card's {channel, ts}
+    at incident:<fingerprint> in Valkey. Return it so the AI analysis threads
+    UNDER the card instead of posting as a separate top-level message."""
+    url = os.environ.get("VALKEY_URL")
+    if not (url and fingerprint):
+        return None, None
+    try:
+        import valkey
+        rec = valkey.from_url(url, decode_responses=True).get(f"incident:{fingerprint}")
+        if rec:
+            rec = json.loads(rec)
+            ts = rec.get("ts")
+            if ts and ts != "unconfigured.000000":
+                return rec.get("channel"), ts
+    except Exception as e:
+        print(f"thread lookup failed (posting top-level): {e}", file=sys.stderr)
+    return None, None
+
+
+def _maybe_slack(analysis, alert, channel=None, thread_ts=None):
     token = os.environ.get("SLACK_BOT_TOKEN", "")
-    channel = os.environ.get("SLACK_CHANNEL_ID", "")
+    channel = channel or os.environ.get("SLACK_CHANNEL_ID", "")
     text = (f":robot_face: *AI analyst* — "
             f"{alert.get('labels', {}).get('alertname', 'alert')} "
             f"(confidence {analysis.confidence:.0%})\n"
@@ -168,7 +188,10 @@ def _maybe_slack(analysis, alert):
         return
     try:
         from slack_sdk import WebClient
-        WebClient(token=token).chat_postMessage(channel=channel, text=text)
+        kwargs = {"channel": channel, "text": text}
+        if thread_ts:
+            kwargs["thread_ts"] = thread_ts
+        WebClient(token=token).chat_postMessage(**kwargs)
     except Exception as e:
         print(f"slack post failed (non-fatal): {e}", file=sys.stderr)
 
@@ -223,7 +246,10 @@ def main():
             raise
 
     print(render_marker_line(result.output, fingerprint))
-    _maybe_slack(result.output, alert)
+    # Thread under the incident card if one exists (keyed by the RAW
+    # fingerprint, matching notify.py's ledger key).
+    ch, ts = _incident_thread(alert.get("fingerprint"))
+    _maybe_slack(result.output, alert, channel=ch, thread_ts=ts)
 
     # Best-effort: render the analysis into this incident's dashboard
     # (if one exists). Decoupled — the marker line above is the durable
