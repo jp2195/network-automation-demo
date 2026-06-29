@@ -3,7 +3,7 @@
         scenario-gray-failure scenario-gray-failure-end \
         maintenance-start maintenance-end maintenance-list \
         remediation-mode remediation-approve remediation-status \
-        drift-check postmortem measure ready help
+        drift-check postmortem measure ready demo-cut-fiber demo-restore-fiber help
 
 CLUSTER_NAME ?= atlas-demo
 TOPO_NS      ?= clabernetes
@@ -22,6 +22,8 @@ help:
 	@echo "  demo-restore         Re-enable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-cut-cabinet     Carrier-loss on an FRR cabinet uplink (NODE=, INTERFACE= required) — fires CabinetInterfaceOperDown"
 	@echo "  demo-restore-cabinet Restore carrier on an FRR cabinet uplink (NODE=, INTERFACE= required)"
+	@echo "  demo-cut-fiber       Real fiber cut on an SR Linux link — carrier loss, admin stays up (NODE=, INTERFACE=)"
+	@echo "  demo-restore-fiber   Restore a fiber-cut SR Linux link (NODE=, INTERFACE= required)"
 	@echo "  scenario-list        List the canned demo outage scenarios"
 	@echo "  scenario-hurricane   Two ring segments fail in series, ~2.5 min"
 	@echo "  scenario-backhoe     One random backbone strand cut for ~2 min"
@@ -208,6 +210,29 @@ demo-restore-cabinet: _require_cut_vars
 	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
 	  echo "==> Restore carrier on $(NODE) $(INTERFACE) ($$POD): up pod-side veth $(NODE)-$(INTERFACE)"; \
 	  kubectl -n $(TOPO_NS) exec $$POD -- ip link set $(NODE)-$(INTERFACE) up
+
+# --- SR Linux fiber cut (carrier loss) vs the admin-disable demo-cut ------
+# demo-cut sets admin-state=disable — a maintenance shutdown the AI analyst
+# correctly reads as a deliberate config action. For a REAL fault, down the
+# pod-side veth (<node>-e1-<x>, e.g. hub-e-e1-2 for ethernet-1/2): the SR Linux
+# interface goes oper-down while admin-state stays ENABLE, with a physical
+# oper-down-reason — a fiber-cut/carrier-loss the analyst diagnoses as a
+# hardware/link failure. Leave it cut until the analysis runs (it reasons over
+# live state). Same SRLInterfaceOperDown alert either way.
+
+demo-cut-fiber: _require_cut_vars
+	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
+	  VETH=$(NODE)-$$(echo $(INTERFACE) | sed 's#ethernet-#e#; s#/#-#'); \
+	  echo "==> Fiber cut (carrier loss) on $(NODE) $(INTERFACE) ($$POD): down pod veth $$VETH (admin-state stays up)"; \
+	  kubectl -n $(TOPO_NS) exec $$POD -- ip link set $$VETH down
+
+demo-restore-fiber: _require_cut_vars
+	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
+	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
+	  VETH=$(NODE)-$$(echo $(INTERFACE) | sed 's#ethernet-#e#; s#/#-#'); \
+	  echo "==> Restore fiber on $(NODE) $(INTERFACE) ($$POD): up pod veth $$VETH"; \
+	  kubectl -n $(TOPO_NS) exec $$POD -- ip link set $$VETH up
 
 # --- Readiness gate -------------------------------------------------------
 # Functional readiness (telemetry flowing, eventing wired, cabinets polling),
