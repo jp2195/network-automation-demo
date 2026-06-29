@@ -155,6 +155,17 @@ def query_netbox(path: str, params: dict | None = None) -> dict:
 def gnmi_get(node: str, path: str) -> dict:
     """gNMI Get against a live SR Linux node (names tmc-* or hub-*).
 
+    SR Linux uses its NATIVE YANG model, not OpenConfig — there is NO
+    `/state/` container. Interface state leaves live directly under the
+    interface: admin-state, oper-state, oper-down-reason, last-change, mtu.
+    So query the interface subtree and read those leaves directly:
+    gnmi_get("hub-e", "/interface[name=ethernet-1/2]") returns admin-state
+    and oper-state and oper-down-reason — the fields that distinguish an
+    administrative shutdown (admin-state=disable) from a physical/hardware
+    failure. Do NOT use OpenConfig-style paths like
+    "/interface[name=ethernet-1/2]/state/admin-status" — they fail with
+    "Path not valid - unknown element 'state'".
+
     Examples: gnmi_get("hub-e", "/interface[name=ethernet-1/1]"),
     gnmi_get("hub-e", "/network-instance[name=default]/protocols/"
     "srl_nokia-isis:isis/instance[name=atlas]") for IS-IS adjacencies.
