@@ -5,14 +5,15 @@ Inputs (env):
   ENRICHMENT_JSON, IMPACT_JSON  — outputs from prior WFT steps
   SLACK_BOT_TOKEN, SLACK_CHANNEL_ID  — bot creds (xoxb-...)
   VALKEY_URL  — incident ledger, e.g. valkey://valkey.valkey.svc.cluster.local:6379/2
+  GRAFANA_URL — base URL for the per-incident dashboard link (optional)
 
 Behavior:
-  - On firing: chat.postMessage with Block Kit, persist
-    {ts, channel, first_seen, impact} in Valkey under
+  - On firing: chat.postMessage a severity-colored Block Kit attachment,
+    persist {ts, channel, first_seen, impact} in Valkey under
     incident:<fingerprint> with 24h TTL.
   - On resolved: load ledger, chat.update the original message in place
-    (✅ header + downtime), then chat.postMessage a thread reply with the
-    resolution summary.
+    (green ✅ header + downtime), then chat.postMessage a thread reply with
+    the resolution summary.
   - Always: writes the alert status to /tmp/argo/status (Argo output
     parameter gating the postmortem step on the resolved path).
 
@@ -24,6 +25,7 @@ for how to opt into real Slack posting.
 
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -50,95 +52,148 @@ def _valkey_retry(op, attempts=3):
             time.sleep(0.5 * i)
 
 
+# --- Presentation -----------------------------------------------------------
+# The message reads top-down as an operator triages: a severity color bar, a
+# one-line verdict that fuses severity with the modeled backup state ("is
+# traffic still protected?"), then identity, impact, and provenance demoted to
+# muted context. The raw alertname/link_id/fingerprint stay in the footer for
+# anyone who keys on them, but the headline speaks in plain operator terms.
+
+GRAFANA_URL = os.environ.get("GRAFANA_URL", "http://grafana.127-0-0-1.nip.io:8080")
+
+# severity_class -> (emoji, attachment color bar, label)
+_SEV_STYLE = {
+    SEVERITY_HIGH:    ("🔴", "#D7263D", "High"),
+    SEVERITY_MEDIUM:  ("🟠", "#E8912D", "Medium"),
+    SEVERITY_WARNING: ("🟡", "#ECB22E", "Warning"),
+    SEVERITY_LOW:     ("🔵", "#2D7FF9", "Low"),
+}
+_RESOLVED_COLOR = "#2EB67D"
+
+# Raw Prometheus alertnames -> human, operator-facing titles.
+_ALERT_TITLES = {
+    "SRLInterfaceOperDown":     "Interface down",
+    "SRLInterfaceFlapping":     "Interface flapping",
+    "SRLOpticalDegrading":      "Optical degrading",
+    "SRLInterfaceErrorsHigh":   "Errors climbing",
+    "CabinetInterfaceOperDown": "Cabinet uplink down",
+    "ConfigDrift":              "Config drift",
+}
+_ACRONYMS = {"adot": "ADOT", "dot": "DOT", "ta": "TA", "tmc": "TMC", "noc": "NOC"}
+
+
+def _alert_title(name):
+    return _ALERT_TITLES.get(name, name or "Alert")
+
+
+def _pretty_agency(slug):
+    return " ".join(_ACRONYMS.get(w, w.capitalize()) for w in slug.split("-"))
+
+
+def _short_time(iso):
+    t = parse_iso(iso)
+    return t.strftime("%H:%M UTC") if t else ""
+
+
+def _fp_uid(fingerprint):
+    return re.sub(r"[^A-Za-z0-9]", "", fingerprint or "").lower()
+
+
+def _backup_line(backup):
+    """One-line, operator-facing verdict on the modeled backup path."""
+    if not backup or backup.get("state") in (None, "unknown"):
+        return None
+    if backup.get("available"):
+        if backup.get("state") == "up":
+            return "✅ traffic protected by corridor ring"
+        return f"⚠️ corridor ring degraded — {backup.get('detail', '')}"
+    return "⛔ no protected path — single-homed cabinet"
+
+
+def _identity_line(enrichment):
+    a = enrichment.get("alert", {})
+    dev = enrichment.get("device", {})
+    ifc = enrichment.get("interface", {})
+    cable = enrichment.get("cable") or {}
+    cf = cable.get("custom_fields") or {}
+    corridor = a.get("corridor") or (cable.get("site_group") or {}).get("slug") \
+        or cf.get("corridor") or "unknown"
+    line = f"`{ifc.get('name')}`   ·   {dev.get('site')}   ·   {corridor}"
+    if cable.get("label"):
+        provider = (cable.get("owner") or {}).get("name") or cf.get("provider") or "unknown"
+        sla = cf.get("restoration_sla_hours", "?")
+        line += f"   ·   `{cable.get('label')}` ({provider}, SLA {sla}h)"
+    return line
+
+
+def _footer_line(enrichment, when_label, when_iso):
+    a = enrichment.get("alert", {})
+    uid = _fp_uid(a.get("fingerprint"))
+    parts = [a.get("name"), a.get("link_id"),
+             f"{when_label} {_short_time(when_iso)}".strip(),
+             f"`{uid[:8]}`" if uid else None,
+             f"<{GRAFANA_URL}/d/incident-{uid}|Open in Grafana ↗>" if uid else None]
+    return "   ·   ".join(p for p in parts if p)
+
 
 def _firing_blocks(enrichment, impact):
-    alert = enrichment.get("alert", {})
-    device = enrichment.get("device", {})
-    iface = enrichment.get("interface", {})
-    cable = enrichment.get("cable", {})
-    cf = cable.get("custom_fields", {}) if cable else {}
+    a = enrichment.get("alert", {})
+    dev = enrichment.get("device", {})
     severity = impact.get("severity_class", SEVERITY_LOW)
-    emoji = {
-        SEVERITY_HIGH:    "🚨",
-        SEVERITY_MEDIUM:  "⚠️",
-        SEVERITY_WARNING: "⚠️",
-        SEVERITY_LOW:     "ℹ️",
-    }.get(severity, "ℹ️")
+    emoji, color, sev_label = _SEV_STYLE.get(severity, _SEV_STYLE[SEVERITY_LOW])
 
-    # Provider lives on cable.owner (NetBox 4.x owner model). Corridor flows
-    # through the alert's relabeled `corridor` label, lifted by the
-    # link_membership_info join — fall back to cable.site_group.slug and
-    # cable.custom_fields.corridor for back-compat with seed data that still
-    # carries it there.
-    provider = (cable.get("owner") or {}).get("name") or cf.get("provider") or "unknown provider"
-    corridor = (alert.get("corridor")
-                or (cable.get("site_group") or {}).get("slug")
-                or cf.get("corridor")
-                or "unknown")
-    sla = cf.get("restoration_sla_hours", "?")
+    verdict = f"*{sev_label} severity*"
+    backup = _backup_line(impact.get("backup_path"))
+    if backup:
+        verdict += f"   ·   {backup}"
 
     blocks = [
-        {"type": "header", "text": {
-            "type": "plain_text",
-            "text": f"{emoji} {alert.get('name', 'Alert')} on {device.get('name')}"}},
-        {"type": "section", "fields": [
-            {"type": "mrkdwn", "text": f"*Device*\n{device.get('name')}"},
-            {"type": "mrkdwn", "text": f"*Interface*\n{iface.get('name')}"},
-            {"type": "mrkdwn", "text": f"*Site*\n{device.get('site')}"},
-            {"type": "mrkdwn", "text": f"*Severity*\n{severity}"},
-        ]},
+        {"type": "header", "text": {"type": "plain_text", "emoji": True,
+            "text": f"{emoji} {_alert_title(a.get('name'))} · {dev.get('name')}"}},
+        {"type": "section", "text": {"type": "mrkdwn", "text": verdict}},
+        {"type": "context", "elements": [
+            {"type": "mrkdwn", "text": _identity_line(enrichment)}]},
     ]
-    if cable:
-        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text":
-            f"*Cable* `{cable.get('label')}` "
-            f"({provider}, corridor {corridor}, SLA {sla}h)"}})
-    if impact.get("downstream_devices"):
-        downstream = ", ".join(d["device"] for d in impact["downstream_devices"])
-        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text":
-            f"*Downstream impact*\n{downstream}"}})
-    backup = impact.get("backup_path") or {}
-    if backup.get("state") and backup.get("state") != "unknown":
-        if backup.get("available"):
-            tag = "UP" if backup.get("state") == "up" else "DEGRADED"
-            text = f"modeled backup via {backup.get('via') or 'alternate path'} ({tag})"
-            if tag == "DEGRADED" and backup.get("detail"):
-                text += f" — {backup['detail']}"
-        else:
-            text = f"none — {backup.get('detail', 'no alternate path')}"
-        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text":
-            f"*Backup path*\n{text}"}})
+    fields = []
+    down = impact.get("downstream_devices") or []
+    if down:
+        fields.append({"type": "mrkdwn",
+            "text": f"*Downstream ({len(down)})*\n" + ", ".join(d["device"] for d in down)})
     if impact.get("affected_agencies"):
-        agencies = ", ".join(impact["affected_agencies"])
-        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text":
-            f"*Agencies affected*\n{agencies}"}})
+        fields.append({"type": "mrkdwn", "text": "*Agencies*\n"
+            + ", ".join(_pretty_agency(x) for x in impact["affected_agencies"])})
+    if fields:
+        blocks.append({"type": "section", "fields": fields})
     if enrichment.get("degraded"):
-        blocks.append({"type": "context", "elements": [
-            {"type": "mrkdwn", "text":
-             "Partial enrichment: " + "; ".join(enrichment["degraded"])}]})
-    return blocks
+        blocks.append({"type": "context", "elements": [{"type": "mrkdwn",
+            "text": "⚠ partial enrichment: " + "; ".join(enrichment["degraded"])}]})
+    blocks.append({"type": "context", "elements": [
+        {"type": "mrkdwn", "text": _footer_line(enrichment, "detected", a.get("started"))}]})
+    return color, blocks
 
 
 def _resolved_blocks(enrichment, ledger, downtime_str):
-    alert = enrichment.get("alert", {})
-    device = enrichment.get("device", {})
-    iface = enrichment.get("interface", {})
+    a = enrichment.get("alert", {})
+    dev = enrichment.get("device", {})
     impact = ledger.get("impact", {})
-    severity = impact.get("severity_class", SEVERITY_LOW)
+    backup = impact.get("backup_path") or {}
+    held = "   ·   ✅ corridor ring held throughout" if backup.get("state") == "up" else ""
 
-    return [
-        {"type": "header", "text": {
-            "type": "plain_text",
-            "text": f"✅ {alert.get('name', 'Alert')} on {device.get('name')} — RESOLVED"}},
-        {"type": "section", "fields": [
-            {"type": "mrkdwn", "text": f"*Device*\n{device.get('name')}"},
-            {"type": "mrkdwn", "text": f"*Interface*\n{iface.get('name')}"},
-            {"type": "mrkdwn", "text": f"*Site*\n{device.get('site')}"},
-            {"type": "mrkdwn", "text": f"*Severity (was)*\n{severity}"},
-        ]},
+    blocks = [
+        {"type": "header", "text": {"type": "plain_text", "emoji": True,
+            "text": f"✅ {_alert_title(a.get('name'))} · {dev.get('name')} — resolved"}},
+        {"type": "section", "text": {"type": "mrkdwn",
+            "text": f"Recovered after *{downtime_str}*" + held}},
         {"type": "context", "elements": [
-            {"type": "mrkdwn", "text": f"Downtime: *{downtime_str}*"},
-        ]},
+            {"type": "mrkdwn", "text": _identity_line(enrichment)}]},
     ]
+    down = impact.get("downstream_devices") or []
+    if down:
+        blocks.append({"type": "section", "text": {"type": "mrkdwn",
+            "text": "*Restored*\n" + ", ".join(d["device"] for d in down)}})
+    blocks.append({"type": "context", "elements": [
+        {"type": "mrkdwn", "text": _footer_line(enrichment, "resolved", a.get("ended"))}]})
+    return _RESOLVED_COLOR, blocks
 
 
 def _thread_summary(downtime_str, ledger):
@@ -149,7 +204,7 @@ def _thread_summary(downtime_str, ledger):
     if downstream:
         parts.append(f"Downstream restored: {', '.join(downstream)}.")
     if agencies:
-        parts.append(f"Agencies cleared: {', '.join(agencies)}.")
+        parts.append(f"Agencies cleared: {', '.join(_pretty_agency(a) for a in agencies)}.")
     return " ".join(parts)
 
 
@@ -159,6 +214,8 @@ def main():
     alert = enrichment.get("alert", {})
     fingerprint = alert.get("fingerprint")
     status = alert.get("status", "firing")
+    dev_name = enrichment.get("device", {}).get("name")
+    headline = f"{_alert_title(alert.get('name'))} · {dev_name}"
 
     # The WFT maps /tmp/argo/status to an output parameter that gates the
     # postmortem step (when: == resolved). A write failure degrades to the
@@ -185,7 +242,8 @@ def main():
     ledger_key = f"incident:{fingerprint}"
 
     if status == "firing":
-        blocks = _firing_blocks(enrichment, impact)
+        color, blocks = _firing_blocks(enrichment, impact)
+        attachments = [{"color": color, "blocks": blocks}]
         record = {
             "channel": channel,
             "first_seen": alert.get("started"),
@@ -194,15 +252,12 @@ def main():
 
         if unconfigured:
             print("=== firing (slack unconfigured) ===", file=sys.stderr)
-            print(json.dumps({"channel": channel, "blocks": blocks}, indent=2),
+            print(json.dumps({"channel": channel, "attachments": attachments}, indent=2),
                   file=sys.stderr)
             record["ts"] = "unconfigured.000000"
         else:
             resp = slack.chat_postMessage(
-                channel=channel,
-                text=f"{alert.get('name')} on {enrichment.get('device', {}).get('name')}",
-                blocks=blocks,
-            )
+                channel=channel, text=headline, attachments=attachments)
             record["ts"] = resp["ts"]
 
         try:
@@ -235,14 +290,15 @@ def main():
         ended = datetime.now(timezone.utc)
     downtime_secs = (ended - started).total_seconds() if started else 0
     downtime_str = humanize_seconds(downtime_secs)
-    blocks = _resolved_blocks(enrichment, ledger_record, downtime_str)
+    color, blocks = _resolved_blocks(enrichment, ledger_record, downtime_str)
+    attachments = [{"color": color, "blocks": blocks}]
     summary = _thread_summary(downtime_str, ledger_record)
 
     if unconfigured:
         print("=== resolved update (slack unconfigured) ===", file=sys.stderr)
         print(json.dumps({"channel": ledger_record["channel"],
                           "ts": ledger_record["ts"],
-                          "blocks": blocks,
+                          "attachments": attachments,
                           "thread_summary": summary}, indent=2),
               file=sys.stderr)
     else:
@@ -250,8 +306,8 @@ def main():
             slack.chat_update(
                 channel=ledger_record["channel"],
                 ts=ledger_record["ts"],
-                text=f"{alert.get('name')} on {enrichment.get('device', {}).get('name')} — RESOLVED",
-                blocks=blocks,
+                text=f"{headline} — resolved",
+                attachments=attachments,
             )
             slack.chat_postMessage(
                 channel=ledger_record["channel"],
@@ -261,8 +317,8 @@ def main():
         else:
             slack.chat_postMessage(
                 channel=channel,
-                text=f"{alert.get('name')} on {enrichment.get('device', {}).get('name')} — RESOLVED",
-                blocks=blocks,
+                text=f"{headline} — resolved",
+                attachments=attachments,
             )
 
     try:
