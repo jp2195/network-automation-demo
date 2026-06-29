@@ -7,8 +7,11 @@ spec:
   serviceAccountName: operate-workflow-sa
   entrypoint: analyze
   # Total deadline: a runaway model cannot hang the lane (iteration cap
-  # and per-tool timeouts live in analyst.py / analyst_tools.py).
-  activeDeadlineSeconds: 600
+  # and per-tool timeouts live in analyst.py / analyst_tools.py). Headroom
+  # for a larger local model (e.g. a 30B+ MLX build) whose multi-round,
+  # tool-calling inference is several minutes; hosted frontier models finish
+  # well inside this.
+  activeDeadlineSeconds: 900
   arguments:
     parameters:
       - name: alert
