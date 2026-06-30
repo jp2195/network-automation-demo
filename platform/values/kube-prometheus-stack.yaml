@@ -78,9 +78,13 @@ grafana:
   resources:
     requests:
       cpu: 50m
-      memory: 128Mi
+      memory: 256Mi
+    # 384Mi OOM-killed (exit 137) the grafana container under sustained load on
+    # the heavier dashboards (the geomap especially) — its many panels keep the
+    # backend's query/render working set above that. 768Mi clears it with room
+    # to spare; the node has ample headroom (see runbook: "Grafana OOMKilled").
     limits:
-      memory: 384Mi
+      memory: 768Mi
   sidecar:
     dashboards:
       enabled: true

@@ -190,6 +190,26 @@ kubectl config use-context k3d-atlas-demo
 k3d cluster list                       # atlas-demo should still be 1/1 servers, 2/2 agents
 ```
 
+### "Grafana goes `no available server` under load (OOMKilled)"
+
+Distinct from the wrong-context case above: if Grafana was up and *then* drops to
+Traefik's `no available server` mid-session — especially while the geomap
+auto-refreshes — the container was OOM-killed and Traefik has no backend until it
+restarts. Confirm:
+
+```bash
+kubectl get pod -n monitoring -l app.kubernetes.io/name=grafana \
+  -o jsonpath='{.items[0].status.containerStatuses[?(@.name=="grafana")].lastState.terminated.reason}{"\n"}'
+# OOMKilled  (exit code 137)
+```
+
+The default chart value (384Mi) is too low once the heavier dashboards run; the
+geomap's many panels push the backend's working set past it. The fix is in the
+**source of truth**, not a live patch — ArgoCD self-heals `kube-prometheus-stack`
+and reverts any `kubectl set resources` within seconds. Raise the limit in
+`platform/values/kube-prometheus-stack.yaml` (now 768Mi) and let ArgoCD sync. The
+node has ample memory headroom, so the bump is free.
+
 ### "Grafana login lands on 'Update your password'"
 
 Grafana forces a password change off the default admin creds. It's `admin` /
