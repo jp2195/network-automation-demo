@@ -129,9 +129,9 @@ spec:
           - -a
           - "@@CLUSTER@@-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
           - -u
-          - admin
+          - @@AUTOMATION_USER@@
           - -p
-          - "NokiaSrl1!"
+          - "@@AUTOMATION_PASSWORD@@"
           - --skip-verify
           - --encoding
           - json_ietf
@@ -157,9 +157,9 @@ spec:
           - -a
           - "@@CLUSTER@@-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
           - -u
-          - admin
+          - @@AUTOMATION_USER@@
           - -p
-          - "NokiaSrl1!"
+          - "@@AUTOMATION_PASSWORD@@"
           - --skip-verify
           - --encoding
           - json_ietf

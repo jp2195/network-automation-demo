@@ -32,6 +32,25 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	p("set / system logging remote-server %s facility all priority match-above informational", syslog)
 	p("")
 
+	// Named operator accounts for change attribution. A role must grant the
+	// gnmi/json-rpc/cli services explicitly — superuser alone yields a gNMI
+	// PermissionDenied ("not authorized to use service srlinux-gnmi"). With
+	// the services granted, a Set authenticated as one of these users is
+	// logged by sr_aaa_mgr / sr_mgmt_server as "committed ... by user <name>
+	// from host <ip>", which flows to Loki — so the demo can show WHO made a
+	// change (noc-ops = manual cut, svc-automation = closed-loop remediation)
+	// rather than the generic admin/root. Demo passwords (see SECRETS.md).
+	for _, u := range []struct{ user, pass string }{
+		{NocOpsUser, NocOpsPassword},
+		{AutomationUser, AutomationPassword},
+	} {
+		p("set / system aaa authorization role %s superuser true", u.user)
+		p("set / system aaa authorization role %s services [ cli gnmi json-rpc ]", u.user)
+		p("set / system aaa authentication user %s role [ %s ]", u.user, u.user)
+		p("set / system aaa authentication user %s password %s", u.user, u.pass)
+	}
+	p("")
+
 	p("set / interface lo0 admin-state enable")
 	p("set / interface lo0 subinterface 0 admin-state enable")
 	p("set / interface lo0 subinterface 0 ipv4 admin-state enable")

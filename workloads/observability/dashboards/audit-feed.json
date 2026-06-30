@@ -441,11 +441,11 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"clabernetes\"} |~ \"(?i)(commit|admin-state|interface ethernet|All changes have been committed)\"",
+          "expr": "{source_type=\"syslog\", app=\"sr_mgmt_server\"} |~ \"committed successfully by user\"",
           "refId": "A"
         }
       ],
-      "title": "Operator actions — sr_cli commits on the SR Linux fleet",
+      "title": "Change attribution — who changed what (SR Linux AAA: user · session · source)",
       "type": "logs"
     },
     {

@@ -74,6 +74,11 @@ func WriteWFTRemediation(w io.Writer, s *Spec) error {
 		"@@GNMIC_IMAGE@@", ImageGNMIC,
 		"@@CLUSTER@@", s.Metadata.Name,
 		"@@ISIS_INSTANCE@@", ISISInstance,
+		// The automated remediation authenticates as svc-automation, so its
+		// IS-IS cost-out is attributed to the automation lane (not admin) in
+		// the AAA syslog — distinguishable from a human noc-ops change.
+		"@@AUTOMATION_USER@@", AutomationUser,
+		"@@AUTOMATION_PASSWORD@@", AutomationPassword,
 	).Replace(wftRemediationTmpl)
 	_, err := fmt.Fprintf(w, "%s\n%s", renderBanner, body)
 	return err

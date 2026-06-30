@@ -9,6 +9,15 @@ CLUSTER_NAME ?= atlas-demo
 TOPO_NS      ?= clabernetes
 INOTIFY_MIN  ?= 512
 
+# demo-cut authenticates to the device as a NAMED operator (not admin/root)
+# so the change is attributed in the AAA syslog → Loki. The Set goes through
+# the gnmic pod, which already has reachability to every node's gNMI on 57400.
+TOPO_NAME    ?= atlanta
+MON_NS       ?= monitoring
+GNMI_PORT    ?= 57400
+NOC_USER     ?= noc-ops
+NOC_PASS     ?= NocOps1!
+
 help:
 	@echo "Targets:"
 	@echo "  up           Create k3d cluster + build images + bootstrap ArgoCD + apply root Application"
@@ -178,19 +187,23 @@ _require_cut_vars:
 ## that inner container — kubectl exec lands in the launcher's docker daemon,
 ## not the SR Linux / FRR process.
 
+# admin-state disable/enable as the named operator noc-ops, via a gNMI Set
+# through the gnmic pod. The device logs "committed ... by user noc-ops from
+# host <gnmic-ip>" (sr_aaa_mgr / sr_mgmt_server → Loki) — so the audit trail
+# and the AI analyst can name WHO made the change, not just that it happened.
 demo-cut: _require_cut_vars
-	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
-	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
-	  echo "==> Disabling $(INTERFACE) on $(NODE) ($$POD)"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- docker exec $(NODE) bash -c \
-	    "echo -e 'enter candidate\nset / interface $(INTERFACE) admin-state disable\ncommit now' | sr_cli"
+	@echo "==> Disabling $(INTERFACE) on $(NODE) — gNMI Set as $(NOC_USER)"; \
+	  kubectl -n $(MON_NS) exec deploy/gnmic -- /app/gnmic \
+	    -a $(TOPO_NAME)-$(NODE).$(TOPO_NS).svc.cluster.local:$(GNMI_PORT) \
+	    -u $(NOC_USER) -p '$(NOC_PASS)' --skip-verify -e json_ietf \
+	    set --update-path '/interface[name=$(INTERFACE)]/admin-state' --update-value disable
 
 demo-restore: _require_cut_vars
-	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
-	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
-	  echo "==> Enabling $(INTERFACE) on $(NODE) ($$POD)"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- docker exec $(NODE) bash -c \
-	    "echo -e 'enter candidate\nset / interface $(INTERFACE) admin-state enable\ncommit now' | sr_cli"
+	@echo "==> Enabling $(INTERFACE) on $(NODE) — gNMI Set as $(NOC_USER)"; \
+	  kubectl -n $(MON_NS) exec deploy/gnmic -- /app/gnmic \
+	    -a $(TOPO_NAME)-$(NODE).$(TOPO_NS).svc.cluster.local:$(GNMI_PORT) \
+	    -u $(NOC_USER) -p '$(NOC_PASS)' --skip-verify -e json_ietf \
+	    set --update-path '/interface[name=$(INTERFACE)]/admin-state' --update-value enable
 
 # --- FRR cabinet failure injection (legacy-edge / SNMP-driven demo lane) ---
 # Inject a real carrier loss, not an admin shutdown. CabinetInterfaceOperDown

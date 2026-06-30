@@ -61,6 +61,17 @@ const (
 	GNMICPassword = "NokiaSrl1!"
 	GNMICPort     = "57400"
 
+	// Named operator accounts, so a change is attributed to WHO made it
+	// (in the AAA syslog → Loki) instead of the generic admin/root. The
+	// manual demo-cut authenticates as NocOps; the closed-loop remediation
+	// lane authenticates as Automation — so the audit trail tells a human
+	// change apart from an automated one by user + source. Demo passwords,
+	// not real credentials (same status as GNMICPassword; see SECRETS.md).
+	NocOpsUser         = "noc-ops"
+	NocOpsPassword     = "NocOps1!"
+	AutomationUser     = "svc-automation"
+	AutomationPassword = "SvcAuto1!"
+
 	// ClabDomain is the in-cluster DNS suffix clabernetes exposes each
 	// topology node Service under (<topology>-<node>.<ClabDomain>).
 	ClabDomain = "clabernetes.svc.cluster.local"

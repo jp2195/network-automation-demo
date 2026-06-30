@@ -164,6 +164,7 @@ remediation. Remove with `kubectl -n argo-events delete secret ai-analyst`.
 | NetBox `secret_key` `"atlas-demo-not-secret-…"` | `workloads/netbox/chart-values.yaml` | Self-labelling demo string used only for Django session signing on a single-laptop cluster. |
 | Grafana admin `admin` / `admin` | `platform/values/kube-prometheus-stack.yaml` | Demo default. |
 | SR Linux gNMI password `NokiaSrl1!` | `workloads/gnmic/targets.yaml`, `workloads/eventing/wft-cut-fiber.yaml` | The publicly documented default for SR Linux containers. |
+| SR Linux operator accounts `noc-ops` / `NocOps1!` and `svc-automation` / `SvcAuto1!` | `tools/render/constants.go` (rendered into `workloads/topology/startup-configs/*.cfg` + `workloads/eventing/wft-remediation.yaml`) | Named accounts so a change is attributed to who made it (manual cut = `noc-ops`, auto-remediation = `svc-automation`) in the AAA syslog. Demo passwords, same status as the gNMI default — not real credentials. |
 
 None of these should be used in any environment that anyone other than
 you can reach.
