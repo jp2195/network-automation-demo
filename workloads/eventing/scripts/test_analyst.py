@@ -13,6 +13,7 @@ import contextlib
 import inspect
 import io
 import json
+import time
 import unittest
 from unittest import mock
 
@@ -97,6 +98,38 @@ class TestToolAllowlists(unittest.TestCase):
                 analyst_tools.query_prometheus_range("up{job=\"a\"}[5m]", 30)
         self.assertEqual(pq.call_args[0][1], 'up{job="a"}')
         analyst_tools._seen_calls.clear()
+
+    def test_query_loki_around_centers_window_on_timestamp(self):
+        analyst_tools._seen_calls.clear()
+        with mock.patch("analyst_tools.loki_query_range",
+                        return_value=[]) as lq:
+            with mock.patch.dict("os.environ", {"LOKI_URL": "http://x"}):
+                # 10-minute window centered on a known instant
+                analyst_tools.query_loki(
+                    '{host="hub-e"}', 10, around="2026-06-29T01:43:19Z")
+        start, end = lq.call_args[0][2], lq.call_args[0][3]
+        center = 1782697399.0  # 2026-06-29T01:43:19Z in epoch seconds
+        self.assertAlmostEqual(start, center - 300, delta=1)  # -5 min
+        self.assertAlmostEqual(end, center + 300, delta=1)    # +5 min
+        analyst_tools._seen_calls.clear()
+
+    def test_query_loki_without_around_is_trailing_from_now(self):
+        analyst_tools._seen_calls.clear()
+        with mock.patch("analyst_tools.loki_query_range",
+                        return_value=[]) as lq:
+            with mock.patch.dict("os.environ", {"LOKI_URL": "http://x"}):
+                analyst_tools.query_loki('{host="hub-e"}', 10)
+        start, end = lq.call_args[0][2], lq.call_args[0][3]
+        self.assertAlmostEqual(end, time.time(), delta=2)     # ends ~now
+        self.assertAlmostEqual(end - start, 600, delta=1)     # 10-min span
+        analyst_tools._seen_calls.clear()
+
+    def test_parse_iso_epoch_tolerates_z_and_nanoseconds(self):
+        self.assertAlmostEqual(
+            analyst_tools._parse_iso_epoch("2026-06-29T01:43:19.123456789Z"),
+            1782697399.123456, delta=0.001)
+        self.assertIsNone(analyst_tools._parse_iso_epoch("not-a-time"))
+        self.assertIsNone(analyst_tools._parse_iso_epoch(None))
 
     def test_third_identical_call_is_blocked(self):
         analyst_tools._seen_calls.clear()
