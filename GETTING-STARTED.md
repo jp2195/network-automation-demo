@@ -255,6 +255,20 @@ You're looking for the Applications to become **Synced / Healthy**. There are
 (`netbox-seed` shows "Progressing" briefly while it loads the network
 inventory; that's normal and clears itself.)
 
+For a one-command *functional* check (beyond ArgoCD's "Healthy"):
+
+```bash
+make ready
+```
+
+It verifies what actually has to work — gNMI + SNMP telemetry flowing, the
+eventing pipeline wired, all 4 cabinets polling, NetBox seeded — and exits
+non-zero until they are. On a clean `make up` it reaches all-green **with no
+manual steps** (the FRR cabinets install `snmpd` in the background as they
+boot). Timing: first boot is the ~10–20 min above (image downloads); a warm
+rebuild — `make down` then `make up` with images cached — reaches all-green in
+~8 minutes.
+
 To watch them settle, run this until every row says `Synced` / `Healthy`:
 
 ```bash
