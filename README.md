@@ -330,7 +330,9 @@ endpoint (OpenAI, Anthropic, Gemini) or a local Ollama for zero cost; absent,
 the lane no-ops and the deterministic pipeline is unaffected. The analysis
 lands on the **Alert console** dashboard, is folded into the postmortem, and is
 rendered onto the per-incident dashboard. It is advisory forever — it never
-executes remediation. Setup recipes + tuning knobs: [`SECRETS.md`](SECRETS.md).
+executes remediation. Full design + safety boundaries:
+[docs/ai-analyst.md](docs/ai-analyst.md); setup recipes + tuning knobs:
+[`SECRETS.md`](SECRETS.md).
 
 ### Per-incident dashboard
 
