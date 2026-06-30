@@ -41,6 +41,20 @@ def _clamp_minutes(minutes):
         return 30
 
 
+def _parse_iso_epoch(s):
+    """Best-effort ISO8601 -> epoch seconds (Alertmanager `startsAt`),
+    or None. Tolerates a trailing Z and 9-digit nanoseconds (Alertmanager
+    emits both; datetime.fromisoformat caps at microseconds)."""
+    if not isinstance(s, str) or not s.strip():
+        return None
+    t = re.sub(r"\.(\d{6})\d+", r".\1", s.strip().replace("Z", "+00:00"))
+    try:
+        from datetime import datetime
+        return datetime.fromisoformat(t).timestamp()
+    except ValueError:
+        return None
+
+
 # Every tool result is byte-bounded before it reaches the model: one
 # un-filtered gNMI subtree or NetBox list can be tens of thousands of
 # tokens, which floods a small local model's context window and makes
@@ -112,16 +126,34 @@ def query_prometheus_range(promql: str, minutes: int = 30) -> list:
                                      step=30)[:_MAX_RANGE_SERIES])
 
 
-def query_loki(logql: str, minutes: int = 30) -> list:
-    """Search logs in Loki over the last `minutes` (max 360).
+def query_loki(logql: str, minutes: int = 30, around: str | None = None) -> list:
+    """Search logs in Loki. By default the trailing `minutes` (max 360,
+    ending now). Pass `around` — an ISO8601 instant, e.g. the alert's
+    `startsAt` — to instead search a window of `minutes` total *centered*
+    on that moment. For an outage this is the move: bracket the fault and
+    read what changed just before it, rather than scrolling from now.
 
-    Device logs: {namespace="clabernetes"} |= "hub-e". Workflow logs:
-    {namespace="argo-events"}. Returns up to 100 [timestamp_ns, line]
+    Streams worth knowing:
+      {namespace="clabernetes"} |= "hub-e"        device pod stdout
+      {namespace="argo-events"}                    workflow logs
+      {source_type="syslog", host="hub-e"}         SR Linux syslog, per node
+    Config changes name the operator: the sr_cli stream logs each command
+    as `|<user>|<session>| <command>`, and sr_mgmt_server logs `committed
+    successfully by user <u> session <n>`. So to find WHO made a change and
+    exactly what, query
+      {source_type="syslog", host="<node>"} |~ "(?i)(commit|set / |admin-state)"
+    with around=<alert startsAt>. Returns up to 100 [timestamp_ns, line]
     pairs, oldest first (empty on error/no match)."""
-    _repeat_guard("query_loki", (logql, _clamp_minutes(minutes)))
-    now = time.time()
-    rows = loki_query_range(os.environ["LOKI_URL"], logql,
-                            now - _clamp_minutes(minutes) * 60, now, limit=100)
+    span = _clamp_minutes(minutes)
+    _repeat_guard("query_loki", (logql, span, (around or "").strip()))
+    center = _parse_iso_epoch(around)
+    if center is not None:
+        half = span * 60 / 2
+        start, end = center - half, center + half
+    else:
+        now = time.time()
+        start, end = now - span * 60, now
+    rows = loki_query_range(os.environ["LOKI_URL"], logql, start, end, limit=100)
     return _bounded([[ts, line[:500]] for ts, line in rows])
 
 

@@ -70,7 +70,15 @@ workflow logs. IS-IS instance name: {isis}.
 You receive one Alertmanager alert. Investigate it with the read-only
 tools — verify current state, find the affected link's both ends, check
 whether IS-IS rerouted, look for related log lines — then return an
-IncidentAnalysis. Label shapes: raw srl_nokia_* series are labeled by
+IncidentAnalysis. The alert's `startsAt` is the fault onset. When state
+points to a configuration change (e.g. oper-down-reason
+port-admin-disabled), do NOT recommend a human go find out who did it —
+look it up. Call query_loki with around=<startsAt> against the node's SR
+Linux syslog, e.g.
+  query_loki('{source_type="syslog", host="hub-e"} |~ "(?i)(committed|admin-state|set / )"', around=<startsAt>)
+The sr_cli lines read `|<user>|<session>| <command>` and sr_mgmt_server
+logs `committed successfully by user <u> session <n>`; quote the user,
+session, and exact command in your root cause. Label shapes: raw srl_nokia_* series are labeled by
 node/interface and have NO link_id label; link-level state lives in
 link:oper_state_with_meta and link_membership_info (labeled by
 link_id). If a query returns [], change the query — never repeat it
