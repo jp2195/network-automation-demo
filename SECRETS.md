@@ -68,18 +68,29 @@ Environment="OLLAMA_CONTEXT_LENGTH=16384"
 (No sudo? `ollama create qwen3.5-16k -f-` with `FROM qwen3.5:9b` +
 `PARAMETER num_ctx 16384` achieves the same per-model.)
 
-Then the Secret — verified end-to-end with `qwen3.5:9b` (correctly
-root-caused an admin-disabled interface at 0.95 confidence):
+On macOS / Apple Silicon (the host this repo is tested on), set the same env on
+the Ollama server — `launchctl setenv OLLAMA_HOST 0.0.0.0`, or just run
+`OLLAMA_HOST=0.0.0.0 OLLAMA_CONTEXT_LENGTH=16384 ollama serve`. Prefer an **MLX**
+build there: it runs on Metal / unified memory and is faster and lighter than
+the default GGUF build for the same weights.
+
+Then the Secret. Verified end-to-end on Apple Silicon with `qwen3.6:35b-mlx`
+(and earlier with the smaller `qwen3.5:9b`) — both correctly told an admin
+disable from a real fiber cut at 0.95 confidence, once the gNMI tool was pointed
+at SR Linux native paths (not OpenConfig `/state/...`):
 
 ```
 kubectl create secret generic ai-analyst \
   --namespace argo-events \
   --from-literal=base_url='http://host.k3d.internal:11434/v1' \
   --from-literal=api_key='ollama' \
-  --from-literal=model='qwen3.5:9b' \
+  --from-literal=model='qwen3.6:35b-mlx' \   # or qwen3.5:9b for a smaller/faster lane
   --from-literal=reasoning_effort='none' \
   --from-literal=temperature='0.2'
 ```
+
+A bigger local model can take several minutes per incident (multiple tool-call
+rounds); the analyst Workflow allows for it (`activeDeadlineSeconds: 900`).
 
 ### Where to run the model — host, Docker, or cloud
 
