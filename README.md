@@ -65,13 +65,17 @@ The 8 SR Linux backbone nodes stream telemetry via gNMI to gNMIc,
 which exposes it as Prometheus metrics (`srl_*`, refreshed every 5–60 s
 across five tiered subscription groups: `if-state`, `if-counters`,
 `transceiver`, `routing`, `system`). This is the modern lane —
-push-based, schema-defined, sub-second detection latency.
+push-based and schema-defined: sub-second *telemetry*, with measured
+end-to-end *detection* of ~18 s (bounded by the 30 s Prometheus rule-eval
+grid, not the 5 s sample) — still an order of magnitude ahead of the legacy
+lane. See `results/RESULTS-SUMMARY.md`.
 
 The 4 FRR field cabinets are deliberately *not* on that pipeline. Each
 cabinet runs a tiny `snmpd` (installed on first boot via
 `apk add net-snmp` in the entrypoint wrapper) listening for SNMPv2c on
 UDP/161. A `prom/snmp_exporter` deployment polls each cabinet every
-30 s for the standard `IF-MIB` tables, and a Prometheus-Operator
+300 s (5 min — a representative enterprise polling cadence, not a
+30 s strawman) for the standard `IF-MIB` tables, and a Prometheus-Operator
 `Probe` CR registers them with kube-prometheus-stack.
 
 The point: the rest of the demo — Alertmanager → EventSource → Sensor
@@ -85,7 +89,7 @@ takeaway.
 | Lane | Nodes | Collection | Sample rate | Metric prefix |
 |---|---|---|---|---|
 | Modern | 8 SR Linux backbone | gNMI streaming → gNMIc | 5 s state / 10 s counters / 30 s DOM / 60 s system | `srl_*` |
-| Legacy | 4 FRR field cabinets | SNMPv2c polling → snmp_exporter | 30 s | `ifOperStatus`, `ifInOctets`, … |
+| Legacy | 4 FRR field cabinets | SNMPv2c polling → snmp_exporter | 300 s (5 min) | `ifOperStatus`, `ifInOctets`, … |
 
 ## Prerequisites
 

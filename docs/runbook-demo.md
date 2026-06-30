@@ -153,7 +153,9 @@ in reverse.
 
 ### Act 4 (optional, advanced) — the legacy edge (≈3 min)
 
-Same demo, but cut a cabinet's interface via FRR.
+Same demo, on the legacy edge: a real carrier loss on a cabinet uplink (the
+interface goes oper-down while admin-state stays up — a link failure, not a
+maintenance shutdown), detected by SNMP polling instead of streaming gNMI.
 
 ```bash
 make demo-cut-cabinet NODE=fc-n INTERFACE=eth1

@@ -107,7 +107,7 @@ telemetry pipelines:
 ```
 SR Linux  ──► gNMI subscribe (5s if-state, 10s counters) ──► gNMIc :9804
                                                               │
-FRR/Linux ──► SNMP poll every 30s ──────► snmp_exporter ──────┼──► Prometheus
+FRR/Linux ──► SNMP poll every 300s ─────► snmp_exporter ──────┼──► Prometheus
                                                               │
 synthetic ──► dom-synth (Python HTTP)                ─────────┘
 
