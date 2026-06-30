@@ -3,7 +3,7 @@
         scenario-gray-failure scenario-gray-failure-end \
         maintenance-start maintenance-end maintenance-list \
         remediation-mode remediation-approve remediation-status \
-        drift-check postmortem measure ready demo-cut-fiber demo-restore-fiber help
+        drift-check postmortem measure measure-gray ready demo-cut-fiber demo-restore-fiber help
 
 CLUSTER_NAME ?= atlas-demo
 TOPO_NS      ?= clabernetes
@@ -41,6 +41,7 @@ help:
 	@echo "  postmortem           List stored postmortems, or print+save one (FP=<fingerprint>)"
 	@echo "  measure              Run N cut->detect->notify cycles, emit CSV+stats (N=, LANE=gnmi|snmp)"
 	@echo "  ready                Functional readiness gate (telemetry/eventing/cabinets), exits non-zero if not ready"
+	@echo "  measure-gray         Gray-failure detectability sweep: streaming vs polling vs traps (DURATIONS=)"
 
 up: preflight
 	@echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"

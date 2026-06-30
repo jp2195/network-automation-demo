@@ -1,0 +1,9 @@
+{
+  "name": "atlas-gifgen",
+  "private": true,
+  "description": "Headless capture of Grafana dashboards for the docs GIFs (Playwright). GIF assembly is done by ffmpeg in bin/make-gif.sh.",
+  "type": "module",
+  "dependencies": {
+    "playwright": "^1.61.1"
+  }
+}
