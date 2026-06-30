@@ -218,6 +218,17 @@ make drift-check
 notify pipeline as any other incident. Restore the link and the next audit
 shows it clean again.
 
+**…and *who* made it.** Drift tells you *what* changed; the **change-attribution**
+trail tells you *who*. Changes are made as **named operators**, not a shared
+`admin`: `make demo-cut` authenticates as **`noc-ops`** and the closed-loop
+remediation authenticates as **`svc-automation`** (both via gNMI). SR Linux logs
+each commit to its AAA syslog — `committed successfully by user noc-ops session
+189`, with the source host — which flows to Loki. The **Audit feed** dashboard's
+*"Change attribution"* panel shows the live feed, and the AI analyst reads the
+same logs, so it can say *"disabled by `noc-ops` at 18:24:13"* and tell a **human**
+change apart from an **automated** one. (Passwords are documented demo defaults —
+see [SECRETS.md](SECRETS.md).)
+
 ---
 
 ## 6. Postmortem generator (the automatic write-up)

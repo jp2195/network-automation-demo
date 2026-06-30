@@ -130,9 +130,9 @@ spec:
           - -a
           - "atlanta-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
           - -u
-          - admin
+          - svc-automation
           - -p
-          - "NokiaSrl1!"
+          - "SvcAuto1!"
           - --skip-verify
           - --encoding
           - json_ietf
@@ -158,9 +158,9 @@ spec:
           - -a
           - "atlanta-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
           - -u
-          - admin
+          - svc-automation
           - -p
-          - "NokiaSrl1!"
+          - "SvcAuto1!"
           - --skip-verify
           - --encoding
           - json_ietf
