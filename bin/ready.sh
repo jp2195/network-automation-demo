@@ -56,7 +56,10 @@ fi
 # 2. Eventing data plane (the inotify-sensitive path). Cross-platform: instead of
 #    reading a host sysctl (meaningless on macOS), check the SYMPTOM — the NATS
 #    eventbus is Ready and no sensor/eventsource pod is crashlooping right now.
-ev=$(kubectl -n argo-events get pods --no-headers 2>/dev/null)
+#    Scope to INFRA pods only (!workflows.argoproj.io/workflow): a failed or old
+#    Argo *workflow* pod sits in Error/Completed and must not be miscounted as a
+#    crashlooping sensor.
+ev=$(kubectl -n argo-events get pods -l '!workflows.argoproj.io/workflow' --no-headers 2>/dev/null)
 if [ -z "$ev" ]; then
   bad "eventing: no pods in argo-events (cut→notify automation will never fire)"
 else
