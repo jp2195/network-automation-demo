@@ -137,11 +137,13 @@ def query_loki(logql: str, minutes: int = 30, around: str | None = None) -> list
       {namespace="clabernetes"} |= "hub-e"        device pod stdout
       {namespace="argo-events"}                    workflow logs
       {source_type="syslog", host="hub-e"}         SR Linux syslog, per node
-    Config changes name the operator: the sr_cli stream logs each command
-    as `|<user>|<session>| <command>`, and sr_mgmt_server logs `committed
-    successfully by user <u> session <n>`. So to find WHO made a change and
-    exactly what, query
-      {source_type="syslog", host="<node>"} |~ "(?i)(commit|set / |admin-state)"
+    Config changes name the operator in the SR Linux AAA syslog:
+    sr_mgmt_server logs `committed successfully by user <u> session <n>`
+    (the change + who), and sr_aaa_mgr logs `session <n> for user <u> from
+    host <ip>` (the source). A gNMI-originated change — the usual case here
+    — has NO per-command sr_cli line, so the committed-by-user line IS the
+    attribution; one match answers WHO. Query
+      {source_type="syslog", host="<node>"} |~ "committed successfully by user"
     with around=<alert startsAt>. Returns up to 100 [timestamp_ns, line]
     pairs, oldest first (empty on error/no match)."""
     span = _clamp_minutes(minutes)
