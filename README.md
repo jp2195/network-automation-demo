@@ -362,6 +362,19 @@ these with the exact command to try it.
 
 ## Slack
 
+The incident posts as a severity-colored card (red / amber / blue, green on
+resolve) that reads top-down the way an operator triages: a one-line verdict
+fusing severity with the **modeled backup state** — "traffic protected by
+corridor ring" vs "no protected path — single-homed cabinet" — then
+device · site · corridor, downstream impact, and affected agencies, with the
+raw alertname / link_id / fingerprint and a per-incident Grafana link demoted
+to a muted footer. The human title ("Interface down") leads; the raw
+`SRLInterfaceOperDown` lives in the footer. On resolve the **same message is
+updated in place** (green, downtime) rather than reposted. Depth lands as
+**thread replies**: a forensic snapshot (the optical DOM table, aligned) and
+the AI analyst's root cause + recommendation — so the channel stays scannable
+and the detail is one click in.
+
 Without real Slack credentials the workflow's notify step prints the
 Block Kit payload to stderr instead of calling the API — visible via
 `kubectl logs` on the workflow step pod.
