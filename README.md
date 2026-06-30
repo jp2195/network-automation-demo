@@ -202,6 +202,18 @@ make demo-cut     NODE=tmc-1 INTERFACE=ethernet-1/1
 make demo-restore NODE=tmc-1 INTERFACE=ethernet-1/1
 ```
 
+A real **fiber cut** instead of an admin shutdown — down the link at the
+physical layer so it goes oper-down with `admin-state` still *up*. Same
+`SRLInterfaceOperDown` alert, but the AI analyst reads `admin-state=enable`
++ a physical `oper-down-reason` and calls it a hardware/link failure —
+whereas `demo-cut` (admin disable) reads as a deliberate maintenance action.
+The pair shows the analyst telling a real fault from maintenance.
+
+```bash
+make demo-cut-fiber     NODE=hub-e INTERFACE=ethernet-1/2
+make demo-restore-fiber NODE=hub-e INTERFACE=ethernet-1/2
+```
+
 **Legacy lane (SNMP / FRR cabinet):**
 
 ```bash
@@ -226,6 +238,29 @@ The 3-step DAG:
    - `resolved`: load the ledger, `chat.update` the original message
      in place (✅ + downtime), thread reply with the resolution
      summary, DEL the ledger key.
+
+### Measuring it
+
+The latency claims are *measured*, not asserted — see
+`results/RESULTS-SUMMARY.md` for the table.
+
+```bash
+make ready                         # functional readiness gate: telemetry flowing,
+                                   # eventing wired, cabinets polling (non-zero if not ready)
+
+make measure N=20 LANE=gnmi        # N cut->detect->enriched-notify cycles; exact
+make measure N=8  LANE=snmp        # timestamps -> CSV + mean/median/p95 per lane
+                                   # (streaming ~18s detection vs 5-min polling ~minutes)
+
+make measure-gray DURATIONS="180 360 600"   # gray-failure detectability: streaming
+                                   # catches it, 5-min polling is probabilistic, SNMP
+                                   # traps are blind (no trap for a rising error gauge)
+```
+
+Each run rotates a distinct interface (independent incident) and differences
+exact Prometheus/Argo object timestamps against the cut. The streaming-vs-polling
+detection delta and the **lane-independent ~30 s enrichment** are the defensible
+results — understanding, not just detection, is the contribution.
 
 ### Closed-loop remediation
 
