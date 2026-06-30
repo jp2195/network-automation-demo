@@ -75,6 +75,15 @@ grafana:
   persistence:
     enabled: true
     size: 1Gi
+  # Skip the legacy init-chown-data container. The pod already runs with
+  # fsGroup 472, so the kubelet sets volume ownership — the init's
+  # `chown -R 472:472 /var/lib/grafana` is redundant, and on a *re-roll* of an
+  # existing PVC it wedges the rollout: the Docker-Desktop volume backend
+  # returns EPERM chowning the render-cache dirs (pdf/png/csv) grafana created
+  # at runtime, even for root+CAP_CHOWN. Disabling it lets every rollout (not
+  # just the first) come up clean. See runbook: "Grafana rollout stuck".
+  initChownData:
+    enabled: false
   resources:
     requests:
       cpu: 50m

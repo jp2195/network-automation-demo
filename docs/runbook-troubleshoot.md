@@ -210,6 +210,32 @@ and reverts any `kubectl set resources` within seconds. Raise the limit in
 `platform/values/kube-prometheus-stack.yaml` (now 768Mi) and let ArgoCD sync. The
 node has ample memory headroom, so the bump is free.
 
+### "Grafana rollout stuck — new pod Pending on `init-chown-data` CrashLoop"
+
+After any change that re-rolls Grafana on an **existing** PVC (a resource bump,
+an image upgrade), the new pod can hang `Pending` while the old one keeps
+serving:
+
+```bash
+kubectl logs -n monitoring <new-grafana-pod> -c init-chown-data
+# chown: /var/lib/grafana/pdf: Permission denied   (also png, csv)
+```
+
+The legacy `init-chown-data` container runs `chown -R 472:472 /var/lib/grafana`;
+on Docker Desktop the volume backend returns EPERM chowning the render-cache
+dirs grafana created at runtime (`pdf`/`png`/`csv`), even as root+CAP_CHOWN. The
+pod already has `fsGroup: 472`, so that init is redundant — it's disabled in
+`platform/values/kube-prometheus-stack.yaml` (`grafana.initChownData.enabled:
+false`). If you hit a wedged pod before that value syncs, unstick it by clearing
+the stale dirs from the *running* pod (it owns them as 472) and deleting the
+Pending pod:
+
+```bash
+kubectl exec -n monitoring <old-grafana-pod> -c grafana -- \
+  rm -rf /var/lib/grafana/pdf /var/lib/grafana/png /var/lib/grafana/csv
+kubectl delete pod -n monitoring <pending-grafana-pod>
+```
+
 ### "Grafana login lands on 'Update your password'"
 
 Grafana forces a password change off the default admin creds. It's `admin` /
