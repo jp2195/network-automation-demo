@@ -62,9 +62,10 @@ NetBox as the source of truth.
 
 ## When it runs
 
-The `ai-analyst` Sensor triggers on: `SRLInterfaceOperDown`,
-`SRLInterfaceFlapping`, `SRLOpticalDegrading`, `SRLInterfaceErrorsHigh`,
-`ConfigDrift`.
+The `ai-analyst` Sensor sees the same alert families as the deterministic
+enrich-notify lane: `SRLInterfaceOperDown`, `SRLInterfaceFlapping`,
+`SRLOpticalDegrading`, `SRLInterfaceErrorsHigh`, `CabinetInterfaceOperDown`
+(the legacy SNMP edge), and `ConfigDrift`.
 
 ## Models
 
