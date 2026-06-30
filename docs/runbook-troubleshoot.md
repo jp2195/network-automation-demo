@@ -160,6 +160,42 @@ This was a real bug. Two possible root causes — pick by how it fails:
    container; if the renderer somehow pinned 1161, the probe goes
    nowhere. Fix: `agentaddress udp:161` in `snmpd.conf`.
 
+### "A cabinet's SNMP lane goes green a few seconds after everything else (or never)"
+
+The FRR cabinets install `snmpd` from the alpine mirror on first boot. The
+entrypoint wrapper does it in the **background** (with per-attempt timeouts +
+retries) so FRR always starts and `snmpd` attaches once `net-snmp` lands
+(~30–60 s later). So on a fresh `make up` the SNMP targets come up a beat after
+gNMI — `make ready` self-heals to `4/4` with no manual steps. (This replaced an
+old bug where an inline `apk add` with no timeout hung at boot if egress wasn't
+up yet, wedging the cabinet — no FRR, no snmpd.) If a cabinet *never* gets
+`snmpd`, the pod had no egress to the apk mirror; confirm it can reach the
+internet, then install + start it by hand:
+
+```bash
+POD=$(kubectl -n clabernetes get pod -l clabernetes/topologyNode=fc-n -o jsonpath='{.items[0].metadata.name}')
+kubectl -n clabernetes exec "$POD" -- docker exec fc-n sh -c \
+  'command -v snmpd || (timeout 30 apk add --no-cache net-snmp && snmpd -Lf /tmp/snmpd.log &)'
+```
+
+### "Everything reads empty / `make ready` all-zeros / Grafana shows `no available server`"
+
+`kubectl` is pointing at the **wrong cluster**. After a laptop sleep/resume,
+Docker Desktop's Kubernetes can steal the current-context (and the clock jumps
+forward). The atlas-demo cluster is fine; just switch back:
+
+```bash
+kubectl config get-contexts            # is * on docker-desktop instead of k3d-atlas-demo?
+kubectl config use-context k3d-atlas-demo
+k3d cluster list                       # atlas-demo should still be 1/1 servers, 2/2 agents
+```
+
+### "Grafana login lands on 'Update your password'"
+
+Grafana forces a password change off the default admin creds. It's `admin` /
+`admin` — click **Skip** to reach the dashboards. (`bin/make-gif.sh` handles this
+automatically when it records a dashboard.)
+
 ### "Geomap line is grey, not green or red"
 
 The route layer color is read from the `Value` field of a single query
