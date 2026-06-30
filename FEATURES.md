@@ -60,6 +60,17 @@ make demo-restore NODE=hub-i20e INTERFACE=ethernet-1/4
   printed to the workflow's logs. To send it to a real Slack channel, see
   [SECRETS.md](SECRETS.md) (optional).
 
+<img src="docs/assets/slack-incident.png" alt="Slack incident thread — resolved severity card with the threaded AI analyst reply" width="420">
+
+> A real incident in Slack: the severity card resolves (green, "Recovered after
+> 1m 30s · corridor ring held throughout") with the enriched identity —
+> interface, location, corridor, and the cable's provider + SLA. Threaded under
+> it, the **🤖 AI analyst** reads live device state and explains the cause —
+> here correctly distinguishing an `admin-disable` (oper-down-reason
+> `port-admin-disabled`) from a physical cut, with a confidence and a concrete
+> recommendation. The deterministic card and the advisory AI reply are separate
+> lanes; see [docs/ai-analyst.md](docs/ai-analyst.md).
+
 > **Tip:** the cut above (`hub-i20e` / `ethernet-1/4`) is the best one for a
 > demo because it isolates a field cabinet and several agencies, so the
 > enrichment is dramatic. A cut on the perimeter ring instead (e.g. `hub-e` /
