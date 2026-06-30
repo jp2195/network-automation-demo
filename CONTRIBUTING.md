@@ -57,7 +57,15 @@ brew install ffmpeg
 npm --prefix tools/gifgen ci          # Playwright (+ its Chromium)
 bin/make-gif.sh                       # geomap reacting to a fiber cut -> docs/assets/grafana-fault.gif
 # override: DASH=geomap NODE=hub-e INTERFACE=ethernet-1/2 OUT=docs/assets/grafana-fault.gif bin/make-gif.sh
+
+# scenario mode — record a whole canned storyline (cascade + self-heal):
+SCENARIO=hurricane OUT=docs/assets/grafana-scenario.gif bin/make-gif.sh
 ```
+
+Scenario mode records the full topology (`HEIGHT` defaults high) through a
+`bin/scenarios.sh` run. Heads-up: the geomap on a fast kiosk refresh can OOM a
+default-sized Grafana — the recorder uses a gentler `REFRESH` and the chart value
+is bumped to 768Mi (see the runbook's "Grafana OOMKilled" entry).
 
 It logs into the live Grafana, records a dashboard while a scripted fault runs,
 and assembles the GIF with ffmpeg. The cluster must be up (`make ready` green).

@@ -129,6 +129,13 @@ make scenario-gray-failure-end LINK=ring-e-i20e   # clear it early if you want
 **What you'll see.** Each scenario drives the same detection-and-response flow,
 but with different shapes — watch Grafana and Argo Workflows during each.
 
+![Hurricane scenario on the geomap — two ring segments fail in series, then self-heal](docs/assets/grafana-scenario.gif)
+
+> `make scenario-hurricane` on the geomap: `hub-i20e` and two ring segments go
+> red as the storm takes the corridor (stranding the `fc-i20e` cabinet), then
+> the network heals back to all-green as the strands are restored in series —
+> the whole arc unattended, recorded headless ([`bin/make-gif.sh`](bin/make-gif.sh)).
+
 ---
 
 ## 4. Closed-loop remediation (the system fixes the routing itself)
