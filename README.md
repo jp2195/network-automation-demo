@@ -63,8 +63,10 @@ platform up, `atlanta` topology ready, all 12 nodes `aarch64`.
 
 The 8 SR Linux backbone nodes stream telemetry via gNMI to gNMIc,
 which exposes it as Prometheus metrics (`srl_*`, refreshed every 5–60 s
-across five tiered subscription groups: `if-state`, `if-counters`,
-`transceiver`, `routing`, `system`). This is the modern lane —
+across three tiered subscription groups: `if-state` at 5 s, `if-counters`
+at 10 s, `system` at 60 s; optical DOM metrics come from the separate
+`dom-synth` synthetic exporter — no real SFPs in a container lab). This
+is the modern lane —
 push-based and schema-defined: sub-second *telemetry*, with measured
 end-to-end *detection* of ~18 s (bounded by the 30 s Prometheus rule-eval
 grid, not the 5 s sample) — still an order of magnitude ahead of the legacy
@@ -88,7 +90,7 @@ takeaway.
 
 | Lane | Nodes | Collection | Sample rate | Metric prefix |
 |---|---|---|---|---|
-| Modern | 8 SR Linux backbone | gNMI streaming → gNMIc | 5 s state / 10 s counters / 30 s DOM / 60 s system | `srl_*` |
+| Modern | 8 SR Linux backbone | gNMI streaming → gNMIc | 5 s state / 10 s counters / 60 s system (+ synthetic DOM via `dom-synth`, 15 s scrape) | `srl_*` |
 | Legacy | 4 FRR field cabinets | SNMPv2c polling → snmp_exporter | 300 s (5 min) | `ifOperStatus`, `ifInOctets`, … |
 
 ## Prerequisites
@@ -105,7 +107,9 @@ takeaway.
 - `kubectl`
 - `helm`
 - `make`
-- `go` 1.22+ (only if you re-render from spec)
+- `go` 1.26+ (only if you re-render from spec)
+- `python3` and `jq` (used by `make ready`, the measurement scripts, and
+  `make maintenance-list`)
 - **`fs.inotify.max_user_instances` ≥ 512** (Linux hosts). The default of 128
   is too low for this stack: the argo-events data plane crashloops with
   "too many open files" and the cut→notify automation silently never fires.
@@ -282,8 +286,9 @@ make remediation-approve LINK=ring-e-i20e      # release a pending gated remedia
 make remediation-mode MODE=auto                # back to full closed-loop
 ```
 
-The deterministic remediation workflow is the only component in the cluster
-holding gNMI *Set* capability; everything else is structurally read-only.
+The deterministic remediation and fault-injection lanes are the only
+components in the cluster holding gNMI *Set* capability; everything else —
+including the AI analyst — is structurally read-only.
 
 ### Config drift audit
 
@@ -412,6 +417,11 @@ SECRETS.md                 how to use real credentials without committing them
 ```
 
 ## Sync waves
+
+The ApplicationSet creates all Applications at once; the waves below are
+the *logical* dependency order (carried as `syncWave` labels), not an
+enforced sequence — an app whose dependencies aren't ready yet simply
+stays Progressing until a later reconcile converges it.
 
 | Wave | Components |
 |---|---|

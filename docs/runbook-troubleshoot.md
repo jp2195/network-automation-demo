@@ -322,8 +322,8 @@ It's `export-policy [<X>]` — leaf-list. Same gotcha shape.
 `make demo-cut` admin-disables an interface. If the alert expression
 joins on `admin_state == 1`, the cut interface drops out and the alert
 never fires. Use `link_membership_info` as the join key instead — it
-filters out the 50+ unused IXR-D3 ports per node without filtering out
-the cut interface.
+filters out the ~34 unused IXR-D3 ports per node (~270 across the
+backbone) without filtering out the cut interface.
 
 ### NetBox token can't be hardcoded
 
@@ -355,7 +355,7 @@ make down
 make up
 
 # wait for ArgoCD to sync everything (~5min)
-until [ "$(kubectl -n argocd get applications --no-headers | awk '$2=="Synced" && $3=="Healthy"' | wc -l)" -ge 17 ]; do sleep 15; done
+until [ "$(kubectl -n argocd get applications --no-headers | awk '$2=="Synced" && $3=="Healthy"' | wc -l)" -ge 21 ]; do sleep 15; done
 
 # bounce the SR Linux pods once so each picks up its startup-config
 for n in tmc-1 tmc-2 hub-n hub-e hub-i20e hub-nw hub-sw hub-i20w; do
@@ -406,7 +406,7 @@ re-apply the topology if you've edited the spec.
      confirm it listens beyond loopback (`OLLAMA_HOST=0.0.0.0`) and
      that `host.k3d.internal` resolves from a pod;
    - unknown model name: must match the endpoint's model list;
-   - exceeded `activeDeadlineSeconds: 600`: small local models can be
+   - exceeded `activeDeadlineSeconds: 900`: small local models can be
      slow — try a smaller alert window or a stronger model;
    - `Model token limit ... exceeded before any response was generated`:
      a thinking model burned the whole output budget on reasoning —

@@ -88,7 +88,8 @@ You need these five tools. The per-OS instructions below install all of them.
 | **make** | Runs the project's shortcut commands (like `make up`). |
 
 (There's an optional sixth tool, **Go**, needed only if you want to *change*
-the network design. You can skip it.)
+the network design. You can skip it. The install commands below also grab
+two small helpers the project's status scripts use: **jq** and **python3**.)
 
 ### 🍎 macOS  *(⚠️ instructions below need testing on a real Mac)*
 
@@ -108,7 +109,7 @@ the network design. You can skip it.)
 3. **Install the rest** with Homebrew:
 
    ```bash
-   brew install k3d kubectl helm make
+   brew install k3d kubectl helm make jq
    ```
 
    (`make` and `git` usually come with Apple's developer tools; if `make`
@@ -141,18 +142,22 @@ tools, and WSL gives you exactly that without leaving Windows.
    PowerShell. Install the tools:
 
    ```bash
-   sudo apt update && sudo apt install -y make curl
+   sudo apt update && sudo apt install -y make curl jq python3
    curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-   sudo snap install kubectl --classic || sudo apt install -y kubectl
-   curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+   curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/$(dpkg --print-architecture)/kubectl"
+   sudo install kubectl /usr/local/bin/ && rm kubectl
+   curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
    ```
+
+   (`kubectl` and `helm` aren't in Ubuntu's default package repos, so these
+   use the official installers instead of `apt`.)
 
 4. **Raise a system limit** (needed for the automation pipeline; see the box
    in Part 4). In the Ubuntu terminal:
 
    ```bash
    sudo sysctl fs.inotify.max_user_instances=1024
-   echo 'fs.inotify.max_user_instances=1024' | sudo tee -a /etc/sysctl.conf
+   echo 'fs.inotify.max_user_instances=1024' | sudo tee /etc/sysctl.d/99-inotify.conf
    ```
 
 ### 🐧 Linux
@@ -169,8 +174,13 @@ tools, and WSL gives you exactly that without leaving Windows.
 
    ```bash
    curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-   # kubectl + helm + make: use your package manager, e.g. on Debian/Ubuntu:
-   sudo apt update && sudo apt install -y kubectl helm make
+   # make + helpers: use your package manager, e.g. on Debian/Ubuntu:
+   sudo apt update && sudo apt install -y make curl jq python3
+   # kubectl + helm aren't in the default Debian/Ubuntu repos — use the
+   # official installers:
+   curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/$(dpkg --print-architecture)/kubectl"
+   sudo install kubectl /usr/local/bin/ && rm kubectl
+   curl -s https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
    ```
 
 3. **Raise a system limit** (one time — see the box in Part 4):

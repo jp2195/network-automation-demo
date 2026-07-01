@@ -140,7 +140,7 @@ Three properties make this work in a demo setting:
 1. **Alert gating uses `link_membership_info`**, not `admin_state == 1`.
    `make demo-cut` admin-disables an interface, which would defeat an
    admin-state gate. Joining the alert expression against
-   `link_membership_info` filters out the 200+ unused IXR-D3 ports
+   `link_membership_info` filters out the ~270 unused IXR-D3 ports
    without filtering out the cut interface.
 
 2. **The alert payload reaches the workflow as an env var, not as inline
