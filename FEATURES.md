@@ -367,6 +367,36 @@ from the browser; the status bar and event log track the real network live.
 
 ---
 
+## 11. Ask the network (optional — chat with the fabric)
+
+**What it is.** A chat panel on the scenario console where anyone can ask the
+network questions in plain English: *"If corridor I-285 goes down, what goes
+down with it?"*, *"How many CCTV cameras ride on GA-400?"*, *"What alerts are
+firing?"*, *"Who made the last config change on hub-e?"*. An AI agent answers
+by querying NetBox, Prometheus, and Loki — and shows each lookup it makes
+under the answer, in the same style as the event log.
+
+**Why it matters.** Blast-radius answers are **computed, not guessed**: the
+what-if questions run a deterministic reachability walk over the NetBox cable
+graph (`corridor_impact`), so the AI narrates a result the topology model
+produced. And it's strictly **read-only** — it cannot cut links, ack alerts,
+or trigger scenarios; the buttons above the chat stay the only way to touch
+the fabric. Ask the what-if first, then press the real **Cut** button and
+watch the prediction come true on the geomap.
+
+**How to try it.** It shares the AI analyst's configuration (feature 7): the
+same `ai-analyst` Secret enables both, hosted or local Ollama — recipes in
+[SECRETS.md](SECRETS.md). Without the Secret the panel shows a "disabled"
+state and everything else works as usual. Once enabled, open the console and
+click one of the suggested questions, or type your own.
+
+**What you'll see.** The answer streams in live, with a `›` trace of every
+tool call the agent made (`corridor_impact`, `query_netbox`, …) — proof the
+numbers came from the source of truth, not the model's imagination. Details:
+[docs/chat.md](docs/chat.md).
+
+---
+
 ## Where to go next
 
 - Running into trouble? [`docs/runbook-troubleshoot.md`](docs/runbook-troubleshoot.md)

@@ -433,6 +433,173 @@
   }
 
   /* ============================================================
+     ASK THE NETWORK — chat over /api/chat (SSE)
+     Read-only Q&A agent; served by the chat-agent Deployment behind
+     the same host (ingress path-routes /api/chat). History lives here
+     in the browser — the server is stateless.
+     ============================================================ */
+  const chatHistory = [];      // [{role, content}...] replayed each turn
+  let chatBusy = false;
+
+  // Minimal, safe markdown: escape everything, then re-introduce only
+  // **bold**, `code`, and "- " bullets. No raw model HTML ever lands.
+  function mdLite(text) {
+    const esc = String(text)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    const lines = esc.split("\n");
+    let html = "", list = false;
+    lines.forEach(function (line) {
+      const inline = line
+        .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+        .replace(/`([^`]+)`/g, "<code>$1</code>");
+      if (/^\s*[-*] /.test(line)) {
+        if (!list) { html += "<ul>"; list = true; }
+        html += "<li>" + inline.replace(/^\s*[-*] /, "") + "</li>";
+      } else {
+        if (list) { html += "</ul>"; list = false; }
+        if (line.trim()) html += "<p>" + inline + "</p>";
+      }
+    });
+    if (list) html += "</ul>";
+    return html;
+  }
+
+  function chatMsg(role, whoLabel) {
+    const wrap = el("div", "chat-msg " + role);
+    wrap.appendChild(el("div", "who", whoLabel));
+    wrap.appendChild(el("div", "body"));
+    $("#chatMessages").appendChild(wrap);
+    return wrap;
+  }
+
+  function chatScroll() {
+    const box = $("#chatMessages");
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function setChatBusy(b) {
+    chatBusy = b;
+    $("#chatInput").disabled = b;
+    $("#chatSend").disabled = b;
+    document.querySelectorAll("#chatChips .chip").forEach(function (c) {
+      c.disabled = b;
+    });
+  }
+
+  async function chatAsk(question) {
+    if (chatBusy || !question.trim()) return;
+    $("#chatModule").querySelector(".chat-empty")?.remove();
+    setChatBusy(true);
+    const userEl = chatMsg("user", "you");
+    userEl.querySelector(".body").textContent = question;
+    chatHistory.push({ role: "user", content: question });
+
+    const botEl = chatMsg("assistant", "network assistant");
+    const body = botEl.querySelector(".body");
+    const trace = el("div", "chat-trace");
+    botEl.insertBefore(trace, body);
+    body.innerHTML = '<span class="chat-thinking">thinking</span>';
+    chatScroll();
+
+    let answer = "", gotDone = false;
+    try {
+      const resp = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: chatHistory.slice(-21) }),
+      });
+      if (!resp.ok) {
+        const data = await resp.json().catch(function () { return {}; });
+        throw new Error(data.detail || ("HTTP " + resp.status));
+      }
+      const reader = resp.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+      for (;;) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        buf += dec.decode(chunk.value, { stream: true });
+        let cut;
+        while ((cut = buf.indexOf("\n\n")) >= 0) {
+          const frame = buf.slice(0, cut);
+          buf = buf.slice(cut + 2);
+          let ev = null, data = {};
+          frame.split("\n").forEach(function (line) {
+            if (line.startsWith("event: ")) ev = line.slice(7);
+            else if (line.startsWith("data: ")) {
+              try { data = JSON.parse(line.slice(6)); } catch (e) {}
+            }
+          });
+          if (ev === "tool") {
+            const t = el("span", "t-line");
+            t.innerHTML = '<span class="t-name"></span> <span class="t-args"></span>';
+            t.querySelector(".t-name").textContent = data.name || "tool";
+            t.querySelector(".t-args").textContent = data.summary || "";
+            trace.appendChild(t);
+            log("info", "chat", "tool call: " + (data.name || "?"));
+          } else if (ev === "token") {
+            answer += data.text || "";
+            body.innerHTML = mdLite(answer);
+          } else if (ev === "done") {
+            answer = data.text || answer;
+            gotDone = true;
+          } else if (ev === "error") {
+            throw new Error(data.detail || "assistant error");
+          }
+          chatScroll();
+        }
+      }
+      if (!answer) throw new Error("the assistant returned no answer");
+      body.innerHTML = mdLite(answer);
+      chatHistory.push({ role: "assistant", content: answer });
+      if (!gotDone) log("warn", "chat", "answer stream ended without done event");
+    } catch (e) {
+      chatHistory.pop(); // failed turn doesn't poison the next one
+      botEl.classList.add("error");
+      trace.remove();
+      body.textContent = e.message;
+      log("error", "chat", e.message);
+    }
+    setChatBusy(false);
+    chatScroll();
+  }
+
+  async function chatInit() {
+    const box = $("#chatMessages");
+    box.appendChild(el("div", "chat-empty",
+      "ask about topology, blast radius, alerts, or inventory — answers " +
+      "come from NetBox, Prometheus and Loki"));
+    try {
+      const s = await fetch("/api/chat/status").then(function (r) { return r.json(); });
+      if (s.enabled) {
+        log("ok", "chat", "network assistant online" + (s.model ? " · " + s.model : ""));
+      } else {
+        throw new Error("disabled");
+      }
+    } catch (e) {
+      $("#chatModule").classList.add("chat-off");
+      $("#chatHint").textContent = "disabled";
+      $("#chatInput").disabled = true;
+      $("#chatSend").disabled = true;
+      document.querySelectorAll("#chatChips .chip").forEach(function (c) { c.disabled = true; });
+      box.innerHTML = "";
+      box.appendChild(el("div", "chat-empty",
+        "AI chat is off — mount the ai-analyst Secret to enable it (SECRETS.md)"));
+      return;
+    }
+    $("#chatForm").addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      const q = $("#chatInput").value;
+      $("#chatInput").value = "";
+      chatAsk(q);
+    });
+    document.querySelectorAll("#chatChips .chip").forEach(function (c) {
+      c.addEventListener("click", function () { chatAsk(c.dataset.q); });
+    });
+  }
+
+  /* ============================================================
      VIEW + THEME PERSISTENCE
      ============================================================ */
   const STORE = "atlas-console-prefs";
@@ -495,6 +662,9 @@
     // Start status poll
     await pollStatus();
     setInterval(pollStatus, 5000);
+
+    // Ask-the-network chat (self-disables when the AI Secret is absent)
+    chatInit();
 
     // Cut / restore
     $("#cutNode").addEventListener("change", syncInterfaces);

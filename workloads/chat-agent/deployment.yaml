@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-agent
+  labels:
+    app.kubernetes.io/name: chat-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: chat-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: chat-agent
+    spec:
+      containers:
+        - name: chat-agent
+          image: atlas-demo-registry:5001/chat-agent:latest
+          # The workflow-scripts ConfigMap mount is the source of truth for
+          # the Python source (same convention as the eventing WFTs); the
+          # baked /scripts copy only serves standalone runs of the image.
+          command: [python3, /scripts/chat_server.py]
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+          env:
+            - name: CHAT_PORT
+              value: "8080"
+            # Optional ai-analyst Secret — absent, /api/chat answers 503
+            # and the console panel renders its disabled state (SECRETS.md).
+            - name: AI_BASE_URL
+              valueFrom:
+                secretKeyRef: {name: ai-analyst, key: base_url, optional: true}
+            - name: AI_API_KEY
+              valueFrom:
+                secretKeyRef: {name: ai-analyst, key: api_key, optional: true}
+            - name: AI_MODEL
+              valueFrom:
+                secretKeyRef: {name: ai-analyst, key: model, optional: true}
+            - name: AI_REASONING_EFFORT
+              valueFrom:
+                secretKeyRef: {name: ai-analyst, key: reasoning_effort, optional: true}
+            - name: AI_TEMPERATURE
+              valueFrom:
+                secretKeyRef: {name: ai-analyst, key: temperature, optional: true}
+            # Model round-trips per question (tool calls + answer);
+            # chat_server defaults to 12 when unset.
+            - name: AI_MAX_REQUESTS
+              valueFrom:
+                secretKeyRef: {name: ai-analyst, key: max_requests, optional: true}
+            - name: PROM_URL
+              value: http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+            - name: LOKI_URL
+              value: http://loki-gateway.monitoring.svc.cluster.local
+            - name: NETBOX_URL
+              value: http://netbox.netbox.svc.cluster.local
+            - name: NETBOX_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  # Minted at runtime by the netbox-seed Job (see SECRETS.md).
+                  name: netbox-api
+                  key: token
+                  optional: true
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /api/chat/status
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits:   {memory: 512Mi}
+      volumes:
+        - name: scripts
+          configMap:
+            name: workflow-scripts

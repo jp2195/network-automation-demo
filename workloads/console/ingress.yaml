@@ -10,6 +10,16 @@ spec:
     - host: console.127-0-0-1.nip.io
       http:
         paths:
+          # Longer prefix wins in Traefik: chat requests go straight to
+          # the chat-agent Service (same origin, no proxy hop through the
+          # console binary); Traefik streams text/event-stream unbuffered.
+          - path: /api/chat
+            pathType: Prefix
+            backend:
+              service:
+                name: chat-agent
+                port:
+                  number: 80
           - path: /
             pathType: Prefix
             backend:

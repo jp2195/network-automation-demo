@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Same namespace as the console + eventing lane: the Deployment mounts the
+# workflow-scripts ConfigMap and the console ingress routes /api/chat here.
+namespace: argo-events
+
+resources:
+  - deployment.yaml
+  - service.yaml

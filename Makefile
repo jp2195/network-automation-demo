@@ -159,6 +159,7 @@ build:
 	docker buildx build -t localhost:5001/dom-synth:latest   -f images/dom-synth/Dockerfile   workloads/dom-synth/ --push
 	docker buildx build -t localhost:5001/frr-snmpd:latest   -f images/frr-snmpd/Dockerfile   images/frr-snmpd/    --push
 	docker buildx build -t localhost:5001/ai-analyst:latest  -f images/ai-analyst/Dockerfile  workloads/eventing/ --push
+	docker buildx build -t localhost:5001/chat-agent:latest  -f images/chat-agent/Dockerfile  workloads/eventing/ --push
 	docker buildx build -t localhost:5001/console:latest     -f images/console/Dockerfile     .                    --push
 	@echo "==> All images pushed. Verify with: curl -s localhost:5001/v2/_catalog"
 
