@@ -52,15 +52,15 @@ curl -s http://127.0.0.1:8000/metrics | grep -c "^dom_temperature_celsius"
 
 | Tab | URL |
 |---|---|
-| Grafana — Network overview | https://grafana.127-0-0-1.nip.io/d/network-overview |
-| Grafana — Atlanta metro Geomap | https://grafana.127-0-0-1.nip.io/d/geomap |
-| Grafana — Device detail | https://grafana.127-0-0-1.nip.io/d/device-detail |
-| Grafana — Link detail | https://grafana.127-0-0-1.nip.io/d/link-detail |
-| Grafana — Alert console | https://grafana.127-0-0-1.nip.io/d/alert-console |
-| ArgoCD | https://localhost:8443 (port-forward 8080:443 from argocd-server) |
-| NetBox | https://netbox.127-0-0-1.nip.io |
-| Argo Workflows UI | https://workflows.127-0-0-1.nip.io |
-| clabernetes UI | https://clabernetes.127-0-0-1.nip.io |
+| Grafana — Network overview | http://grafana.127-0-0-1.nip.io:8080/d/network-overview |
+| Grafana — Atlanta metro Geomap | http://grafana.127-0-0-1.nip.io:8080/d/geomap |
+| Grafana — Device detail | http://grafana.127-0-0-1.nip.io:8080/d/device-detail |
+| Grafana — Link detail | http://grafana.127-0-0-1.nip.io:8080/d/link-detail |
+| Grafana — Alert console | http://grafana.127-0-0-1.nip.io:8080/d/alert-console |
+| ArgoCD | http://argocd.127-0-0-1.nip.io:8080 |
+| NetBox | http://netbox.127-0-0-1.nip.io:8080 |
+| Argo Workflows UI | http://workflows.127-0-0-1.nip.io:8080 |
+| clabernetes UI | http://clabernetes.127-0-0-1.nip.io:8080 |
 
 ## The demo (≈10 minutes)
 
@@ -220,7 +220,7 @@ warning-severity branch of the enriched-notify pipeline. It auto-recovers.
 3. Verify the control key landed:
 
    ```bash
-   kubectl -n valkey exec valkey-0 -- valkey-cli -n 3 GET gray:ring-n-e
+   kubectl -n valkey exec deploy/valkey -c valkey -- valkey-cli -n 3 GET gray:ring-n-e
    ```
 
 4. In Grafana → **device-detail** → pick `hub-n` or `hub-e`. The
@@ -252,7 +252,7 @@ warning-severity branch of the enriched-notify pipeline. It auto-recovers.
 8. Verify the Valkey key auto-cleared:
 
    ```bash
-   kubectl -n valkey exec valkey-0 -- valkey-cli -n 3 KEYS 'gray:*'
+   kubectl -n valkey exec deploy/valkey -c valkey -- valkey-cli -n 3 KEYS 'gray:*'
    ```
 
    Expected: empty within ~30 seconds of duration end.
