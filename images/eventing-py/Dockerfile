@@ -4,7 +4,7 @@
 # read-write source of truth for the Python source — this image just
 # carries the pinned dependencies and a copy that runs without the mount
 # for one-off use (the mount overrides /scripts/* at workflow runtime).
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 RUN pip install --no-cache-dir slack-sdk valkey
 
