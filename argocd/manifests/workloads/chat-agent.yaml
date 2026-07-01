@@ -1,0 +1,4 @@
+name: chat-agent
+namespace: argo-events
+syncWave: "3"
+appPath: workloads/chat-agent

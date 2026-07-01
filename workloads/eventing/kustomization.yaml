@@ -53,3 +53,5 @@ configMapGenerator:
       - scripts/k8s_api.py
       - scripts/incident_dashboard.py
       - scripts/gray_key.py
+      - scripts/corridor_impact.py
+      - scripts/chat_server.py

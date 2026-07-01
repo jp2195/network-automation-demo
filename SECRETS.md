@@ -32,7 +32,11 @@ gitignored so a careless `git add -A` won't catch them.
 
 The AI lane follows the same optional-Secret pattern as Slack. With no
 Secret, every `ai-analyze-*` workflow step prints `AI disabled` and
-exits 0 — the deterministic pipeline never depends on it.
+exits 0 — the deterministic pipeline never depends on it. The same Secret
+also enables the console's **Ask the network** chat ([docs/chat.md](docs/chat.md));
+without it the chat panel shows a disabled state. The chat-agent pod reads
+the Secret at startup, so after creating or changing it:
+`kubectl -n argo-events rollout restart deploy/chat-agent`.
 
 To enable it, point the Secret at any OpenAI-compatible endpoint.
 A hosted frontier model gives the best analyses with zero tuning:

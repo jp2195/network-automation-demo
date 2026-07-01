@@ -173,6 +173,29 @@
         </div>
       </div>
 
+      <!-- Ask the network (AI chat) -->
+      <div class="module span2 chat" id="chatModule">
+        <div class="mod-head">
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/><path d="M9 11h.01M13 11h.01"/></svg></span>
+          <h2>Ask the network</h2>
+          <span class="hint" id="chatHint">read-only</span>
+        </div>
+        <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+        <div class="chat-chips" id="chatChips">
+          <button class="chip" data-q="If corridor I-285 goes down, what goes down with it?">I-285 goes down — what breaks?</button>
+          <button class="chip" data-q="How many CCTV cameras would a GA-400 fiber cut take offline?">CCTV lost on a GA-400 cut?</button>
+          <button class="chip" data-q="What alerts are firing right now?">Alerts firing now?</button>
+          <button class="chip" data-q="Who made the last config change on hub-e?">Who last changed hub-e?</button>
+        </div>
+        <form class="chat-inputrow" id="chatForm">
+          <input type="text" id="chatInput" placeholder="Ask about topology, impact, alerts, inventory…" maxlength="4000" autocomplete="off">
+          <button class="btn btn-accent" id="chatSend" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>
+            Ask
+          </button>
+        </form>
+      </div>
+
     </section>
 
     <!-- log / terminal -->
