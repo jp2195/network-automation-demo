@@ -46,8 +46,11 @@ if [ -n "${SCENARIO:-}" ]; then
   wait "$REC"
 else
   DURATION=$(( PRE + RED + GREEN ))
-  echo "==> recording dashboard '$DASH' for ${DURATION}s while cutting $NODE_/$IFACE"
-  ( cd tools/gifgen && DURATION=$DURATION node record.mjs "$DASH" "$FRAMES" ) &
+  # HEIGHT defaults high so the FULL topology is in frame — without it the
+  # geomap renders a wide/short slice that clips the southern cabinets.
+  HEIGHT=${HEIGHT:-1080}
+  echo "==> recording dashboard '$DASH' for ${DURATION}s (HEIGHT=$HEIGHT) while cutting $NODE_/$IFACE"
+  ( cd tools/gifgen && DURATION=$DURATION HEIGHT=$HEIGHT node record.mjs "$DASH" "$FRAMES" ) &
   REC=$!
   sleep "$PRE"
   echo "    [$(date +%H:%M:%S)] fiber cut $NODE_/$IFACE"
