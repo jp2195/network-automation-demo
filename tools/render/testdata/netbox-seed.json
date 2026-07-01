@@ -26,6 +26,15 @@
         "dcim.cable"
       ],
       "description": "Provider restoration SLA in hours"
+    },
+    {
+      "name": "corridor",
+      "label": "Corridor",
+      "type": "text",
+      "object_types": [
+        "dcim.cable"
+      ],
+      "description": "Highway corridor the cable runs along"
     }
   ],
   "regions": [
@@ -363,6 +372,7 @@
       "length_unit": "km",
       "custom_fields": {
         "circuit_id": "",
+        "corridor": "",
         "restoration_sla_hours": 0
       }
     },
@@ -385,6 +395,7 @@
       "install_date": "2020-01-01",
       "custom_fields": {
         "circuit_id": "RF-0001",
+        "corridor": "",
         "restoration_sla_hours": 8
       }
     }

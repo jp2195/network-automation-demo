@@ -170,6 +170,10 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 		{Name: "isis_sid", Label: "IS-IS SID", Type: "integer", ObjectTypes: dev, Description: "Segment Routing prefix-SID"},
 		{Name: "circuit_id", Label: "Circuit ID", Type: "text", ObjectTypes: cab, Description: "Provider circuit / OSP identifier"},
 		{Name: "restoration_sla_hours", Label: "Restoration SLA (h)", Type: "integer", ObjectTypes: cab, Description: "Provider restoration SLA in hours"},
+		// The cable's own corridor, NOT derivable from its endpoints: ring
+		// cables run I-285 between sites whose groups are other corridors.
+		// Consumed by corridor_impact.py to pick a corridor's cut-set.
+		{Name: "corridor", Label: "Corridor", Type: "text", ObjectTypes: cab, Description: "Highway corridor the cable runs along"},
 	}
 
 	// Regions: one per district. Sites inherit district via region membership.
@@ -363,6 +367,7 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 			CustomFields: map[string]interface{}{
 				"circuit_id":            l.Cable.CircuitID,
 				"restoration_sla_hours": l.Cable.RestorationSLAHours,
+				"corridor":              l.Cable.Corridor,
 			},
 		})
 	}
