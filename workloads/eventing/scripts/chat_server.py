@@ -36,6 +36,7 @@ from pydantic_ai.usage import UsageLimits
 import analyst
 import analyst_tools
 import corridor_impact
+from prom import prom_query
 
 # Longest question a chip or a booth attendee reasonably produces; anything
 # bigger is someone pasting a document into a demo box.
@@ -50,7 +51,42 @@ DEFAULT_MAX_REQUESTS = 12
 # hosted-model bill. Restart the pod to reset.
 DEFAULT_LIFETIME_REQUESTS = 500
 
-CHAT_TOOLS = [analyst_tools.query_prometheus,
+# Labels that make an alert instance narratable; everything else
+# (kube pod hashes, endpoints, prometheus replica labels) is noise.
+_ALERT_LABELS = ("node", "interface", "link_id", "corridor", "cable_label",
+                 "instance", "pod", "severity")
+
+
+def firing_alerts() -> dict:
+    """The alerts firing RIGHT NOW — the same Prometheus ALERTS query the
+    console status tile runs, so this answer always agrees with the tile.
+    Call this FIRST for any "what alerts / how many alerts / anything
+    firing?" question. Returns {count, alerts:[{alertname, severity,
+    count, instances}]}. Alerts do NOT live in Loki (logs) or NetBox
+    (inventory)."""
+    try:
+        rows = prom_query(os.environ["PROM_URL"],
+                          'ALERTS{alertstate="firing"}')
+    except Exception as e:
+        return {"error": f"Prometheus query failed: {e}"}
+    groups = {}
+    for r in rows:
+        m = r.get("metric", {})
+        name = m.get("alertname", "unknown")
+        g = groups.setdefault(name, {"alertname": name,
+                                     "severity": m.get("severity", ""),
+                                     "count": 0, "instances": []})
+        g["count"] += 1
+        inst = {k: m[k] for k in _ALERT_LABELS
+                if m.get(k) and k != "severity"}
+        if inst and len(g["instances"]) < 10:
+            g["instances"].append(inst)
+    return {"count": len(rows), "alerts": sorted(
+        groups.values(), key=lambda g: g["alertname"])}
+
+
+CHAT_TOOLS = [firing_alerts,
+              analyst_tools.query_prometheus,
               analyst_tools.query_prometheus_range,
               analyst_tools.query_loki,
               analyst_tools.query_netbox,
@@ -71,13 +107,17 @@ Where answers live:
 - Any what-if or blast-radius question ("if corridor X goes down, what
   breaks?") MUST go through corridor_impact — it computes reachability
   from the topology model. Never eyeball the graph yourself.
-- Live and recent state is Prometheus: ALERTS{alertstate="firing"} for
-  what's firing now; count_over_time(ALERTS{alertname="..."}[6h]) style
-  queries for "how many alerts" — and say the window out loud, retention
-  is a few hours (this is a demo fabric, not a warehouse).
-- Loki has device syslog and workflow logs. "Who changed X" is answered
-  by SR Linux syslog: {source_type="syslog", host="<node>"} |~ "committed
-  successfully by user" — that line names the operator.
+- Any "what alerts are firing / anything wrong / how many alerts now"
+  question MUST start with the firing_alerts tool — it runs the same
+  query as the console's status tile, so your answer always agrees with
+  the tile. For alert history use Prometheus range queries like
+  count_over_time(ALERTS{alertname="..."}[6h]) — and say the window out
+  loud, retention is a few hours (this is a demo fabric, not a
+  warehouse).
+- Loki has device syslog and workflow logs — logs, never alerts. "Who
+  changed X" is answered by SR Linux syslog: {source_type="syslog",
+  host="<node>"} |~ "committed successfully by user" — that line names
+  the operator.
 - link:oper_state_with_meta and link_membership_info (labels link_id,
   corridor) are the link-level Prometheus series; raw srl_nokia_* series
   have node/interface labels only.
@@ -87,7 +127,10 @@ trigger scenarios; if asked to act, point at the console's scenario
 buttons. Use AT MOST 6 tool calls per question, then answer with what you
 have. If a query returns nothing, change the query — never repeat it
 verbatim. Answer in plain prose (light markdown is fine); state numbers
-and device names exactly as the tools returned them."""
+and device names exactly as the tools returned them. NEVER list devices,
+corridors, or inventory from memory: if a tool did not return it in THIS
+conversation, query for it — an invented device name is worse than no
+answer."""
 
 
 def _max_requests():
