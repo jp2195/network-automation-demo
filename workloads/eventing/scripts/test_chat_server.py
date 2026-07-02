@@ -11,6 +11,7 @@ everything else exercises pure helpers.
 import json
 import os
 import unittest
+from unittest import mock
 
 from fastapi.testclient import TestClient
 from pydantic_ai.messages import (FunctionToolCallEvent, ModelResponse,
@@ -88,12 +89,61 @@ class SSEFramingTest(unittest.TestCase):
 
 class ToolRosterTest(unittest.TestCase):
     def test_chat_tools_are_the_read_only_qa_set(self):
-        # No gNMI/SNMP device pokes in chat v1, and the deterministic
-        # corridor walk must be present.
+        # No gNMI/SNMP device pokes in chat v1; the deterministic corridor
+        # walk and firing-alerts tools must be present (demo-critical
+        # questions get computed tools, not tool-selection hope).
         self.assertEqual(
             [t.__name__ for t in chat_server.CHAT_TOOLS],
-            ["query_prometheus", "query_prometheus_range", "query_loki",
-             "query_netbox", "corridor_impact"])
+            ["firing_alerts", "query_prometheus", "query_prometheus_range",
+             "query_loki", "query_netbox", "corridor_impact"])
+
+
+class FiringAlertsTest(unittest.TestCase):
+    """firing_alerts wraps the exact ALERTS query the status tile uses, so
+    the chat can never disagree with the tile about what's firing."""
+
+    def setUp(self):
+        os.environ["PROM_URL"] = "http://prom"
+
+    def tearDown(self):
+        os.environ.pop("PROM_URL", None)
+
+    def _rows(self):
+        return [
+            {"metric": {"alertname": "Watchdog", "severity": "none"}},
+            {"metric": {"alertname": "NodeClockNotSynchronising",
+                        "severity": "warning", "pod": "node-exporter-1"}},
+            {"metric": {"alertname": "NodeClockNotSynchronising",
+                        "severity": "warning", "pod": "node-exporter-2"}},
+            {"metric": {"alertname": "SRLInterfaceOperDown",
+                        "severity": "critical", "node": "hub-e",
+                        "interface": "ethernet-1/1", "link_id": "ring-n-e"}},
+        ]
+
+    def test_counts_and_groups_by_alertname(self):
+        with mock.patch.object(chat_server, "prom_query",
+                               return_value=self._rows()):
+            out = chat_server.firing_alerts()
+        self.assertEqual(out["count"], 4)
+        by_name = {a["alertname"]: a for a in out["alerts"]}
+        self.assertEqual(by_name["NodeClockNotSynchronising"]["count"], 2)
+        self.assertEqual(by_name["SRLInterfaceOperDown"]["severity"],
+                         "critical")
+        # Network-meaningful labels survive for the model to narrate.
+        self.assertIn({"node": "hub-e", "interface": "ethernet-1/1",
+                       "link_id": "ring-n-e"},
+                      by_name["SRLInterfaceOperDown"]["instances"])
+
+    def test_empty_is_explicit(self):
+        with mock.patch.object(chat_server, "prom_query", return_value=[]):
+            out = chat_server.firing_alerts()
+        self.assertEqual(out, {"count": 0, "alerts": []})
+
+    def test_prom_failure_returns_error(self):
+        with mock.patch.object(chat_server, "prom_query",
+                               side_effect=OSError("prom down")):
+            out = chat_server.firing_alerts()
+        self.assertIn("error", out)
 
 
 class EndpointTest(unittest.TestCase):
