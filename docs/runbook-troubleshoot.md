@@ -402,9 +402,23 @@ re-apply the topology if you've edited the spec.
    `ai-analyst` Secret is absent or incomplete. It needs all three
    keys: `base_url`, `api_key`, `model` (see SECRETS.md).
 3. **Workflow Failed** — `kubectl -n argo-events logs <ai-analyze pod>`:
-   - connection refused / timeout on `base_url`: for local Ollama,
-     confirm it listens beyond loopback (`OLLAMA_HOST=0.0.0.0`) and
-     that `host.k3d.internal` resolves from a pod;
+   - connection refused / timeout / `Connection error.` on `base_url`:
+     for local Ollama, confirm it listens beyond loopback
+     (`OLLAMA_HOST=0.0.0.0`) and that `host.k3d.internal` resolves from
+     a pod:
+
+     ```bash
+     kubectl -n argo-events exec deploy/chat-agent -- \
+       python3 -c "import socket; print(socket.gethostbyname('host.k3d.internal'))"
+     ```
+
+     *Name or service not known* → run **`make fix-host-dns`**. k3d
+     injects `host.k3d.internal` into CoreDNS's `NodeHosts` ConfigMap at
+     cluster create, but k3s owns that ConfigMap and rewrites it over
+     time, silently dropping the entry — so a fresh `make up` works and
+     the AI lanes (analyst **and** console chat) break days later. The
+     target re-pins the name in a `coredns-custom` server block, which
+     k3s never touches;
    - unknown model name: must match the endpoint's model list;
    - exceeded `activeDeadlineSeconds: 900`: small local models can be
      slow — try a smaller alert window or a stronger model;

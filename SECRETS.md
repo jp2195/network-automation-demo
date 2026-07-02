@@ -96,6 +96,12 @@ kubectl create secret generic ai-analyst \
 A bigger local model can take several minutes per incident (multiple tool-call
 rounds); the analyst Workflow allows for it (`activeDeadlineSeconds: 900`).
 
+> **If the AI lanes suddenly fail with `Connection error.`** even though the
+> model server is up: pods have likely lost the `host.k3d.internal` DNS entry
+> (k3s periodically rewrites the CoreDNS `NodeHosts` ConfigMap and drops what
+> k3d injected at cluster create). Run `make fix-host-dns` — details in the
+> troubleshooting runbook.
+
 ### Where to run the model — host, Docker, or cloud
 
 The analyst only needs a URL; it does not care where the model runs. The
