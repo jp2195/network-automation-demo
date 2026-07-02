@@ -98,6 +98,25 @@ The 4 cabinet links each attach an FRR cabinet to one corridor-hub.
 | **Argo Events + Workflows** | Decouples "alert fired" from "someone got paged". Lets the demo show enrichment, analysis, and conditional Slack messaging in steps you can read. |
 | **Loki** | All workflow output flows to Loki by default. The Alert console shows the steps live, no extra plumbing. |
 
+### Advisory AI lanes (optional)
+
+Two read-only AI consumers sit on top of the planes above; both are
+Pydantic-AI agents over the same tool layer (PromQL, LogQL, NetBox GET),
+both read the optional `ai-analyst` Secret, and neither can change the
+network — the deterministic pipeline never depends on them.
+
+- **Incident analyst** (`docs/ai-analyst.md`) — event-triggered: its own
+  Sensor fires the `ai-analyst` WorkflowTemplate per alert, in parallel
+  with the paging lane. Output is a structured analysis threaded under the
+  Slack incident card and folded into the postmortem.
+- **Console chat** (`docs/chat.md`) — interactive: a long-lived
+  `chat-agent` Deployment behind the console's `/api/chat` ingress path
+  streams answers into the scenario console's "Ask the network" panel.
+  Demo-critical questions ride deterministic tools — `corridor_impact`
+  (NetBox cable-graph reachability walk) and `firing_alerts` (the status
+  tile's exact `ALERTS` query) — so blast-radius and alert answers are
+  computed, never guessed.
+
 ## Telemetry — the gNMI / SNMP split
 
 The fictional Atlas DOT runs a mixed fleet: modern SR Linux backbone, FRR
