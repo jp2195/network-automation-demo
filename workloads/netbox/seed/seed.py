@@ -390,7 +390,15 @@ def main():
         existing = find_id("/api/dcim/cables/", label=c["label"])
         if existing is not None:
             cable_ids[c["label"]] = existing
-            print(f"  exists: cable/{c['label']} (id={existing})", flush=True)
+            # Custom fields are the one cable attribute that grows across
+            # spec revisions (corridor arrived after clusters were seeded);
+            # converge them on re-seed instead of create-and-forget.
+            if c.get("custom_fields"):
+                patch("/api/dcim/cables/", existing,
+                      {"custom_fields": c["custom_fields"]},
+                      f"cable/{c['label']} custom_fields")
+            else:
+                print(f"  exists: cable/{c['label']} (id={existing})", flush=True)
             continue
         payload = {
             "label": c["label"],
