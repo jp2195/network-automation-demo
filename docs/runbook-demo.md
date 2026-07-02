@@ -46,6 +46,12 @@ kubectl -n monitoring port-forward svc/dom-synth 8000:8000 >/dev/null 2>&1 &
 sleep 2
 curl -s http://127.0.0.1:8000/metrics | grep -c "^dom_temperature_celsius"
 # expected: 26
+
+# 8. (if the AI Secret is set) chat lane up and model reachable
+curl -s http://console.127-0-0-1.nip.io:8080/api/chat/status
+# expected: {"enabled":true,"model":"...","remaining_requests":...}
+# enabled:false → Secret absent (SECRETS.md); Connection error on first
+# question → run `make fix-host-dns` (troubleshooting runbook)
 ```
 
 ## URLs to have open in tabs
@@ -131,6 +137,29 @@ make demo-restore NODE=hub-i20e INTERFACE=ethernet-1/2
 > again. If we'd posted to Slack, you'd now see the original message
 > updated with a ✅ + downtime computed from `alert.startsAt → endsAt`,
 > plus a threaded resolution summary. The Valkey ledger key gets DEL'd.
+
+### Act 3½ (optional, needs the AI Secret) — ask the network (≈2 min)
+
+Open the **scenario console** and scroll to the **Ask the network**
+panel. Best run *before* a cut, so the prediction lands first.
+
+Click the **"I-285 goes down — what breaks?"** chip.
+
+> I didn't write this answer — watch the `›` trace under it. The agent
+> called `corridor_impact`, which walks the NetBox cable graph: cut every
+> I-285 cable, then check who can still reach a TMC. hub-e, hub-i20e,
+> hub-i20w and field cabinet fc-i20e go dark — 14 cameras, 26 signal
+> controllers, two county DOTs. Computed, not guessed.
+
+Now cut a ring link with the **Cut** button and, once the tile goes red,
+click **"Alerts firing now?"**.
+
+> Same number as the status tile — the chat runs the exact query the
+> tile runs. The AI narrates; the telemetry decides.
+
+Timing note: with a local ~35B model, answers stream in over ~30–60 s —
+start the question, keep talking over the stream. It's read-only: ask it
+to "fix" something and it will point you back at the scenario buttons.
 
 ### Pre-canned outage scenarios
 

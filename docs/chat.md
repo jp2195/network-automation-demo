@@ -14,7 +14,8 @@ chat, and the rest of the demo is untouched.
 | "If corridor I-285 goes down, what breaks?" | `corridor_impact` — a deterministic reachability walk over the NetBox cable graph |
 | "How many CCTV cameras are on GA-400?" | NetBox (each cabinet's ITS roster is seeded as devices at its site) |
 | "Which agencies ride on fc-i20e?" | NetBox device tags |
-| "What alerts are firing / how many in the last hour?" | Prometheus `ALERTS` (say the window — retention is hours, not weeks) |
+| "What alerts are firing right now?" | `firing_alerts` — the exact `ALERTS` query the console status tile runs (same Watchdog/InfoInhibitor filter), so chat and tile always agree |
+| "How many alerts in the last hour?" | Prometheus range queries over `ALERTS` (the agent says the window — retention is hours, not weeks) |
 | "Who last changed hub-e?" | Loki, SR Linux syslog (`committed successfully by user …`) |
 
 ## Architecture
@@ -25,8 +26,9 @@ browser (console chat panel)
        └─ Traefik ingress path-routes /api/chat (same origin, no proxy code)
             └─ chat-agent Deployment   workloads/chat-agent/, argo-events ns
                  └─ Pydantic-AI agent  scripts/chat_server.py
-                      tools: query_prometheus · query_prometheus_range
-                             query_loki · query_netbox · corridor_impact
+                      tools: firing_alerts · corridor_impact
+                             query_prometheus · query_prometheus_range
+                             query_loki · query_netbox
 ```
 
 - **Stateless server.** The browser replays the conversation (capped) with
@@ -43,6 +45,14 @@ browser (console chat panel)
   `spec/atlanta.yaml` for exactly this purpose (it is *not* derivable from a
   cable's endpoint sites — the ring spans sites grouped under other
   corridors).
+- **Deterministic tools for demo-critical questions.** The design rule this
+  lane follows: any question a demo audience *will* ask gets a computed,
+  purpose-named tool (`corridor_impact`, `firing_alerts`) rather than
+  trusting a small local model to pick the right generic query. Live-found
+  counterexample that motivated `firing_alerts`: asked "what alerts are
+  firing?", the model searched Loki (logs — no alerts there) and declared
+  all-clear while the status tile showed alerts firing. The generic tools
+  stay for the long tail of unscripted questions.
 
 ## Guardrails
 

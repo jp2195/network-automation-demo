@@ -50,6 +50,7 @@ a 3-step Argo Workflow with an alert-fingerprint-keyed ledger in Valkey.
 | Logs | Alloy DaemonSet → Loki SingleBinary |
 | Eventing | Argo Events (NATS JetStream EventBus) → Argo Workflows |
 | Notifications | Slack (`slack-sdk` bot, `chat.update` on resolve) |
+| AI (optional) | Pydantic-AI over any OpenAI-compatible endpoint: per-alert incident analyst + interactive console chat, both read-only (`docs/ai-analyst.md`, `docs/chat.md`) |
 | Certs | cert-manager (selfsigned ClusterIssuer, traefik ingresses on `*.127-0-0-1.nip.io`) |
 
 Working set ≈ 25 GB on a 32 GB+ laptop. Apple Silicon / ARM64 is
@@ -148,7 +149,7 @@ TLS warning):
 
 ### Pre-baked images
 
-`make up` (and `make build` standalone) builds and pushes five pre-baked
+`make up` (and `make build` standalone) builds and pushes six pre-baked
 images into the k3d-bundled distribution registry:
 
 - `localhost:5001/eventing-py:latest` — Python + slack-sdk + valkey + eventing scripts.
@@ -158,9 +159,15 @@ images into the k3d-bundled distribution registry:
   tool deps (pygnmi Get-only, SNMP, PromQL/LogQL/NetBox over stdlib) for the
   advisory AI lane. A no-op unless you create the optional `ai-analyst`
   Secret (see `SECRETS.md`).
+- `localhost:5001/chat-agent:latest` — Python + Pydantic AI + FastAPI for
+  the console's **Ask the network** chat: interactive read-only Q&A over
+  NetBox/Prometheus/Loki with deterministic blast-radius and alert tools
+  (`docs/chat.md`). Shares the optional `ai-analyst` Secret; disabled
+  without it.
 - `localhost:5001/console:latest` — the scenario console (Go static
   binary on distroless): drives cut/restore, gray-failure, and
-  maintenance from the browser and shows a live status strip.
+  maintenance from the browser, shows a live status strip, and hosts
+  the chat panel.
 
 Note the two endpoints for the SAME registry:
 
