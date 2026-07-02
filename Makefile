@@ -27,6 +27,7 @@ help:
 	@echo "  render       Re-render workloads/* outputs from spec/atlanta.yaml"
 	@echo "  render-check Re-render to /tmp/render-check and verify no drift vs the committed outputs"
 	@echo "  build        Build + push the pre-baked images to the k3d registry (localhost:5001)"
+	@echo "  fix-host-dns Restore host.k3d.internal resolution in cluster DNS (k3s rewrites NodeHosts and drops it)"
 	@echo "  demo-cut             Disable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-restore         Re-enable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-cut-cabinet     Carrier-loss on an FRR cabinet uplink (NODE=, INTERFACE= required) — fires CabinetInterfaceOperDown"
@@ -162,6 +163,27 @@ build:
 	docker buildx build -t localhost:5001/chat-agent:latest  -f images/chat-agent/Dockerfile  workloads/eventing/ --push
 	docker buildx build -t localhost:5001/console:latest     -f images/console/Dockerfile     .                    --push
 	@echo "==> All images pushed. Verify with: curl -s localhost:5001/v2/_catalog"
+
+## host.k3d.internal is how the in-cluster AI lanes (analyst + chat) reach a
+## model server running on the host (SECRETS.md). k3d injects the name into
+## CoreDNS's NodeHosts ConfigMap at cluster create, but k3s OWNS that
+## ConfigMap and rewrites it over time, silently dropping the entry — a fresh
+## `make up` works, then days later the AI lanes fail with "Connection
+## error". This pins the name in a k3s-native coredns-custom server block,
+## which the NodeHosts rewrites can't touch. Idempotent; safe to re-run.
+fix-host-dns:
+	@IP=$$(docker run --rm --add-host=host.docker.internal:host-gateway alpine \
+	  getent ahostsv4 host.docker.internal | awk 'NR==1{print $$1}'); \
+	if [ -z "$$IP" ]; then \
+	  echo "could not detect the docker host-gateway IP" >&2; exit 1; \
+	fi; \
+	echo "==> Pinning host.k3d.internal -> $$IP in kube-system/coredns-custom"; \
+	VAL=$$(printf 'host.k3d.internal:53 {\n    hosts {\n        %s host.k3d.internal\n        fallthrough\n    }\n}\n' "$$IP"); \
+	kubectl -n kube-system create configmap coredns-custom \
+	  --from-literal=hostk3d.server="$$VAL" \
+	  --dry-run=client -o yaml | kubectl apply -f -; \
+	kubectl -n kube-system rollout restart deploy/coredns; \
+	kubectl -n kube-system rollout status deploy/coredns --timeout=90s
 
 status:
 	@echo "==> Nodes"
