@@ -61,12 +61,17 @@ def firing_alerts() -> dict:
     """The alerts firing RIGHT NOW — the same Prometheus ALERTS query the
     console status tile runs, so this answer always agrees with the tile.
     Call this FIRST for any "what alerts / how many alerts / anything
-    firing?" question. Returns {count, alerts:[{alertname, severity,
-    count, instances}]}. Alerts do NOT live in Loki (logs) or NetBox
-    (inventory)."""
+    firing?" question. Housekeeping alerts (Watchdog, InfoInhibitor) are
+    excluded, exactly like the tile. Returns {count, alerts:[{alertname,
+    severity, count, instances}]}. Alerts do NOT live in Loki (logs) or
+    NetBox (inventory)."""
     try:
+        # Keep this filter in lockstep with the alerts_firing tile query
+        # in tools/console/main.go — agreement with the tile is the
+        # entire point of this tool.
         rows = prom_query(os.environ["PROM_URL"],
-                          'ALERTS{alertstate="firing"}')
+                          'ALERTS{alertstate="firing",alertname!="Watchdog"'
+                          ',alertname!="InfoInhibitor"}')
     except Exception as e:
         return {"error": f"Prometheus query failed: {e}"}
     groups = {}

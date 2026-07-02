@@ -120,6 +120,18 @@ class FiringAlertsTest(unittest.TestCase):
                         "interface": "ethernet-1/1", "link_id": "ring-n-e"}},
         ]
 
+    def test_query_uses_the_tiles_housekeeping_filter(self):
+        # The tile hides Watchdog/InfoInhibitor (tools/console/main.go);
+        # firing_alerts must send the SAME filter or the two disagree on
+        # quiet fabrics (live-found: chat said 3, tile said 2 — Watchdog).
+        seen = {}
+        with mock.patch.object(
+                chat_server, "prom_query",
+                side_effect=lambda url, q: seen.setdefault("q", q) and []):
+            chat_server.firing_alerts()
+        self.assertIn('alertname!="Watchdog"', seen["q"])
+        self.assertIn('alertname!="InfoInhibitor"', seen["q"])
+
     def test_counts_and_groups_by_alertname(self):
         with mock.patch.object(chat_server, "prom_query",
                                return_value=self._rows()):
