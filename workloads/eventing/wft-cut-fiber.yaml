@@ -26,9 +26,9 @@ spec:
           - -a
           - "atlanta-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
           - -u
-          - admin
+          - "noc-ops"
           - -p
-          - "NokiaSrl1!"
+          - "NocOps1!"
           - --skip-verify
           - --encoding
           - json_ietf
