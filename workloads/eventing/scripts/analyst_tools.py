@@ -18,6 +18,7 @@ import json
 import os
 import re
 import time
+from datetime import datetime, timezone
 
 from pydantic_ai import ModelRetry
 
@@ -49,10 +50,37 @@ def _parse_iso_epoch(s):
         return None
     t = re.sub(r"\.(\d{6})\d+", r".\1", s.strip().replace("Z", "+00:00"))
     try:
-        from datetime import datetime
         return datetime.fromisoformat(t).timestamp()
     except ValueError:
         return None
+
+
+def _iso(ts_ns):
+    """Nanosecond epoch -> "YYYY-MM-DDTHH:MM:SSZ".
+
+    Loki returns 19-digit nanosecond integers. Handing those straight to the
+    model forces it to do epoch arithmetic before it can quote a time in its
+    evidence, and small models get that wrong: a smoke run reported a config
+    commit at a timestamp matching NO log line in the result set, at 0.95
+    confidence. Formatting here removes the conversion from the model's job.
+    """
+    try:
+        return datetime.fromtimestamp(
+            int(ts_ns) / 1e9, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    except (TypeError, ValueError, OSError, OverflowError):
+        return str(ts_ns)
+
+
+# When `around` is given the window is deliberately ASYMMETRIC: a cause
+# precedes its effect, so most of the span belongs before the instant. A
+# centred window reaches just as far forward, which lets post-fault activity
+# — the operator's own restore, the remediation lane's cost-out — land in
+# the evidence set and get reported as the root cause (smoke-found: a
+# ConfigDrift run blamed the RESTORE commit that landed while the agent was
+# still investigating). The 20% forward lead is kept on purpose: the
+# device's own reaction (IS-IS adjacency down, oper-state change) is
+# genuine corroborating evidence for what the fault did.
+_AROUND_LOOKBACK = 0.8
 
 
 # Every tool result is byte-bounded before it reaches the model: one
@@ -129,9 +157,16 @@ def query_prometheus_range(promql: str, minutes: int = 30) -> list:
 def query_loki(logql: str, minutes: int = 30, around: str | None = None) -> list:
     """Search logs in Loki. By default the trailing `minutes` (max 360,
     ending now). Pass `around` — an ISO8601 instant, e.g. the alert's
-    `startsAt` — to instead search a window of `minutes` total *centered*
-    on that moment. For an outage this is the move: bracket the fault and
-    read what changed just before it, rather than scrolling from now.
+    `startsAt` — to instead search a window of `minutes` total weighted
+    around that moment: mostly BEFORE it, with a short lead after. For an
+    outage this is the move: bracket the fault and read what changed just
+    before it, rather than scrolling from now.
+
+    Causality: anything logged AFTER the alert's `startsAt` happened after
+    the fault, so it cannot have caused it — it is the fault's consequence
+    or somebody's response to it (an operator restoring the link, the
+    remediation lane costing a link out). Never cite a post-onset commit as
+    the root cause.
 
     Streams worth knowing:
       {namespace="clabernetes"} |= "hub-e"        device pod stdout
@@ -144,19 +179,20 @@ def query_loki(logql: str, minutes: int = 30, around: str | None = None) -> list
     — has NO per-command sr_cli line, so the committed-by-user line IS the
     attribution; one match answers WHO. Query
       {source_type="syslog", host="<node>"} |~ "committed successfully by user"
-    with around=<alert startsAt>. Returns up to 100 [timestamp_ns, line]
-    pairs, oldest first (empty on error/no match)."""
+    with around=<alert startsAt>. Returns up to 100 [timestamp, line] pairs,
+    oldest first, each timestamp already formatted as ISO-8601 UTC — quote
+    it verbatim, never compute a time yourself (empty on error/no match)."""
     span = _clamp_minutes(minutes)
     _repeat_guard("query_loki", (logql, span, (around or "").strip()))
     center = _parse_iso_epoch(around)
     if center is not None:
-        half = span * 60 / 2
-        start, end = center - half, center + half
+        start = center - span * 60 * _AROUND_LOOKBACK
+        end = center + span * 60 * (1 - _AROUND_LOOKBACK)
     else:
         now = time.time()
         start, end = now - span * 60, now
     rows = loki_query_range(os.environ["LOKI_URL"], logql, start, end, limit=100)
-    return _bounded([[ts, line[:500]] for ts, line in rows])
+    return _bounded([[_iso(ts), line[:500]] for ts, line in rows])
 
 
 def query_netbox(path: str, params: dict | None = None) -> dict:
