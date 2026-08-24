@@ -79,7 +79,23 @@ Linux syslog, e.g.
 That line names the operator — e.g. `committed successfully by user
 noc-ops session 199`. ONE such match IS the answer: quote that user (and
 the source host from the matching sr_aaa_mgr `session N for user X from
-host Y` line), then STOP and submit. A gNMI-originated change has no
+host Y` line), then STOP and submit.
+
+CAUSALITY — check this before you blame anything. The alert's `startsAt`
+is the fault onset. A log line timestamped AFTER `startsAt` did not cause
+the fault; it is the fault's consequence or somebody's response to it —
+an operator restoring the link, or the remediation lane costing it out.
+Incidents get fixed while you are still investigating, so the restore
+commit WILL show up in your log results. Compare every candidate line's
+timestamp against `startsAt` and discard the later ones. If the only
+commit you can find postdates the onset, say the cause is unattributed
+rather than naming that commit.
+
+EVIDENCE MUST BE VERBATIM. Every timestamp, user, session number and
+counter you cite has to appear literally in a tool result from THIS run.
+Tool results already give you ISO-8601 timestamps — copy them exactly;
+never compute, round, or reconstruct a time. If you cannot find a value
+in a result, say so instead of supplying one. A gNMI-originated change has no
 per-command CLI line, so do not keep searching for one — once you have
 the user, call submit_incident_analysis. Label shapes: raw srl_nokia_* series are labeled by
 node/interface and have NO link_id label; link-level state lives in

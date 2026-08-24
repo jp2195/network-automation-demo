@@ -99,19 +99,47 @@ class TestToolAllowlists(unittest.TestCase):
         self.assertEqual(pq.call_args[0][1], 'up{job="a"}')
         analyst_tools._seen_calls.clear()
 
-    def test_query_loki_around_centers_window_on_timestamp(self):
+    def test_query_loki_around_weights_window_before_the_instant(self):
+        """A cause precedes its effect, so `around` must look mostly BACK.
+
+        A centred window reaches as far forward as back, which pulled the
+        operator's own restore — committed while the agent was still
+        investigating — into the evidence set, where one run reported it as
+        the root cause. The window keeps a short forward lead so the
+        device's reaction (IS-IS down, oper-state change) is still visible.
+        """
         analyst_tools._seen_calls.clear()
         with mock.patch("analyst_tools.loki_query_range",
                         return_value=[]) as lq:
             with mock.patch.dict("os.environ", {"LOKI_URL": "http://x"}):
-                # 10-minute window centered on a known instant
                 analyst_tools.query_loki(
                     '{host="hub-e"}', 10, around="2026-06-29T01:43:19Z")
         start, end = lq.call_args[0][2], lq.call_args[0][3]
         center = 1782697399.0  # 2026-06-29T01:43:19Z in epoch seconds
-        self.assertAlmostEqual(start, center - 300, delta=1)  # -5 min
-        self.assertAlmostEqual(end, center + 300, delta=1)    # +5 min
+        self.assertAlmostEqual(start, center - 480, delta=1)  # -8 min
+        self.assertAlmostEqual(end, center + 120, delta=1)    # +2 min
+        self.assertAlmostEqual(end - start, 600, delta=1)     # 10-min total
+        self.assertGreater(center - start, end - center)      # biased back
         analyst_tools._seen_calls.clear()
+
+    def test_query_loki_returns_iso_timestamps_not_nanoseconds(self):
+        """The model must never have to convert an epoch to quote a time.
+
+        Loki hands back 19-digit nanosecond integers; a run that had to
+        render one itself cited a commit at a timestamp matching no log
+        line at all, at 0.95 confidence.
+        """
+        analyst_tools._seen_calls.clear()
+        with mock.patch("analyst_tools.loki_query_range",
+                        return_value=[(1782697399000000000, "committed by noc-ops")]):
+            with mock.patch.dict("os.environ", {"LOKI_URL": "http://x"}):
+                rows = analyst_tools.query_loki('{host="hub-e"}', 10)
+        self.assertEqual(rows, [["2026-06-29T01:43:19Z", "committed by noc-ops"]])
+        analyst_tools._seen_calls.clear()
+
+    def test_iso_falls_back_to_raw_value_on_garbage(self):
+        self.assertEqual(analyst_tools._iso("not-a-number"), "not-a-number")
+        self.assertEqual(analyst_tools._iso(None), "None")
 
     def test_query_loki_without_around_is_trailing_from_now(self):
         analyst_tools._seen_calls.clear()
