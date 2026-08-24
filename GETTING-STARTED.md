@@ -246,10 +246,13 @@ minutes the first time** and print a lot of text. That's normal.
 > a Linux system limit is too low and the automation pipeline (the part that
 > reacts to network failures) won't fire. The fix is the one-time command shown
 > in your OS's install section above (Part 2). The cluster and dashboards still
-> work without it — only the automatic incident response is affected. On
-> **macOS with Docker Desktop** this limit lives inside Docker's own virtual
-> machine and usually doesn't need changing; if the pipeline misbehaves, see
-> the troubleshooting runbook.
+> work without it — only the automatic incident response is affected.
+>
+> This check is **Linux-only**. On **macOS and Windows** the limit lives inside
+> Docker's own virtual machine rather than on your host, where the default is
+> ample — so `make up` prints `preflight: no /proc/sys/fs/inotify on Darwin —
+> skipping` and moves on. That line is expected, not a problem. If the pipeline
+> misbehaves there anyway, see the troubleshooting runbook.
 
 ### How do I know it's ready?
 

@@ -65,7 +65,13 @@ up: preflight
 	@$(MAKE) --no-print-directory status
 
 preflight:
-	@instances=$$(cat /proc/sys/fs/inotify/max_user_instances 2>/dev/null || echo 0); \
+	@if [ ! -r /proc/sys/fs/inotify/max_user_instances ]; then \
+	  echo "==> preflight: no /proc/sys/fs/inotify on $$(uname -s) — skipping"; \
+	  echo "    (on macOS/Windows the limit lives inside the Docker VM, not the host;"; \
+	  echo "     Docker Desktop's default is ample. See docs/runbook-troubleshoot.md.)"; \
+	  exit 0; \
+	fi; \
+	instances=$$(cat /proc/sys/fs/inotify/max_user_instances 2>/dev/null || echo 0); \
 	if [ "$$instances" -lt $(INOTIFY_MIN) ]; then \
 	  echo ""; \
 	  echo "  !!  fs.inotify.max_user_instances=$$instances (< $(INOTIFY_MIN))"; \

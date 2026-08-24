@@ -14,6 +14,10 @@
 set -uo pipefail
 export PATH="$HOME/.local/bin:$PATH"
 
+# Repo root, derived from this script's own location so the gate can be run
+# from any working directory (it reads rendered manifests for expected counts).
+REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+
 PASS=0; FAIL=0
 ok()   { printf '  \033[32m✓\033[0m %s\n' "$1"; PASS=$((PASS+1)); }
 bad()  { printf '  \033[31m✗\033[0m %s\n' "$1"; FAIL=$((FAIL+1)); }
@@ -86,11 +90,25 @@ fi
 
 # 4. SNMP lane — all cabinet targets up AND ifOperStatus actually populated.
 #    This is the check that catches a cabinet whose snmpd never started.
+#
+#    The denominator MUST come from the Probe's declared targets, not from
+#    the `up` series that happen to exist. A target Prometheus has not
+#    scraped yet emits no `up` series at all, so it drops out of BOTH the
+#    sum and the count — and a naive `snmpup -eq snmptot` then reports a
+#    green "2/2" while four cabinets are configured and two are dark. With
+#    a 300s poll interval that window is guaranteed on every fresh cluster,
+#    which is exactly when this gate gets run.
 snmpseries=$(promcount 'ifOperStatus%7Btelemetry_source%3D%22snmp%22%7D')
 snmpup=$(promsum 'up%7Bjob%3D%22snmp-frr-cabinets%22%7D')
-snmptot=$(promcount 'up%7Bjob%3D%22snmp-frr-cabinets%22%7D')
+snmpseen=$(promcount 'up%7Bjob%3D%22snmp-frr-cabinets%22%7D')
+# Declared targets in the rendered Probe (source of truth for what SHOULD
+# be polled); fall back to the scraped count if the file isn't reachable.
+snmptot=$(grep -cE '^\s*-\s+\S+:161\s*$' "$REPO_ROOT/workloads/snmp/probe.yaml" 2>/dev/null || echo 0)
+[ "${snmptot:-0}" -gt 0 ] || snmptot=$snmpseen
 if [ "$snmpup" -gt 0 ] && [ "$snmpup" -eq "$snmptot" ] && [ "$snmpseries" -gt 0 ]; then
   ok "snmp: $snmpup/$snmptot cabinets up, $snmpseries ifOperStatus series"
+elif [ "$snmpseen" -lt "$snmptot" ]; then
+  bad "snmp: $snmpup/$snmptot cabinets up, $snmpseries ifOperStatus series ($((snmptot - snmpseen)) target(s) never scraped — 300s poll, or snmpd down)"
 else
   bad "snmp: $snmpup/$snmptot cabinets up, $snmpseries ifOperStatus series (snmpd down on cabinet(s)?)"
 fi

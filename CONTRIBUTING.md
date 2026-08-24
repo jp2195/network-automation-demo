@@ -40,6 +40,15 @@ go test ./tools/...
 cd workloads/eventing/scripts && python3 -m unittest test_analyze_impact -v
 # Others need extra deps via uv, e.g.:
 #   uv run --with fakeredis --with valkey python3 -m unittest test_drift -v
+
+# …or run every eventing suite at once with the union of those deps:
+cd workloads/eventing/scripts && uv run --quiet \
+  --with fakeredis --with valkey --with "pydantic-ai-slim[openai]" \
+  --with fastapi --with httpx python3 -m unittest discover -p "test_*.py"
+
+# dom-synth lives in its own directory and needs valkey + fakeredis:
+cd workloads/dom-synth && uv run --quiet --with valkey --with fakeredis \
+  python3 -m unittest test_dom_synth
 ```
 
 After changing eventing Python, the change reaches the cluster two ways: the
