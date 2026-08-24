@@ -35,8 +35,14 @@ var wftGrayFailureTmpl string
 // WriteWFTCutFiber emits the cut-fiber WorkflowTemplate. The clabernetes
 // FQDN baked into the gnmic -a flag is parameterised from
 // spec.Metadata.Name so renaming the cluster doesn't break the demo.
+//
+// The Set authenticates as NocOps, NOT admin: this template is the console's
+// manual-cut lane, the exact counterpart of `make demo-cut`. Both must name
+// the same operator or the AAA syslog attributes a console-driven cut to
+// "admin" — and the AI analyst, whose instructions tell it to look for
+// "committed successfully by user noc-ops", reports the wrong actor.
 func WriteWFTCutFiber(w io.Writer, s *Spec) error {
-	_, err := fmt.Fprintf(w, wftCutFiberTemplate, s.Metadata.Name)
+	_, err := fmt.Fprintf(w, wftCutFiberTemplate, s.Metadata.Name, NocOpsUser, NocOpsPassword)
 	return err
 }
 
@@ -135,9 +141,9 @@ spec:
           - -a
           - "%s-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
           - -u
-          - admin
+          - "%s"
           - -p
-          - "NokiaSrl1!"
+          - "%s"
           - --skip-verify
           - --encoding
           - json_ietf

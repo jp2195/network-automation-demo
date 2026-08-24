@@ -66,6 +66,18 @@ spec:
                   value: "{{tasks.notify.outputs.result}}"
 
     - name: enrich
+      # A transient NetBox or DNS blip must not sink the incident
+      # notification — this is the first step of the marquee lane, and a
+      # failure here means the alert is never announced at all. Safe to
+      # retry unconditionally: enrich only issues GETs, so a re-run has no
+      # side effects. (enrich.py also degrades rather than raising now;
+      # this covers the failures it cannot catch — image pull, OOMKill.)
+      retryStrategy:
+        limit: "2"
+        retryPolicy: OnFailure
+        backoff:
+          duration: "5s"
+          factor: "2"
       inputs:
         parameters:
           - name: alert
@@ -105,6 +117,17 @@ spec:
             memory: 128Mi
 
     - name: analyze
+      # Same reasoning as enrich: Prometheus/NetBox reads only, no writes,
+      # so a retry is free. Deliberately NOT applied to notify, dashboard
+      # or postmortem — those have side effects (a Slack post, a ConfigMap,
+      # a ledger entry) and would need an idempotency review first; a blind
+      # retry of notify on a partial failure would post a duplicate card.
+      retryStrategy:
+        limit: "2"
+        retryPolicy: OnFailure
+        backoff:
+          duration: "5s"
+          factor: "2"
       inputs:
         parameters:
           - name: enrichment

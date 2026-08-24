@@ -166,7 +166,10 @@ The FRR cabinets install `snmpd` from the alpine mirror on first boot. The
 entrypoint wrapper does it in the **background** (with per-attempt timeouts +
 retries) so FRR always starts and `snmpd` attaches once `net-snmp` lands
 (~30–60 s later). So on a fresh `make up` the SNMP targets come up a beat after
-gNMI — `make ready` self-heals to `4/4` with no manual steps. (This replaced an
+gNMI — `make ready` self-heals to `4/4` with no manual steps. During that window
+the gate reports the honest interim count (`2/4 … 2 target(s) never scraped`)
+rather than a green `2/2`: the denominator comes from the targets the Probe
+declares, not from the `up` series that happen to exist yet. (This replaced an
 old bug where an inline `apk add` with no timeout hung at boot if egress wasn't
 up yet, wedging the cabinet — no FRR, no snmpd.) If a cabinet *never* gets
 `snmpd`, the pod had no egress to the apk mirror; confirm it can reach the
