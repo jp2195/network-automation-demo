@@ -114,7 +114,7 @@ scenario_hurricane() {
   banner "scenario: hurricane"
   log "1/4  ring-e-i20e drops (storm surge)"
   cut hub-i20e ethernet-1/2
-  log "     dashboards should show oper_state=2 within 5s, alert pending in 30s"
+  log "     dashboards should show oper_state=2 within 5s, alert fires in ~20s"
   sleep 30
 
   log "2/4  ring-i20e-sw drops too — corridor isolated, fc-i20e is now stranded"
