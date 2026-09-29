@@ -150,5 +150,20 @@ class NotifyTests(unittest.TestCase):
         self.assertNotIn("thread_ts", slack.calls[0][1])
 
 
+
+class IdentityLineTests(unittest.TestCase):
+    def test_falls_back_to_alert_interface_when_netbox_lookup_empty(self):
+        line = notify._identity_line({
+            "alert": {"interface": "ethernet-1/4"},
+            "device": {"site": "Lithonia"},
+            "interface": {"name": None},
+        })
+        self.assertIn("`ethernet-1/4`", line)
+        self.assertNotIn("None", line)
+
+    def test_unknown_when_no_interface_anywhere(self):
+        line = notify._identity_line({"alert": {}, "device": {}, "interface": {}})
+        self.assertNotIn("None", line)
+
 if __name__ == "__main__":
     unittest.main()

@@ -162,7 +162,11 @@ def _identity_line(enrichment):
     cf = cable.get("custom_fields") or {}
     corridor = a.get("corridor") or (cable.get("site_group") or {}).get("slug") \
         or cf.get("corridor") or "unknown"
-    line = f"`{ifc.get('name')}`   ·   {dev.get('site')}   ·   {corridor}"
+    # NetBox can come back empty (e.g. an alert raised while it's still
+    # seeding) — fall back to the alert's own label, never print "None".
+    ifname = ifc.get("name") or a.get("interface") or "unknown interface"
+    site = dev.get("site") or "unknown site"
+    line = f"`{ifname}`   ·   {site}   ·   {corridor}"
     if cable.get("label"):
         provider = (cable.get("owner") or {}).get("name") or cf.get("provider") or "unknown"
         sla = cf.get("restoration_sla_hours", "?")
