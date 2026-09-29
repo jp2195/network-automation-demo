@@ -1,11 +1,16 @@
-.PHONY: up preflight down status render render-check build demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet \
-        scenario scenario-list scenario-hurricane scenario-backhoe scenario-cabinet scenario-flap \
+.PHONY: help doctor preflight up demo wait-ready urls down status render render-check build fix-host-dns repoint last-notify \
+        _require_cut_vars demo-cut demo-restore demo-cut-cabinet demo-restore-cabinet demo-cut-fiber demo-restore-fiber \
+        scenario-list scenario-hurricane scenario-backhoe scenario-cabinet scenario-flap \
         scenario-gray-failure scenario-gray-failure-end \
         maintenance-start maintenance-end maintenance-list \
         remediation-mode remediation-approve remediation-status \
-        drift-check postmortem measure measure-gray ready demo-cut-fiber demo-restore-fiber help
+        drift-check postmortem measure measure-gray ready
 
-CLUSTER_NAME ?= atlas-demo
+# The cluster name is NOT configurable: k3d/config.yaml (metadata.name), the
+# registry name (atlas-demo-registry) and the rendered manifests all hardcode
+# atlas-demo. `override` stops a stray `make CLUSTER_NAME=...` from making
+# `up`/`down` disagree with the config file.
+override CLUSTER_NAME := atlas-demo
 TOPO_NS      ?= clabernetes
 INOTIFY_MIN  ?= 512
 
@@ -18,16 +23,31 @@ GNMI_PORT    ?= 57400
 NOC_USER     ?= noc-ops
 NOC_PASS     ?= NocOps1!
 
+# Image builds must use a docker-driver buildx builder: a docker-container
+# builder runs BuildKit in its own container, where localhost:5001 is not the
+# host's k3d registry, so --push fails. Every docker context has a same-named
+# docker-driver builder (default / desktop-linux / orbstack), so pin to it.
+BUILDER      ?= $(shell docker context show 2>/dev/null || echo default)
+REGISTRY     ?= localhost:5001
+
 help:
-	@echo "Targets:"
-	@echo "  up           Create k3d cluster + build images + bootstrap ArgoCD + apply root Application"
-	@echo "  preflight    Check host fs.inotify.max_user_instances (eventing needs headroom)"
+	@echo "Setup:"
+	@echo "  demo         One shot: up + wait-ready + urls (OPEN=1 also opens the console in a browser)"
+	@echo "  doctor       Check host prerequisites (tools, Docker memory/CPU, ports, disk, DNS, inotify)"
+	@echo "  preflight    Alias for doctor"
+	@echo "  up           Doctor + create k3d cluster (skipped if it exists) + build images + ArgoCD + root app"
+	@echo "  wait-ready   Re-run the readiness gate every 20s until READY (TIMEOUT= seconds, default 1500)"
+	@echo "  urls         Print every UI URL with its credentials (fetches the ArgoCD admin password)"
+	@echo "  status       Show node + ArgoCD application state, then the URL table"
 	@echo "  down         Delete the k3d cluster"
-	@echo "  status       Show node + ArgoCD application state, print URL and admin password"
+	@echo "  repoint      Point ArgoCD at your fork: REPO= (default: origin) REV= (default: current branch)"
+	@echo "  last-notify  Show the newest enriched-notify workflow's notify output (Slack payload if unconfigured)"
+	@echo "Dev:"
 	@echo "  render       Re-render workloads/* outputs from spec/atlanta.yaml"
 	@echo "  render-check Re-render to /tmp/render-check and verify no drift vs the committed outputs"
-	@echo "  build        Build + push the pre-baked images to the k3d registry (localhost:5001)"
+	@echo "  build        Build + push the pre-baked images to the k3d registry (localhost:5001; BUILDER= to override)"
 	@echo "  fix-host-dns Restore host.k3d.internal resolution in cluster DNS (k3s rewrites NodeHosts and drops it)"
+	@echo "Demo:"
 	@echo "  demo-cut             Disable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-restore         Re-enable an interface on an SR Linux node (NODE=, INTERFACE= required)"
 	@echo "  demo-cut-cabinet     Carrier-loss on an FRR cabinet uplink (NODE=, INTERFACE= required) — fires CabinetInterfaceOperDown"
@@ -53,9 +73,17 @@ help:
 	@echo "  ready                Functional readiness gate (telemetry/eventing/cabinets), exits non-zero if not ready"
 	@echo "  measure-gray         Gray-failure detectability sweep: streaming vs polling vs traps (DURATIONS=)"
 
-up: preflight
-	@echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"
-	k3d cluster create -c k3d/config.yaml
+up: doctor
+	@if k3d cluster list $(CLUSTER_NAME) >/dev/null 2>&1; then \
+	  echo "==> k3d cluster '$(CLUSTER_NAME)' already exists — skipping create"; \
+	  if k3d cluster list $(CLUSTER_NAME) --no-headers 2>/dev/null | awk '{split($$2,s,"/"); exit !(s[1] < s[2])}'; then \
+	    echo "==> Cluster is stopped — starting it"; k3d cluster start $(CLUSTER_NAME) || exit 1; \
+	  fi; \
+	  k3d kubeconfig merge $(CLUSTER_NAME) --kubeconfig-merge-default --kubeconfig-switch-context >/dev/null || exit 1; \
+	else \
+	  echo "==> Creating k3d cluster '$(CLUSTER_NAME)'"; \
+	  k3d cluster create -c k3d/config.yaml; \
+	fi
 	@echo "==> Building + pushing pre-baked images"
 	@$(MAKE) --no-print-directory build
 	@echo "==> Installing ArgoCD"
@@ -63,30 +91,94 @@ up: preflight
 	@echo "==> Applying root Application (App-of-Apps)"
 	kubectl apply -f bootstrap/root-app.yaml
 	@$(MAKE) --no-print-directory status
+	@echo
+	@echo "==> Bootstrapped. Apps take ~10-20 min to converge: 'make wait-ready' blocks until the lab is demo-ready."
 
-preflight:
-	@if [ ! -r /proc/sys/fs/inotify/max_user_instances ]; then \
-	  echo "==> preflight: no /proc/sys/fs/inotify on $$(uname -s) — skipping"; \
-	  echo "    (on macOS/Windows the limit lives inside the Docker VM, not the host;"; \
-	  echo "     Docker Desktop's default is ample. See docs/runbook-troubleshoot.md.)"; \
-	  exit 0; \
-	fi; \
-	instances=$$(cat /proc/sys/fs/inotify/max_user_instances 2>/dev/null || echo 0); \
-	if [ "$$instances" -lt $(INOTIFY_MIN) ]; then \
-	  echo ""; \
-	  echo "  !!  fs.inotify.max_user_instances=$$instances (< $(INOTIFY_MIN))"; \
-	  echo "      The argo-events data plane (NATS EventBus + sensors + eventsource)"; \
-	  echo "      will crashloop with 'too many open files' and the cut->notify"; \
-	  echo "      automation will silently never fire. Raise it (one-time, host):"; \
-	  echo ""; \
-	  echo "        sudo sysctl fs.inotify.max_user_instances=1024"; \
-	  echo "        echo 'fs.inotify.max_user_instances=1024' | sudo tee /etc/sysctl.d/99-inotify.conf"; \
-	  echo ""; \
-	  echo "      Continuing anyway — the cluster and dashboards still work; only"; \
-	  echo "      the eventing pipeline is affected. See docs/runbook-troubleshoot.md."; \
-	  echo ""; \
+# Host prerequisites. Hard failures (missing tools, Docker down, ports taken)
+# exit non-zero and abort `make up`; resource/DNS/inotify shortfalls warn only.
+doctor:
+	@CLUSTER_NAME=$(CLUSTER_NAME) INOTIFY_MIN=$(INOTIFY_MIN) bin/doctor.sh
+
+preflight: doctor
+
+# One shot for a fresh machine: bootstrap, block until functionally ready,
+# print the URL table. OPEN=1 also opens the scenario console.
+demo:
+	@$(MAKE) --no-print-directory up
+	@$(MAKE) --no-print-directory wait-ready
+	@$(MAKE) --no-print-directory urls
+	@if [ "$(OPEN)" = "1" ]; then \
+	  url=http://console.127-0-0-1.nip.io:8080; \
+	  if [ "$$(uname -s)" = Darwin ]; then open "$$url"; \
+	  elif command -v wslview >/dev/null 2>&1; then wslview "$$url"; \
+	  elif command -v xdg-open >/dev/null 2>&1; then xdg-open "$$url" >/dev/null 2>&1 & \
+	  else echo "==> open $$url in a browser"; fi; \
+	fi
+
+wait-ready:
+	@TIMEOUT=$(or $(TIMEOUT),1500) INTERVAL=$(or $(INTERVAL),20) bin/wait-ready.sh
+
+# Every UI behind the Traefik ingress (:8080 plain HTTP avoids the
+# self-signed TLS warning; :8443 serves the same hosts over HTTPS).
+urls:
+	@if kubectl -n argocd get secret argocd-initial-admin-secret >/dev/null 2>&1; then \
+	  pw=$$(kubectl -n argocd get secret argocd-initial-admin-secret -o go-template='{{.data.password | base64decode}}' 2>/dev/null); \
+	elif kubectl -n argocd get deploy argocd-server >/dev/null 2>&1; then \
+	  pw="(initial secret deleted — use the password you set)"; \
 	else \
-	  echo "==> preflight: fs.inotify.max_user_instances=$$instances (ok)"; \
+	  pw="(ArgoCD not installed yet — run make up)"; \
+	fi; \
+	echo "==> UIs (http://…:8080; same hosts on https://…:8443)"; \
+	printf '  %-12s %-44s %s\n' "UI" "URL" "Login"; \
+	printf '  %-12s %-44s %s\n' "ArgoCD"      "http://argocd.127-0-0-1.nip.io:8080"      "admin / $$pw"; \
+	printf '  %-12s %-44s %s\n' "NetBox"      "http://netbox.127-0-0-1.nip.io:8080"      "admin / admin"; \
+	printf '  %-12s %-44s %s\n' "Grafana"     "http://grafana.127-0-0-1.nip.io:8080"     "admin / admin"; \
+	printf '  %-12s %-44s %s\n' "Workflows"   "http://workflows.127-0-0-1.nip.io:8080"   "no auth (server mode)"; \
+	printf '  %-12s %-44s %s\n' "Clabernetes" "http://clabernetes.127-0-0-1.nip.io:8080" "no auth"; \
+	printf '  %-12s %-44s %s\n' "Console"     "http://console.127-0-0-1.nip.io:8080"     "no auth (scenario console)"
+
+# Point ArgoCD at a fork/branch. Rewrites the repo URL + revision in the two
+# files that name this repo; ArgoCD reads them from the REMOTE, so commit and
+# push afterwards. Chart sources ({{ .chart.* }} templates) are left alone.
+repoint:
+	@repo='$(REPO)'; rev='$(REV)'; \
+	[ -n "$$repo" ] || repo=$$(git remote get-url origin 2>/dev/null); \
+	[ -n "$$repo" ] || { echo "no REPO= given and no 'origin' remote" >&2; exit 1; }; \
+	[ -n "$$rev" ] || rev=$$(git rev-parse --abbrev-ref HEAD 2>/dev/null); \
+	[ -n "$$rev" ] && [ "$$rev" != HEAD ] || { echo "detached HEAD — pass REV=<branch>" >&2; exit 1; }; \
+	case "$$repo" in \
+	  git@*:*) repo=$$(printf '%s' "$$repo" | sed -E 's#^git@([^:]+):#https://\1/#') ;; \
+	  ssh://git@*) repo=$$(printf '%s' "$$repo" | sed -E 's#^ssh://git@([^/:]+)(:[0-9]+)?/#https://\1/#') ;; \
+	esac; \
+	echo "==> Repointing ArgoCD to $$repo @ $$rev"; \
+	REPO="$$repo" REV="$$rev" perl -pi -e \
+	  's{^(\s*-?\s*repoURL:\s*)(?!.*\{\{)\S+}{$$1$$ENV{REPO}}; s{^(\s*-?\s*(?:targetRevision|revision):\s*)(?!.*\{\{)\S+}{$$1$$ENV{REV}}' \
+	  bootstrap/root-app.yaml argocd/applicationset.yaml; \
+	grep -nE 'repoURL:|targetRevision:|revision:' bootstrap/root-app.yaml argocd/applicationset.yaml | grep -v '{{' | sed 's/^/    /'; \
+	echo "==> Now commit + push these two files to $$rev on $$repo — ArgoCD syncs from the remote, not this checkout:"; \
+	echo "      git add bootstrap/root-app.yaml argocd/applicationset.yaml && git commit -m 'chore: repoint ArgoCD' && git push"; \
+	echo "    Already bootstrapped? Re-apply the root app: kubectl apply -f bootstrap/root-app.yaml"; \
+	echo "    (A private repo also needs ArgoCD repo credentials.)"
+
+# Newest enriched-notify run's notify step. Without the slack-bot Secret,
+# notify.py prints the Block Kit payload it WOULD post to stderr, so the pod
+# log is the payload. Falls back to the stored step result if the pod is gone.
+last-notify:
+	@wf=$$(kubectl -n argo-events get workflows.argoproj.io --sort-by=.metadata.creationTimestamp \
+	  -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null | grep '^enrich-notify-' | tail -1); \
+	[ -n "$$wf" ] || { echo "no enriched-notify workflows yet — trigger one: make scenario-backhoe (or demo-cut-fiber)"; exit 1; }; \
+	phase=$$(kubectl -n argo-events get workflows.argoproj.io "$$wf" -o jsonpath='{.status.phase}'); \
+	echo "==> $$wf ($$phase)"; \
+	pod=$$(kubectl -n argo-events get pods -l workflows.argoproj.io/workflow="$$wf" \
+	  -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.annotations.workflows\.argoproj\.io/node-name}{"\n"}{end}' 2>/dev/null \
+	  | awk -F'\t' '$$2 ~ /\.notify(\([0-9]+\))?$$/ {print $$1}' | tail -1); \
+	if [ -n "$$pod" ]; then \
+	  echo "==> kubectl -n argo-events logs $$pod -c main"; \
+	  kubectl -n argo-events logs "$$pod" -c main; \
+	else \
+	  echo "==> notify pod not found (not started yet, or garbage-collected) — stored step result:"; \
+	  out=$$(kubectl -n argo-events get workflows.argoproj.io "$$wf" -o go-template='{{range .status.nodes}}{{if eq .displayName "notify"}}phase: {{.phase}}{{"\n"}}{{with .outputs}}{{with .result}}{{.}}{{end}}{{end}}{{"\n"}}{{end}}{{end}}'); \
+	  if [ -n "$$out" ]; then printf '%s\n' "$$out"; else echo "  (notify step has not run yet)"; fi; \
 	fi
 
 down:
@@ -152,6 +244,9 @@ render-check:
 	if [ $$drift -eq 1 ]; then exit 1; fi; \
 	echo "==> render-check OK"
 
+# frr-snmpd is intentionally not built: the topology runs the stock
+# quay.io/frrouting/frr image (see tools/render/constants.go). Its Dockerfile
+# stays in images/frr-snmpd/ for a future pull-through fix.
 build:
 	@echo "==> Building + pushing pre-baked demo images to localhost:5001"
 	@if ! command -v docker >/dev/null 2>&1; then \
@@ -162,13 +257,13 @@ build:
 	  echo "docker buildx not available — required for 'make build'" >&2; \
 	  exit 1; \
 	fi
-	docker buildx build -t localhost:5001/eventing-py:latest -f images/eventing-py/Dockerfile workloads/eventing/ --push
-	docker buildx build -t localhost:5001/dom-synth:latest   -f images/dom-synth/Dockerfile   workloads/dom-synth/ --push
-	docker buildx build -t localhost:5001/frr-snmpd:latest   -f images/frr-snmpd/Dockerfile   images/frr-snmpd/    --push
-	docker buildx build -t localhost:5001/ai-analyst:latest  -f images/ai-analyst/Dockerfile  workloads/eventing/ --push
-	docker buildx build -t localhost:5001/chat-agent:latest  -f images/chat-agent/Dockerfile  workloads/eventing/ --push
-	docker buildx build -t localhost:5001/console:latest     -f images/console/Dockerfile     .                    --push
-	@echo "==> All images pushed. Verify with: curl -s localhost:5001/v2/_catalog"
+	@echo "    (buildx builder: $(BUILDER))"
+	docker buildx build --builder $(BUILDER) -t $(REGISTRY)/eventing-py:latest -f images/eventing-py/Dockerfile workloads/eventing/ --push
+	docker buildx build --builder $(BUILDER) -t $(REGISTRY)/dom-synth:latest   -f images/dom-synth/Dockerfile   workloads/dom-synth/ --push
+	docker buildx build --builder $(BUILDER) -t $(REGISTRY)/ai-analyst:latest  -f images/ai-analyst/Dockerfile  workloads/eventing/ --push
+	docker buildx build --builder $(BUILDER) -t $(REGISTRY)/chat-agent:latest  -f images/chat-agent/Dockerfile  workloads/eventing/ --push
+	docker buildx build --builder $(BUILDER) -t $(REGISTRY)/console:latest     -f images/console/Dockerfile     .                    --push
+	@echo "==> All images pushed. Verify with: curl -s $(REGISTRY)/v2/_catalog"
 
 ## host.k3d.internal is how the in-cluster AI lanes (analyst + chat) reach a
 ## model server running on the host (SECRETS.md). k3d injects the name into
@@ -198,12 +293,7 @@ status:
 	@echo "==> ArgoCD applications"
 	@kubectl -n argocd get applications.argoproj.io 2>/dev/null || echo "  (none yet)"
 	@echo
-	@echo "==> ArgoCD URL:      http://argocd.127-0-0-1.nip.io:8080"
-	@echo "==> ArgoCD username: admin"
-	@printf  "==> ArgoCD password: "
-	@kubectl -n argocd get secret argocd-initial-admin-secret \
-		-o jsonpath='{.data.password}' 2>/dev/null | base64 -d || echo "(secret not yet created)"
-	@echo
+	@$(MAKE) --no-print-directory urls
 
 # --- Failure injection (functional once the Clabernetes topology is deployed in step 4) ---
 

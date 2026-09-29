@@ -1,0 +1,26 @@
+# Build context hygiene. Only images/console builds from the repo root
+# (COPY . . then `go build ./tools/console`); the other images use
+# workloads/eventing, workloads/dom-synth or images/<name> as context, where
+# this file does not apply. Never exclude go.mod/go.sum or tools/console.
+.git
+.github
+.claude
+.idea
+.vscode
+.playwright-mcp
+docs
+results
+tmp
+dist
+render
+tools/gifgen/node_modules
+**/__pycache__
+**/*.pyc
+*.docx
+*.pdf
+Intelligent_Backbone_*
+PAPER_*.md
+secrets.local
+*.secret.yaml
+kubeconfig*
+*.kubeconfig
