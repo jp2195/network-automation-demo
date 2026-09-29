@@ -73,6 +73,51 @@ def compute_backup_path(alert, affected_role=None):
             "detail": "corridor ring intact"}
 
 
+def _own_interface(cable, device):
+    """Name of `device`'s interface on this cable, or None."""
+    for side in ("a_terminations", "b_terminations"):
+        for t in cable.get(side, []):
+            obj = t.get("object") or {}
+            if (obj.get("device") or {}).get("name") == device:
+                return obj.get("name")
+    return None
+
+
+def failed_cable_peers(cables, affected_device, cable_id=None, interface=""):
+    """Peers on the far side of the FAILED cable only.
+
+    `cables` is every cable touching the device; an interface alert affects
+    just one of them. Scope by the enriched cable id, else by the alerting
+    interface name. Only when neither identifies a cable (device-wide
+    alerts, degraded enrichment) fall back to all peers, so impact is
+    never silently under-reported.
+    """
+    scoped = [c for c in cables if cable_id is not None and c.get("id") == cable_id]
+    if not scoped and interface:
+        scoped = [c for c in cables if _own_interface(c, affected_device) == interface]
+    if not scoped:
+        scoped = cables
+
+    peers = []
+    for cable in scoped:
+        for side in ("a_terminations", "b_terminations"):
+            for t in cable.get(side, []):
+                if t.get("object_type") != "dcim.interface":
+                    continue
+                obj = t.get("object") or {}
+                pdev = (obj.get("device") or {}).get("name", "")
+                if not pdev or pdev == affected_device:
+                    # Skip the affected device's own termination — the
+                    # peer is on the OTHER side of the cable.
+                    continue
+                peers.append({
+                    "device": pdev,
+                    "interface": obj.get("name", ""),
+                    "cable_label": cable.get("label"),
+                })
+    return peers
+
+
 _nb = Client()
 get = _nb.get
 
@@ -90,23 +135,12 @@ def main():
         "/api/dcim/cables/", device=affected_device, limit=100,
     ).get("results", [])
 
-    downstream = []
-    for cable in cables:
-        for side in ("a_terminations", "b_terminations"):
-            for t in cable.get(side, []):
-                if t.get("object_type") != "dcim.interface":
-                    continue
-                obj = t.get("object") or {}
-                pdev = (obj.get("device") or {}).get("name", "")
-                if not pdev or pdev == affected_device:
-                    # Skip the affected device's own termination — the
-                    # peer is on the OTHER side of the cable.
-                    continue
-                downstream.append({
-                    "device": pdev,
-                    "interface": obj.get("name", ""),
-                    "cable_label": cable.get("label"),
-                })
+    alert = enrichment.get("alert", {}) or {}
+    downstream = failed_cable_peers(
+        cables, affected_device,
+        cable_id=(enrichment.get("cable") or {}).get("id"),
+        interface=alert.get("interface") or "",
+    )
 
     site_slug = enrichment.get("device", {}).get("site_slug")
 
@@ -136,7 +170,6 @@ def main():
             return role == ROLE_FIELD_CABINET
         return dev.startswith(CABINET_NAME_PREFIX)
 
-    alert = enrichment.get("alert", {}) or {}
     alert_severity = alert.get("severity", "")
 
     severity_class = SEVERITY_LOW

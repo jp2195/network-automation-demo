@@ -69,5 +69,57 @@ class BackupPathTest(unittest.TestCase):
         self.assertEqual(bp["state"], "up")  # no evidence of another failure
 
 
+def _cable(cid, a_dev, a_if, b_dev, b_if):
+    def term(dev, iface):
+        return {"object_type": "dcim.interface",
+                "object": {"device": {"name": dev}, "name": iface}}
+    return {"id": cid, "label": f"c{cid}",
+            "a_terminations": [term(a_dev, a_if)],
+            "b_terminations": [term(b_dev, b_if)]}
+
+
+# hub-i20e: two ring links + the fc-i20e cabinet drop.
+HUB_CABLES = [
+    _cable(1, "hub-i20e", "ethernet-1/1", "hub-i20w", "ethernet-1/2"),
+    _cable(2, "hub-i20e", "ethernet-1/2", "hub-e", "ethernet-1/1"),
+    _cable(3, "hub-i20e", "ethernet-1/4", "fc-i20e", "eth1"),
+]
+
+
+class FailedCablePeersTest(unittest.TestCase):
+    def _devices(self, peers):
+        return [p["device"] for p in peers]
+
+    def test_ring_cut_only_reports_the_ring_peer(self):
+        # A ring cut must not drag the hub's cabinet in as downstream —
+        # that would falsely escalate every hub fault to severity high.
+        peers = analyze_impact.failed_cable_peers(
+            HUB_CABLES, "hub-i20e", cable_id=2, interface="ethernet-1/2")
+        self.assertEqual(self._devices(peers), ["hub-e"])
+
+    def test_cabinet_drop_reports_the_cabinet(self):
+        peers = analyze_impact.failed_cable_peers(
+            HUB_CABLES, "hub-i20e", cable_id=3, interface="ethernet-1/4")
+        self.assertEqual(self._devices(peers), ["fc-i20e"])
+
+    def test_interface_match_when_enrichment_has_no_cable_id(self):
+        peers = analyze_impact.failed_cable_peers(
+            HUB_CABLES, "hub-i20e", cable_id=None, interface="ethernet-1/2")
+        self.assertEqual(self._devices(peers), ["hub-e"])
+
+    def test_device_wide_alert_falls_back_to_all_peers(self):
+        # No failed interface (e.g. ConfigDrift) → device-wide scope.
+        peers = analyze_impact.failed_cable_peers(
+            HUB_CABLES, "hub-i20e", cable_id=None, interface="")
+        self.assertEqual(sorted(self._devices(peers)),
+                         ["fc-i20e", "hub-e", "hub-i20w"])
+
+    def test_unknown_interface_falls_back_to_all_peers(self):
+        # Degraded enrichment must not silently under-report impact.
+        peers = analyze_impact.failed_cable_peers(
+            HUB_CABLES, "hub-i20e", cable_id=None, interface="ethernet-1/9")
+        self.assertEqual(len(peers), 3)
+
+
 if __name__ == "__main__":
     unittest.main()
