@@ -192,5 +192,67 @@ class RecordTests(unittest.TestCase):
         self.assertTrue(vk.exists(REMEDIATION_ACTIVE_PREFIX + LINK))
 
 
+def _fake_slack(post):
+    """sys.modules stub for slack_sdk whose WebClient.chat_postMessage = post."""
+    import types
+    mod = types.ModuleType("slack_sdk")
+
+    class WebClient:
+        def __init__(self, token=None):
+            pass
+        chat_postMessage = staticmethod(post)
+
+    mod.WebClient = WebClient
+    return mod
+
+
+class ThreadLookupTests(unittest.TestCase):
+    def setUp(self):
+        import json
+        self.vk = fakeredis.FakeRedis(decode_responses=True)
+        self.vk.set("incident:aaa", json.dumps({
+            "channel": "C1", "ts": "111.1", "first_seen": "2026-01-01T10:00:00Z",
+            "link_id": LINK}))
+        self.vk.set("incident:bbb", json.dumps({
+            "channel": "C1", "ts": "222.2", "first_seen": "2026-01-01T11:00:00Z",
+            "link_id": "ring-n-e"}))
+        self.vk.set("incident:ccc", "not json")
+
+    def lookup(self, link):
+        from remediate_record import lookup_thread_ts
+        with mock.patch("valkey.from_url", return_value=self.vk):
+            return lookup_thread_ts(link, "valkey://stub:6379/2")
+
+    def test_prefers_record_for_this_link(self):
+        # the newer ring-n-e incident must not capture ring-e-i20e's note
+        self.assertEqual(self.lookup(LINK), ("C1", "111.1"))
+
+    def test_falls_back_to_newest_when_no_link_match(self):
+        self.assertEqual(self.lookup("tmc1-tmc2"), ("C1", "222.2"))
+
+
+class PostSlackTests(unittest.TestCase):
+    def test_slack_failure_is_non_fatal(self):
+        from remediate_record import post_slack
+
+        def boom(**kw):
+            raise RuntimeError("ratelimited")
+        with mock.patch.dict("sys.modules", {"slack_sdk": _fake_slack(boom)}), \
+                mock.patch.dict("os.environ", {"SLACK_BOT_TOKEN": "x", "SLACK_CHANNEL_ID": "C1"}):
+            self.assertFalse(post_slack("hi", thread_ts="1.1"))
+
+    def test_placeholder_thread_ts_is_not_used(self):
+        from remediate_record import post_slack
+        seen = {}
+
+        def post(**kw):
+            seen.update(kw)
+            return {"ts": "9.9"}
+        with mock.patch.dict("sys.modules", {"slack_sdk": _fake_slack(post)}), \
+                mock.patch.dict("os.environ", {"SLACK_BOT_TOKEN": "x", "SLACK_CHANNEL_ID": "C1"}):
+            self.assertTrue(post_slack("hi", thread_ts="unconfigured.000000"))
+        self.assertNotIn("thread_ts", seen)
+
+
 if __name__ == "__main__":
     unittest.main()

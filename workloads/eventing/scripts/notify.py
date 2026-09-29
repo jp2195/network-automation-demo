@@ -9,8 +9,11 @@ Inputs (env):
 
 Behavior:
   - On firing: chat.postMessage a severity-colored Block Kit attachment,
-    persist {ts, channel, first_seen, impact} in Valkey under
-    incident:<fingerprint> with 24h TTL.
+    persist {ts, channel, first_seen, impact, link_id} in Valkey under
+    incident:<fingerprint> with 24h TTL. Alertmanager's hourly repeat of a
+    still-firing alert (same fingerprint + startsAt) does not re-post.
+  - Slack API failures are logged, never fatal: the ledger and stdout JSON
+    are still written so downstream steps keep working.
   - On resolved: load ledger, chat.update the original message in place
     (green ✅ header + downtime), then chat.postMessage a thread reply with
     the resolution summary.
@@ -50,6 +53,47 @@ def _valkey_retry(op, attempts=3):
             print(f"warning: valkey attempt {i}/{attempts} failed, retrying: {e}",
                   file=sys.stderr)
             time.sleep(0.5 * i)
+
+
+_UNCONFIGURED_TS = "unconfigured.000000"
+
+
+def _real_ts(ts):
+    """True for a Slack message ts we actually posted (not a placeholder)."""
+    return bool(ts) and ts != _UNCONFIGURED_TS
+
+
+def _slack_call(what, fn, **kwargs):
+    """Run one Slack API call; on failure log and return None.
+
+    A Slack outage/ratelimit/bad token must not crash the step: the ledger
+    write and the stdout JSON (json.loads'd by the postmortem step) still
+    have to happen. Returns the message ts on success."""
+    try:
+        resp = fn(**kwargs)
+        return resp["ts"]
+    except Exception as e:
+        print(f"slack {what} failed (non-fatal): {e}", file=sys.stderr)
+        return None
+
+
+def _parse_record(raw):
+    if not raw:
+        return None
+    try:
+        rec = json.loads(raw)
+    except (TypeError, ValueError) as e:
+        print(f"warning: unreadable incident ledger record: {e}", file=sys.stderr)
+        return None
+    return rec if isinstance(rec, dict) else None
+
+
+def _load_record(ledger_db, key):
+    try:
+        return _parse_record(_valkey_retry(lambda: ledger_db.get(key)))
+    except Exception as e:
+        print(f"warning: ledger read failed: {e}", file=sys.stderr)
+        return None
 
 
 # --- Presentation -----------------------------------------------------------
@@ -248,17 +292,35 @@ def main():
             "channel": channel,
             "first_seen": alert.get("started"),
             "impact": impact,
+            "link_id": alert.get("link_id"),
         }
 
-        if unconfigured:
+        # Alertmanager re-sends a still-firing alert every repeat_interval
+        # (hourly). If this fingerprint already has a posted card, don't
+        # post a duplicate — keep the original ts/first_seen so the
+        # resolve still edits that card, and refresh the ledger TTL.
+        existing = _load_record(ledger_db, ledger_key)
+        posted = False
+        deduped = False
+        # Same startsAt = same episode; a different one means a stale
+        # record (e.g. a failed resolve-time delete), so post afresh.
+        if (existing and _real_ts(existing.get("ts"))
+                and existing.get("first_seen") == alert.get("started")):
+            deduped = True
+            record.update({k: existing[k] for k in ("channel", "ts", "first_seen")
+                           if existing.get(k)})
+            print(f"firing repeat for {fingerprint}: card already posted "
+                  f"(ts={record['ts']}), not re-posting", file=sys.stderr)
+        elif unconfigured:
             print("=== firing (slack unconfigured) ===", file=sys.stderr)
             print(json.dumps({"channel": channel, "attachments": attachments}, indent=2),
                   file=sys.stderr)
-            record["ts"] = "unconfigured.000000"
+            record["ts"] = _UNCONFIGURED_TS
         else:
-            resp = slack.chat_postMessage(
+            record["ts"] = _slack_call(
+                "post firing card", slack.chat_postMessage,
                 channel=channel, text=headline, attachments=attachments)
-            record["ts"] = resp["ts"]
+            posted = record["ts"] is not None
 
         try:
             _valkey_retry(lambda: ledger_db.set(ledger_key, json.dumps(record), ex=86400))
@@ -266,7 +328,7 @@ def main():
             # A Valkey hiccup must not crash the step after we've already
             # posted; resolve will fall back to a fresh top-level post.
             print(f"warning: failed to persist incident ledger: {e}", file=sys.stderr)
-        json.dump({"posted": not unconfigured, "status": "firing",
+        json.dump({"posted": posted, "deduped": deduped, "status": "firing",
                    "ts": record["ts"], "fingerprint": fingerprint}, sys.stdout)
         return
 
@@ -276,13 +338,13 @@ def main():
     except Exception as e:
         print(f"warning: ledger read failed, posting fresh resolved notice: {e}", file=sys.stderr)
         raw = None
-    if not raw:
-        # No ledger record (e.g. demo restart between firing and resolve).
-        # Fall back to a fresh top-level resolved post.
+    ledger_record = _parse_record(raw)
+    if not ledger_record:
+        # No (or unreadable) ledger record, e.g. demo restart between
+        # firing and resolve. Fall back to a fresh top-level resolved post.
+        raw = None
         ledger_record = {"impact": impact, "first_seen": alert.get("started"),
                          "channel": channel, "ts": None}
-    else:
-        ledger_record = json.loads(raw)
 
     started = parse_iso(ledger_record.get("first_seen"))
     ended = parse_iso(alert.get("ended"))
@@ -294,38 +356,44 @@ def main():
     attachments = [{"color": color, "blocks": blocks}]
     summary = _thread_summary(downtime_str, ledger_record)
 
+    posted = False
     if unconfigured:
         print("=== resolved update (slack unconfigured) ===", file=sys.stderr)
-        print(json.dumps({"channel": ledger_record["channel"],
-                          "ts": ledger_record["ts"],
+        print(json.dumps({"channel": ledger_record.get("channel"),
+                          "ts": ledger_record.get("ts"),
                           "attachments": attachments,
                           "thread_summary": summary}, indent=2),
               file=sys.stderr)
     else:
-        if ledger_record.get("ts"):
-            slack.chat_update(
-                channel=ledger_record["channel"],
+        rec_channel = ledger_record.get("channel") or channel
+        if _real_ts(ledger_record.get("ts")):
+            updated = _slack_call(
+                "update firing card", slack.chat_update,
+                channel=rec_channel,
                 ts=ledger_record["ts"],
                 text=f"{headline} — resolved",
                 attachments=attachments,
             )
-            slack.chat_postMessage(
-                channel=ledger_record["channel"],
+            replied = _slack_call(
+                "post resolved thread reply", slack.chat_postMessage,
+                channel=rec_channel,
                 thread_ts=ledger_record["ts"],
                 text=summary,
             )
+            posted = updated is not None or replied is not None
         else:
-            slack.chat_postMessage(
+            posted = _slack_call(
+                "post resolved notice", slack.chat_postMessage,
                 channel=channel,
                 text=f"{headline} — resolved",
                 attachments=attachments,
-            )
+            ) is not None
 
     try:
         _valkey_retry(lambda: ledger_db.delete(ledger_key))
     except Exception as e:
         print(f"warning: ledger delete failed (24h TTL will reap it): {e}", file=sys.stderr)
-    json.dump({"posted": not unconfigured, "status": "resolved",
+    json.dump({"posted": posted, "status": "resolved",
                "downtime_seconds": int(downtime_secs),
                "first_seen": ledger_record.get("first_seen"),
                # False = this resolve ran on the no-ledger fallback (e.g.
