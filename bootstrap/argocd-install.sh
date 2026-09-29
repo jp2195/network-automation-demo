@@ -11,6 +11,10 @@ helm repo add argo https://argoproj.github.io/argo-helm >/dev/null 2>&1 || true
 helm repo update argo >/dev/null
 
 echo "==> Installing argo-cd chart ${CHART_VERSION} into ns ${NAMESPACE}"
+# controller.metrics exposes the argocd_* metrics Service. No ServiceMonitor:
+# the chart only renders one when the monitoring.coreos.com CRDs exist, and
+# they don't at bootstrap (kube-prometheus-stack is synced BY ArgoCD later),
+# so serviceMonitor.enabled here was a silent no-op.
 helm upgrade --install "${RELEASE}" argo/argo-cd \
   --version "${CHART_VERSION}" \
   --namespace "${NAMESPACE}" \
@@ -20,14 +24,12 @@ helm upgrade --install "${RELEASE}" argo/argo-cd \
   --set server.ingress.ingressClassName=traefik \
   --set server.ingress.hostname="${HOSTNAME}" \
   --set controller.metrics.enabled=true \
-  --set controller.metrics.serviceMonitor.enabled=true \
   --wait --timeout 10m
 
-echo "==> Waiting for argocd-server rollout"
-kubectl -n "${NAMESPACE}" rollout status deploy/"${RELEASE}"-server --timeout=5m
-
+# Tolerate a deleted initial secret so re-running `make up` stays idempotent.
 PASSWORD=$(kubectl -n "${NAMESPACE}" get secret argocd-initial-admin-secret \
-  -o jsonpath='{.data.password}' | base64 -d)
+  -o jsonpath='{.data.password}' 2>/dev/null | base64 -d 2>/dev/null) \
+  || PASSWORD="(initial secret deleted — use the password you set)"
 
 cat <<EOF
 
