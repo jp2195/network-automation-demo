@@ -14,6 +14,7 @@ from drift_compare import (
     build_alerts,
     diff_node,
     env_name,
+    config_loaded,
     parse_live,
     suppress_remediated,
 )
@@ -105,6 +106,27 @@ class DiffNodeTests(unittest.TestCase):
         exp = {"interfaces": {"ethernet-1/1": {"link_id": "ring-e-i20e"}},
                "isis_interfaces": ["ethernet-1/2.0", "lo0.0"]}
         self.assertEqual(diff_node("hub-e", exp, self.live), [])
+
+
+class ConfigLoadedTests(unittest.TestCase):
+    # A node still booting answers the gNMI Get with only mgmt0 — every
+    # rendered interface looks "missing". That is not drift.
+    BOOTING = json.dumps([{"updates": [{"values": {"": {
+        "srl_nokia-interfaces:interface": [
+            {"name": "mgmt0", "admin-state": "enable"}]}}}]}])
+
+    def test_booting_node_is_not_loaded(self):
+        self.assertFalse(config_loaded(EXPECTED_NODE, parse_live(self.BOOTING)))
+
+    def test_configured_node_is_loaded(self):
+        self.assertTrue(config_loaded(EXPECTED_NODE, parse_live(GNMIC_OUTPUT)))
+
+    def test_one_missing_interface_still_counts_as_loaded(self):
+        exp = {"interfaces": {"ethernet-1/1": {}, "ethernet-1/9": {}}}
+        self.assertTrue(config_loaded(exp, parse_live(GNMIC_OUTPUT)))
+
+    def test_node_without_rendered_interfaces_is_loaded(self):
+        self.assertTrue(config_loaded({"interfaces": {}}, parse_live(self.BOOTING)))
 
 
 class SuppressionTests(unittest.TestCase):

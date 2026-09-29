@@ -63,6 +63,15 @@ def parse_live(raw):
     return out
 
 
+def config_loaded(expected, live):
+    """False while a node is still booting: it answers the Get with only
+    mgmt0, so every rendered interface would look "missing". Treat that
+    like unreachable instead of raising a ConfigDrift per interface. A
+    single deleted interface on a configured node is still drift."""
+    rendered = expected.get("interfaces", {})
+    return not rendered or any(i in live["interfaces"] for i in rendered)
+
+
 def diff_node(node, expected, live):
     drifts = []
     for ifname, meta in sorted(expected.get("interfaces", {}).items()):
@@ -161,7 +170,7 @@ def main():
     all_drifts, unreachable = [], []
     for node, exp in sorted(expected.items()):
         live = parse_live(os.environ.get(env_name(node), ""))
-        if live is None:
+        if live is None or not config_loaded(exp, live):
             unreachable.append(node)
             continue
         all_drifts.extend(diff_node(node, exp, live))
@@ -171,7 +180,7 @@ def main():
         print(f"suppressed (platform remediation active): {d['node']} {d['detail']}",
               flush=True)
     for n in unreachable:
-        print(f"unreachable: {n} — skipped this cycle", file=sys.stderr, flush=True)
+        print(f"unreachable or still booting: {n} — skipped this cycle", file=sys.stderr, flush=True)
 
     if not kept:
         print(f"no drift across {len(expected) - len(unreachable)} nodes", flush=True)
