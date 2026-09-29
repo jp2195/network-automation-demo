@@ -53,13 +53,13 @@ hub-sw); every cabinet is single-homed.
            ▼                                                 ▼
   ┌──────────────────┐                             ┌─────────────────────┐
   │  Topology layer  │                             │  Platform layer     │
-  │  clabernetes:    │                             │  cert-manager       │
+  │  Clabernetes:    │                             │  cert-manager       │
   │   8× SR Linux    │                             │  CNPG operator      │
   │   4× FRR         │                             │  valkey-helm        │
   │   in DinD pods   │                             │  kube-prometheus-   │
   └──────────┬───────┘                             │   stack, Loki, Alloy│
              │                                     │  argo-{events,wf}   │
-             │ gNMI :57400                         │  clabernetes mgr    │
+             │ gNMI :57400                         │  Clabernetes mgr    │
              │ SNMPv2c :161                        └─────────────────────┘
              ▼
   ┌──────────────────────────────────────────────────────────────────┐
@@ -104,7 +104,7 @@ hub-sw); every cabinet is single-homed.
 | **Topology** | Clabernetes runs lab nodes as nested docker containers per pod, so you can stand up multi-vendor topologies with kubernetes scheduling. |
 | **Telemetry — gNMI** | Modern, streaming, model-driven — what an operator buying SR Linux today would use. |
 | **Telemetry — SNMP** | The legacy edge story. Cabinets aren't SR Linux; they're FRR boxes that only speak SNMP. The same alert pipeline carries both. |
-| **Telemetry — DOM** | Synthetic transceiver metrics (no real SFPs in clabernetes). Lets dashboards show optical health without faking the entire LLDP/optical YANG. |
+| **Telemetry — DOM** | Synthetic transceiver metrics (no real SFPs in Clabernetes). Lets dashboards show optical health without faking the entire LLDP/optical YANG. |
 | **NetBox** | Operational source of truth. Seed is generated from the spec — same data, different lens. The workflow's `enrich` step uses NetBox so the alert payload includes site/agency/cable_label without operator memory. |
 | **Argo Events + Workflows** | Decouples "alert fired" from "someone got paged". Lets the demo show enrichment, analysis, and conditional Slack messaging in steps you can read. |
 | **Loki** | All workflow output flows to Loki by default. The Alert console shows the steps live, no extra plumbing. |
@@ -112,7 +112,7 @@ hub-sw); every cabinet is single-homed.
 ### Advisory AI lanes (optional)
 
 Two read-only AI consumers sit on top of the planes above; both are
-Pydantic-AI agents over the same tool layer (PromQL, LogQL, NetBox GET),
+Pydantic AI agents over the same tool layer (PromQL, LogQL, NetBox GET),
 both read the optional `ai-analyst` Secret, and neither can change the
 network — the deterministic pipeline never depends on them.
 
@@ -206,7 +206,7 @@ ApplicationSet, whose `git` files generator globs both
 `manifests/platform/*.yaml` and `manifests/workloads/*.yaml` and templates one
 Application per stub (21 today, so `kubectl -n argocd get applications`
 shows 22 rows including `root`). Each owns one logical chunk. The `topology`, `gnmic`, and `snmp` stubs
-carry `ignoreDifferences` blocks so clabernetes' admission webhook defaults and
+carry `ignoreDifferences` blocks so Clabernetes' admission webhook defaults and
 the Prometheus operator's stored `action: replace` don't register as drift. All
 stubs auto-sync (prune + selfHeal).
 

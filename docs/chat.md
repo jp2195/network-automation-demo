@@ -3,7 +3,7 @@
 An interactive, **read-only** Q&A agent embedded in the scenario console
 (`console.127-0-0-1.nip.io`). Where the [AI incident analyst](ai-analyst.md)
 investigates one alert when a sensor fires, the chat answers whatever a demo
-audience types, live. Both lanes share the same stack (Pydantic-AI over the
+audience types, live. Both lanes share the same stack (Pydantic AI over the
 read-only tool set) and the same optional `ai-analyst` Secret — no Secret, no
 chat, and the rest of the demo is untouched.
 
@@ -25,7 +25,7 @@ browser (console chat panel)
   └─ POST console…/api/chat            SSE stream back
        └─ Traefik ingress path-routes /api/chat (same origin, no proxy code)
             └─ chat-agent Deployment   workloads/chat-agent/, argo-events ns
-                 └─ Pydantic-AI agent  scripts/chat_server.py
+                 └─ Pydantic AI agent  scripts/chat_server.py
                       tools: firing_alerts · corridor_impact
                              query_prometheus · query_prometheus_range
                              query_loki · query_netbox

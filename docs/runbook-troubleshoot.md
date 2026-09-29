@@ -101,7 +101,7 @@ present on an unfamiliar network.
 
 ### "ArgoCD apps stuck OutOfSync after a fresh `make up`"
 
-Almost always the clabernetes admission webhook adding defaults to the
+Almost always the Clabernetes admission webhook adding defaults to the
 Topology CR (`mode: read` on every `filesFromConfigMap` entry,
 `expose.disableExpose: false`, etc.) or the Prometheus operator storing
 the implicit `action: replace` on relabeling configs.
@@ -251,7 +251,7 @@ This was a real bug. Two possible root causes — pick by how it fails:
 
 2. **Probe times out, snmpd is up.** Wrong port. The cabinet pod's
    container image only publishes the standard SNMP port (161), not
-   1161. clabernetes' Service forwards :161 → :161 in the inner
+   1161. Clabernetes' Service forwards :161 → :161 in the inner
    container; if the renderer somehow pinned 1161, the probe goes
    nowhere. Fix: `agentaddress udp:161` in `snmpd.conf`.
 

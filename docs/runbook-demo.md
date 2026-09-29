@@ -75,7 +75,7 @@ generated Argo CD admin password).
 | ArgoCD | http://argocd.127-0-0-1.nip.io:8080 |
 | NetBox | http://netbox.127-0-0-1.nip.io:8080 |
 | Argo Workflows UI | http://workflows.127-0-0-1.nip.io:8080 |
-| clabernetes UI | http://clabernetes.127-0-0-1.nip.io:8080 |
+| Clabernetes UI | http://clabernetes.127-0-0-1.nip.io:8080 |
 
 ## The demo (≈10 minutes)
 
