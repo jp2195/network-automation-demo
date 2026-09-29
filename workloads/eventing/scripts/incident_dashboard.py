@@ -65,7 +65,7 @@ def _logs_options():
 
 def _stat(pid, title, x, y, w, h, expr, mappings, steps):
     # Value-mapped status chip: the panel title bar names the device; the
-    # body shows just the mapped status ("● UP") in a colour, at a capped
+    # body shows just the mapped status ("● UP") in a color, at a capped
     # font size so it reads as a chip rather than a ballooning number.
     return _panel(
         pid, title, x, y, w, h, type="stat", datasource=_PROM,
@@ -134,7 +134,7 @@ def build_dashboard(enrichment, impact, fp):
         panels.append(_row(pid, "Link health", y))
         pid += 1
         y += 1
-        # state-timeline: coloured UP/DOWN bands over the window — far
+        # state-timeline: colored UP/DOWN bands over the window — far
         # more legible than a 1/2 line plot.
         panels.append(_panel(
             pid, f"Link state — {link_id}", 0, y, 12, 8,

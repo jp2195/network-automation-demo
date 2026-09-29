@@ -73,7 +73,7 @@ def _iso(ts_ns):
 
 # When `around` is given the window is deliberately ASYMMETRIC: a cause
 # precedes its effect, so most of the span belongs before the instant. A
-# centred window reaches just as far forward, which lets post-fault activity
+# centered window reaches just as far forward, which lets post-fault activity
 # — the operator's own restore, the remediation lane's cost-out — land in
 # the evidence set and get reported as the root cause (smoke-found: a
 # ConfigDrift run blamed the RESTORE commit that landed while the agent was

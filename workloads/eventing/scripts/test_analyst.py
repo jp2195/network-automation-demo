@@ -102,7 +102,7 @@ class TestToolAllowlists(unittest.TestCase):
     def test_query_loki_around_weights_window_before_the_instant(self):
         """A cause precedes its effect, so `around` must look mostly BACK.
 
-        A centred window reaches as far forward as back, which pulled the
+        A centered window reaches as far forward as back, which pulled the
         operator's own restore — committed while the agent was still
         investigating — into the evidence set, where one run reported it as
         the root cause. The window keeps a short forward lead so the
