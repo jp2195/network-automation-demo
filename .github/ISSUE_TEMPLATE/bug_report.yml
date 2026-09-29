@@ -1,0 +1,55 @@
+name: Bug report
+description: Something in the lab doesn't come up or doesn't behave as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Most setup problems are host resources or ports —
+        please paste the `make doctor` and `make status` output below, it answers
+        the first round of questions. Redact anything sensitive (tokens, internal hostnames).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you ran, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS and architecture
+      placeholder: "macOS 15.5 arm64 / Ubuntu 24.04 x86_64 / Windows 11 + WSL2"
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Docker runtime and memory/CPU allocated to it
+      description: "e.g. Docker Desktop 4.x, 24 GiB, 8 CPUs (`docker info --format '{{.MemTotal}} {{.NCPU}}'`)"
+      placeholder: "OrbStack 1.x, 32 GiB, 10 CPUs"
+    validations:
+      required: true
+  - type: input
+    id: commit
+    attributes:
+      label: Commit / branch
+      placeholder: "git rev-parse --short HEAD"
+  - type: textarea
+    id: doctor
+    attributes:
+      label: "`make doctor` output"
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: status
+    attributes:
+      label: "`make status` output"
+      description: Remove the ArgoCD admin password line.
+      render: text
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: "`make ready` output, pod logs, screenshots."
