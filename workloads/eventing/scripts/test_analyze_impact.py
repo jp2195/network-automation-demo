@@ -121,5 +121,26 @@ class FailedCablePeersTest(unittest.TestCase):
         self.assertEqual(len(peers), 3)
 
 
+
+class StrandedCabinetTests(unittest.TestCase):
+    def _devices(self, peers):
+        return [p["device"] for p in peers]
+
+    def test_one_ring_link_down_strands_nothing(self):
+        self.assertEqual(analyze_impact.stranded_cabinet_peers(
+            HUB_CABLES, "hub-i20e", down_ifaces={"ethernet-1/2"}), [])
+
+    def test_both_ring_links_down_strands_the_cabinet(self):
+        # hurricane: the hub is cut off from the ring on both sides, so its
+        # single-homed cabinet is isolated even though its own drop is up.
+        peers = analyze_impact.stranded_cabinet_peers(
+            HUB_CABLES, "hub-i20e", down_ifaces={"ethernet-1/1", "ethernet-1/2"})
+        self.assertEqual(self._devices(peers), ["fc-i20e"])
+
+    def test_device_without_backbone_links_strands_nothing(self):
+        cab_only = [c for c in HUB_CABLES if c["id"] == 3]
+        self.assertEqual(analyze_impact.stranded_cabinet_peers(
+            cab_only, "hub-i20e", down_ifaces={"ethernet-1/4"}), [])
+
 if __name__ == "__main__":
     unittest.main()

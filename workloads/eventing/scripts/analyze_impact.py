@@ -118,6 +118,34 @@ def failed_cable_peers(cables, affected_device, cable_id=None, interface=""):
     return peers
 
 
+def stranded_cabinet_peers(cables, affected_device, down_ifaces):
+    """Cabinets cut off because EVERY backbone cable on the device is down.
+
+    A single ring cut leaves the hub reachable the other way around the
+    ring; lose all of them (the hurricane scenario) and the hub's
+    single-homed field cabinets are stranded even though their own drops
+    are still up.
+    """
+    backbone, cabinets = [], []
+    for cable in cables:
+        for peer in failed_cable_peers([cable], affected_device, cable_id=cable.get("id")):
+            if peer["device"].startswith(CABINET_NAME_PREFIX):
+                cabinets.append(peer)
+            else:
+                backbone.append(_own_interface(cable, affected_device))
+    if backbone and all(i in down_ifaces for i in backbone):
+        return cabinets
+    return []
+
+
+def _down_interfaces(prom_url, device):
+    rows = prom_query(
+        prom_url,
+        'srl_nokia_interfaces_interface_oper_state{node="%s"} == 2' % device,
+    )
+    return {r.get("metric", {}).get("interface") for r in rows}
+
+
 _nb = Client()
 get = _nb.get
 
@@ -141,6 +169,12 @@ def main():
         cable_id=(enrichment.get("cable") or {}).get("id"),
         interface=alert.get("interface") or "",
     )
+    prom_url = os.environ.get("PROM_URL")
+    if prom_url and affected_device:
+        down = _down_interfaces(prom_url, affected_device) | {alert.get("interface")}
+        seen = {d["device"] for d in downstream}
+        downstream += [p for p in stranded_cabinet_peers(cables, affected_device, down)
+                       if p["device"] not in seen]
 
     site_slug = enrichment.get("device", {}).get("site_slug")
 
