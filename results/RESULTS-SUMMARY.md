@@ -1,6 +1,6 @@
 # Measured results — detection & enrichment latency
 
-Environment: single-host k3d (kind-equivalent) on Apple Silicon (arm64). All
+Environment: single-host k3d cluster (k3s in Docker) on Apple Silicon (arm64). All
 timestamps are exact cluster-object times (Prometheus `activeAt`, Argo workflow
 `finishedAt`) differenced against the cut-issue wall clock; every container
 shares the host kernel clock. Absolute values are environment-bound — the
@@ -17,7 +17,7 @@ enrichment**, both of which are structural.
 | Enrichment (analyze→notify) | **30.8 s (constant)** | **30.7 s (constant)** |
 | End-to-end to enriched notification (median) | 49 s | 177 s |
 
-- Streaming detection is **eval-bound** (~18 s = the 30 s Prometheus rule-eval grid + 15 s scrape; the 5 s telemetry sample is not the limiter). Do **not** claim ~5 s.
+- Streaming detection is **eval-bound**, not sample-bound. A cut has to wait for the next 15 s gNMIc scrape and then the next 30 s rule evaluation, so the worst case is roughly 5 + 15 + 30 ≈ 50 s (44 s observed) and a cut landing mid-cycle waits about half of each (18 s median). The 5 s telemetry sample is not the limiter. Do **not** claim ~5 s.
 - Polling detection is a **uniform distribution bounded by the poll interval** (cut lands anywhere in the 5-min window → 78–315 s observed), plus the 60 s debounce.
 - **Headline delta: ≈5× at the medians (18 s vs 86 s), up to ~17× at the tails** (18 s vs 315 s).
 - **Enrichment is identical across lanes (~30 s).** This is the empirical backbone of the thesis: the model-driven *understanding* is constant regardless of how the signal arrived — the lane difference is entirely in *detection*.
