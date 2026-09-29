@@ -1,5 +1,10 @@
 fullnameOverride: valkey
 
+# Chart valkey-0.9.4 defaults to appVersion 9.0.2; pin the latest 9.0.x
+# patch for security fixes without moving the chart.
+image:
+  tag: "9.0.6"
+
 replica:
   enabled: false
 

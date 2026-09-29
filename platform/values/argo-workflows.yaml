@@ -1,3 +1,10 @@
+# Pin the Argo Workflows app images (controller, argocli server, argoexec
+# executor) to v4.0.12: chart 1.0.24 (latest 1.0.x) defaults to
+# appVersion v4.0.8, and v4.0.12 carries further security fixes. Drop this
+# once the chart's appVersion is >= v4.0.12.
+images:
+  tag: v4.0.12
+
 crds:
   install: true
   keep: true
