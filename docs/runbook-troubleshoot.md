@@ -6,6 +6,13 @@ first demo.
 
 ## Quick triage
 
+Start with the host, then the cluster:
+
+```bash
+make doctor   # tools, Docker daemon + memory, free ports, disk, nip.io DNS, inotify
+make ready    # functional gate: telemetry flowing, eventing wired, cabinets polling
+```
+
 ```bash
 # every layer at a glance
 kubectl -n argocd get applications
@@ -28,6 +35,70 @@ kubectl -n argo-events get wf --sort-by=.metadata.creationTimestamp | tail -10
 
 ## Symptom → diagnosis
 
+### "`make up` fails: `port is already allocated` (8080, 8443, or 5001)"
+
+Something else on the host already listens on one of the ports k3d
+publishes: 8080/8443 (Traefik ingress) or 5001 (the local image
+registry, bound to 127.0.0.1). `make doctor` checks all three. Find the
+owner and stop it:
+
+```bash
+lsof -nP -iTCP:8080 -sTCP:LISTEN     # macOS / Linux; repeat for 8443, 5001
+```
+
+Common culprits are another local dev server, a proxy, or a leftover k3d
+cluster from an earlier project (`k3d cluster list`). Then re-run
+`make up`.
+
+### "`make up` failed partway; what now?"
+
+`make up` is safe to re-run: it reuses an existing `atlas-demo` cluster
+instead of failing, then rebuilds and pushes the images and re-applies
+Argo CD and the root Application. Fix whatever the error pointed at (usually Docker
+not running, a busy port, or a network timeout pulling an image) and run
+`make up` again. If the cluster itself is broken, start clean with
+`make down && make up`.
+
+### "Pods stuck `Pending` or `OOMKilled`, everything crawls"
+
+Docker doesn't have enough memory. The full stack's working set is about
+25 GB. Check what Docker actually has:
+
+```bash
+docker info --format '{{.MemTotal}}' | awk '{printf "%.1f GiB\n", $1/1073741824}'
+kubectl get pods -A | grep -Ev 'Running|Completed'
+kubectl describe pod <pending-pod> -n <ns> | grep -A3 Events   # "Insufficient memory"
+```
+
+`make doctor` warns below 20 GiB. Give Docker at least 24 GB: Docker
+Desktop → **Settings → Resources → Memory**; OrbStack → **Settings →
+System → Memory limit**; on WSL 2, set `memory=24GB` under `[wsl2]` in
+`%UserProfile%\.wslconfig` and run `wsl --shutdown`. Then
+`make down && make up`.
+
+### "Browser can't resolve `*.127-0-0-1.nip.io`"
+
+`nip.io` is public wildcard DNS that answers `127.0.0.1` for these names.
+Some corporate, hotel, and conference networks run resolvers with
+**DNS-rebinding protection**, which drops public answers that point at
+private or loopback addresses. `make doctor` checks resolution. Confirm:
+
+```bash
+nslookup grafana.127-0-0-1.nip.io     # empty / NXDOMAIN / SERVFAIL = blocked
+```
+
+Fix it offline-proof by pinning every UI hostname in `/etc/hosts`
+(on Windows, also `C:\Windows\System32\drivers\etc\hosts` if you browse
+from Windows rather than WSL):
+
+```bash
+echo '127.0.0.1 argocd.127-0-0-1.nip.io clabernetes.127-0-0-1.nip.io console.127-0-0-1.nip.io grafana.127-0-0-1.nip.io netbox.127-0-0-1.nip.io workflows.127-0-0-1.nip.io' | sudo tee -a /etc/hosts
+```
+
+These are all the hostnames the ingresses use. Switching the host to a
+public resolver (for example 1.1.1.1) also works. Do this before you
+present on an unfamiliar network.
+
 ### "ArgoCD apps stuck OutOfSync after a fresh `make up`"
 
 Almost always the clabernetes admission webhook adding defaults to the
@@ -40,11 +111,23 @@ all carry `ignoreDifferences` blocks. If you've added a new app and
 hit drift on a Probe / ServiceMonitor / Topology, that's the pattern
 to copy.
 
-### "make demo-cut: `sr_cli: executable file not found`"
+### "`make demo-cut` fails or does nothing"
 
-The Makefile must `kubectl exec POD -- docker exec <node> sr_cli` — the
-launcher pod is the docker daemon, the lab node is a nested container
-inside it. If you've recently regenerated the Makefile, double-check.
+`make demo-cut` / `demo-restore` don't use `sr_cli`; they run a gNMI Set
+as `noc-ops` through the gNMIc pod
+(`kubectl -n monitoring exec deploy/gnmic -- /app/gnmic … set`). So:
+
+- `deployments.apps "gnmic" not found` → the `gnmic` Application hasn't
+  synced yet (`kubectl -n argocd get application gnmic`).
+- `connection refused` / `context deadline exceeded` → the target node's
+  pod isn't ready, or SR Linux is still booting. Check
+  `kubectl -n clabernetes get pods` and retry.
+- `authentication failed` → the startup-config (which creates the
+  `noc-ops` account) wasn't applied; see the hard reset below.
+
+Anything that *does* use `sr_cli` by hand must go through the launcher
+pod's Docker daemon: `kubectl exec POD -- docker exec <node> sr_cli`. The
+lab node is a nested container inside the launcher pod.
 
 ### "Alert never fires"
 
@@ -77,8 +160,10 @@ kubectl -n argo-events logs -l sensor-name=interface-down --tail=20 | tail
 
 If the Sensor logs `not interested in dependency alert (didn't pass filter)`
 the alert payload isn't matching the filter. Check the alert is the cut
-you intended — the filter only matches `SRLInterfaceOperDown` and
-`SRLInterfaceFlapping`. Stock kube-prometheus-stack alerts (`Watchdog`,
+you intended. The `interface-down` Sensor only matches
+`SRLInterfaceOperDown`, `SRLInterfaceFlapping`, `SRLOpticalDegrading`,
+`SRLInterfaceErrorsHigh`, `CabinetInterfaceOperDown`, and `ConfigDrift`
+(see `workloads/eventing/sensor-interface-down.yaml`). Stock kube-prometheus-stack alerts (`Watchdog`,
 `TargetDown`, `CPUThrottlingHigh`) reach the same Alertmanager but get
 routed to the `null` receiver.
 
@@ -111,7 +196,17 @@ kubectl -n argo-events delete pod -l eventsource-name
 # within ~10s: eventbus 3/3, sensors + eventsource 1/1; re-cut to verify
 ```
 
-`make up` runs a `preflight` check that warns when the limit is too low.
+`make up` runs `make doctor` first, which warns when the limit is too low.
+
+On **WSL 2** without systemd, files in `/etc/sysctl.d/` aren't applied at
+boot, so the limit resets after `wsl --shutdown` or a reboot. Either
+re-run the `sysctl` line after each restart, or make it automatic in
+`/etc/wsl.conf`:
+
+```ini
+[boot]
+command = sysctl -w fs.inotify.max_user_instances=1024
+```
 
 ### "Workflow created but enrich step failed with `Invalid control character`"
 
@@ -245,7 +340,7 @@ Grafana forces a password change off the default admin creds. It's `admin` /
 `admin` — click **Skip** to reach the dashboards. (`bin/make-gif.sh` handles this
 automatically when it records a dashboard.)
 
-### "Geomap line is grey, not green or red"
+### "Geomap line is gray, not green or red"
 
 The route layer color is read from the `Value` field of a single query
 (refId `L`) against the `link_endpoint_geo` recording rule. If that rule
@@ -324,9 +419,10 @@ It's `export-policy [<X>]` — leaf-list. Same gotcha shape.
 
 `make demo-cut` admin-disables an interface. If the alert expression
 joins on `admin_state == 1`, the cut interface drops out and the alert
-never fires. Use `link_membership_info` as the join key instead — it
-filters out the ~34 unused IXR-D3 ports per node (~270 across the
-backbone) without filtering out the cut interface.
+never fires. Use `link_membership_info` as the join key instead. Each
+IXR-D3 exposes 34 ethernet ports but only 26 are cabled across the 8
+nodes; the join filters out the ~246 unused ones without filtering out
+the cut interface.
 
 ### NetBox token can't be hardcoded
 
@@ -357,8 +453,8 @@ If everything is melted:
 make down
 make up
 
-# wait for ArgoCD to sync everything (~5min)
-until [ "$(kubectl -n argocd get applications --no-headers | awk '$2=="Synced" && $3=="Healthy"' | wc -l)" -ge 21 ]; do sleep 15; done
+# wait for the functional readiness gate (polls bin/ready.sh, up to ~25 min)
+make wait-ready
 
 # bounce the SR Linux pods once so each picks up its startup-config
 for n in tmc-1 tmc-2 hub-n hub-e hub-i20e hub-nw hub-sw hub-i20w; do
@@ -403,7 +499,7 @@ re-apply the topology if you've edited the spec.
    `kubectl -n argo-events get sensors,pods`).
 2. **Workflow Succeeded but the log says `AI disabled`** — the
    `ai-analyst` Secret is absent or incomplete. It needs all three
-   keys: `base_url`, `api_key`, `model` (see SECRETS.md).
+   keys: `base_url`, `api_key`, `model` (see [SECRETS.md](../SECRETS.md)).
 3. **Workflow Failed** — `kubectl -n argo-events logs <ai-analyze pod>`:
    - connection refused / timeout / `Connection error.` on `base_url`:
      for local Ollama, confirm it listens beyond loopback
