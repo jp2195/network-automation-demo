@@ -103,7 +103,7 @@ snmpup=$(promsum 'up%7Bjob%3D%22snmp-frr-cabinets%22%7D')
 snmpseen=$(promcount 'up%7Bjob%3D%22snmp-frr-cabinets%22%7D')
 # Declared targets in the rendered Probe (source of truth for what SHOULD
 # be polled); fall back to the scraped count if the file isn't reachable.
-snmptot=$(grep -cE '^\s*-\s+\S+:161\s*$' "$REPO_ROOT/workloads/snmp/probe.yaml" 2>/dev/null || echo 0)
+snmptot=$(grep -cE '^\s*-\s+\S+:161\s*$' "$REPO_ROOT/workloads/snmp/probe.yaml" 2>/dev/null || true)
 [ "${snmptot:-0}" -gt 0 ] || snmptot=$snmpseen
 if [ "$snmpup" -gt 0 ] && [ "$snmpup" -eq "$snmptot" ] && [ "$snmpseries" -gt 0 ]; then
   ok "snmp: $snmpup/$snmptot cabinets up, $snmpseries ifOperStatus series"
