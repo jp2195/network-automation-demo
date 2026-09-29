@@ -73,7 +73,7 @@ reset. Tool results are byte-bounded and NetBox access is GET-only
 | Corridor what-if walk | `workloads/eventing/scripts/corridor_impact.py` |
 | Deployment / Service | `workloads/chat-agent/` |
 | Ingress path (`/api/chat`) | `workloads/console/ingress.yaml` |
-| Image | `images/chat-agent/Dockerfile` (python:3.14-slim) |
+| Image | `images/chat-agent/Dockerfile` (python:3.14.7-slim) |
 | Console panel | `tools/console/static/` (`chatInit` in `app.js`) |
 | Tests | `scripts/test_chat_server.py`, `scripts/test_corridor_impact.py` |
 
