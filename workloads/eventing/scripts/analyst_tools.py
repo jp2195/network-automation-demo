@@ -14,6 +14,7 @@ accept path so the unit tests run with pydantic-ai-slim alone.
 """
 
 import asyncio
+import contextvars
 import json
 import os
 import re
@@ -96,12 +97,29 @@ _MAX_RESULT_CHARS = 5000
 # range queries until the request limit). Two identical calls are
 # legitimate (re-check after another tool); the third gets a corrective
 # ModelRetry instead of burning the budget.
+#
+# Counts live in a per-context dict when one has been opened with
+# new_repeat_scope() (the chat server does, per request, so concurrent
+# questions can't reset or inflate each other's counts); otherwise in the
+# module-level _seen_calls (the one-shot batch analyst and tests).
 _seen_calls = {}
+_seen_calls_ctx = contextvars.ContextVar("seen_calls", default=None)
+
+
+def new_repeat_scope():
+    """Give the current context (and tasks/threads it spawns) fresh counts."""
+    _seen_calls_ctx.set({})
+
+
+def _calls():
+    scoped = _seen_calls_ctx.get()
+    return _seen_calls if scoped is None else scoped
 
 
 def _repeat_guard(tool, key):
-    n = _seen_calls.get((tool, key), 0) + 1
-    _seen_calls[(tool, key)] = n
+    seen = _calls()
+    n = seen.get((tool, key), 0) + 1
+    seen[(tool, key)] = n
     if n > 2:
         raise ModelRetry(
             f"you already called {tool} with these exact arguments "
