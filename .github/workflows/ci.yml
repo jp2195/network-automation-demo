@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go:
+    name: Go (vet, test, render drift)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: go vet ./...
+      - run: go test ./tools/...
+      - name: Render drift gate
+        # Every workloads/* renderer output is committed; a hand-edit (or a
+        # renderer change without re-rendering) shows up as a diff here.
+        run: |
+          go run ./tools/render -spec spec/atlanta.yaml -out .
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            git diff
+            echo "::error::Rendered outputs drifted — run 'make render' and commit the result."
+            exit 1
+          fi
+
+  python:
+    name: Python (eventing + dom-synth)
+    runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: "3.12"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.2.0  # no floating major tag upstream
+      - name: Eventing suites
+        working-directory: workloads/eventing/scripts
+        run: >-
+          uv run --quiet --no-project
+          --with fakeredis --with valkey --with "pydantic-ai-slim[openai]"
+          --with fastapi --with httpx
+          python3 -m unittest discover -p "test_*.py"
+      - name: dom-synth suite
+        working-directory: workloads/dom-synth
+        run: >-
+          uv run --quiet --no-project --with valkey --with fakeredis
+          python3 -m unittest test_dom_synth
+
+  shell:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Severity "error": the existing scripts carry a few benign warnings
+      # (e.g. SC2034 in bin/measure-gray.sh); tighten once those are cleaned up.
+      - run: shellcheck --version && shellcheck -S error bin/*.sh bootstrap/*.sh
+
+  console-image:
+    name: Console image build (smoke, no push)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker buildx build -f images/console/Dockerfile .
