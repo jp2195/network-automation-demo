@@ -17,6 +17,8 @@
 set -uo pipefail
 
 TOPO_NS="${TOPO_NS:-clabernetes}"
+# Resolve the repo root so `make` targets work regardless of caller cwd.
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COLOR="${COLOR:-1}"
 
 if [[ "$COLOR" == 1 && -t 1 ]]; then
@@ -40,29 +42,45 @@ push_restore() { RESTORE_QUEUE+=("$1:$2"); }
 push_gray()    { GRAY_QUEUE+=("$1"); }
 # valkey-io/valkey-helm deploys as a Deployment; pod name has a hash suffix.
 valkey_pod()   { kubectl -n valkey get pods -l app.kubernetes.io/name=valkey -o jsonpath='{.items[0].metadata.name}' 2>/dev/null; }
-delete_gray()  { local p; p=$(valkey_pod) && [ -n "$p" ] && kubectl -n valkey exec "$p" -- valkey-cli -n 3 DEL "gray:$1" >/dev/null 2>&1 || true; }
+delete_gray()  { local p; p=$(valkey_pod) && [ -n "$p" ] && kubectl -n valkey exec "$p" -c valkey -- valkey-cli -n 3 DEL "gray:$1" >/dev/null 2>&1 || true; }
+
+# Portable epoch -> human date: GNU `date -d @N`, BSD/macOS `date -r N`.
+fmt_epoch() { date -d "@$1" 2>/dev/null || date -r "$1" 2>/dev/null || echo "epoch $1"; }
+
+demo_make() { make -s -C "$REPO_ROOT" "$@" >/dev/null; }
 
 cut() {
   local node=$1 intf=$2
   hot "cutting ${BOLD}${node}/${intf}${CLR}"
-  make -s demo-cut NODE="$node" INTERFACE="$intf" >/dev/null
+  # Queue the restore first: re-enabling an interface is idempotent, and a
+  # partially-applied cut must still be unwound by the EXIT trap.
   push_restore "$node" "$intf"
+  if ! demo_make demo-cut NODE="$node" INTERFACE="$intf"; then
+    warn "cut of ${node}/${intf} FAILED (make demo-cut) — aborting scenario"
+    exit 1
+  fi
 }
 
 restore() {
   local node=$1 intf=$2
   ok "restoring ${BOLD}${node}/${intf}${CLR}"
-  make -s demo-restore NODE="$node" INTERFACE="$intf" >/dev/null || true
+  demo_make demo-restore NODE="$node" INTERFACE="$intf" \
+    || warn "restore of ${node}/${intf} FAILED — run: make demo-restore NODE=${node} INTERFACE=${intf}"
 }
 
 # Track whether we exited via a signal (Ctrl-C / TERM) vs. normally.
 # Normal exit from the async gray-failure subcommand must NOT clear the
 # Valkey key — TTL handles that. Cuts in RESTORE_QUEUE always run, since
 # leaving a cut applied on script exit would break the next demo.
+# The handler must exit (not just record the signal): otherwise bash
+# resumes the scenario after the interrupted `sleep` and Ctrl-C only
+# skips one step. Exiting runs the EXIT trap (cleanup) below.
 INTERRUPTED=0
-on_signal() { INTERRUPTED=1; }
+on_signal() { INTERRUPTED=1; exit "$1"; }
 
 cleanup() {
+  # Don't let a second Ctrl-C abort the restore half-way.
+  trap '' INT TERM
   if (( ${#RESTORE_QUEUE[@]} > 0 )); then
     banner "scenario cleanup — restoring ${#RESTORE_QUEUE[@]} cuts"
     # restore in reverse so a partially-applied scenario un-winds in the
@@ -83,7 +101,8 @@ cleanup() {
     done
   fi
 }
-trap on_signal INT TERM
+trap 'on_signal 130' INT
+trap 'on_signal 143' TERM
 trap cleanup EXIT
 
 # ────────────────────────────────────────────────────────────────────────
@@ -95,7 +114,7 @@ scenario_hurricane() {
   banner "scenario: hurricane"
   log "1/4  ring-e-i20e drops (storm surge)"
   cut hub-i20e ethernet-1/2
-  log "     dashboards should show oper_state=2 within 5s, alert pending in 30s"
+  log "     dashboards should show oper_state=2 within 5s, alert fires in ~20s"
   sleep 30
 
   log "2/4  ring-i20e-sw drops too — corridor isolated, fc-i20e is now stranded"
@@ -113,7 +132,8 @@ scenario_hurricane() {
     [[ "$entry" == "hub-i20e:ethernet-1/1" ]] && continue
     new_queue+=("$entry")
   done
-  RESTORE_QUEUE=("${new_queue[@]}")
+  # bash 3.2 + set -u: expanding an empty array is an error, hence the guard.
+  RESTORE_QUEUE=(${new_queue[@]+"${new_queue[@]}"})
   sleep 30
 
   log "4/4  ring-e-i20e back up — full restoration"
@@ -183,14 +203,17 @@ scenario_flapping() {
   banner "scenario: flapping"
   local node=hub-e intf=ethernet-1/1
   log "flapping ${node}/${intf} 6x to trip the SRLInterfaceFlapping alert"
+  # Ctrl-C mid-flap must not leave the interface down.
+  push_restore "$node" "$intf"
   for i in 1 2 3 4 5 6; do
     log "  flap $i/6 — down"
-    make -s demo-cut NODE="$node" INTERFACE="$intf" >/dev/null
+    demo_make demo-cut NODE="$node" INTERFACE="$intf" || warn "flap $i/6 cut failed"
     sleep 10
     log "  flap $i/6 — up"
-    make -s demo-restore NODE="$node" INTERFACE="$intf" >/dev/null
+    demo_make demo-restore NODE="$node" INTERFACE="$intf" || warn "flap $i/6 restore failed"
     sleep 10
   done
+  RESTORE_QUEUE=()
   log "settled — wait 60s for SRLInterfaceFlapping to enter firing"
   sleep 60
   ok "flapping scenario complete"
@@ -225,10 +248,14 @@ gray_failure() {
     echo "valkey pod not found in namespace 'valkey'" >&2
     return 1
   fi
-  kubectl -n valkey exec "$p" -- \
-    valkey-cli -n 3 SET "gray:$link" "$json" EX "$ttl" >/dev/null
+  # Queue before writing so a Ctrl-C mid-write still clears the key.
   push_gray "$link"
-  ok "Key gray:$link written; will auto-clear at $(date -d @$((now+ttl)))"
+  if ! kubectl -n valkey exec "$p" -c valkey -- \
+    valkey-cli -n 3 SET "gray:$link" "$json" EX "$ttl" >/dev/null; then
+    echo "failed to write gray:$link to valkey" >&2
+    return 1
+  fi
+  ok "Key gray:$link written; will auto-clear at $(fmt_epoch $((now+ttl)))"
 }
 
 gray_failure_end() {

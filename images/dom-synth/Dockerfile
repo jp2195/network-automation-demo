@@ -3,9 +3,9 @@
 # /app/dom_synth.py is also the ConfigMap mount path so the dashboard
 # can keep iterating without rebuilding the image — the mount overrides
 # the baked copy at runtime.
-FROM python:3.14-slim
+FROM python:3.14.7-slim
 
-RUN pip install --no-cache-dir valkey
+RUN pip install --no-cache-dir valkey==6.1.1
 
 COPY dom_synth.py /app/dom_synth.py
 

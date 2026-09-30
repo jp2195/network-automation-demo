@@ -12,7 +12,7 @@ spec:
       rules:
         # Only alert on interfaces that are part of the rendered topology
         # (configured links, captured by link_membership_info). An IXR-D3
-        # exposes 56 ethernet ports; the unused ones report oper-state=down
+        # exposes 34 ethernet ports; the unused ones report oper-state=down
         # by default but no link_membership_info exists for them, so they're
         # filtered out. Joining on link_membership_info also lifts link_id /
         # link_kind into the alert labels for downstream enrichment.

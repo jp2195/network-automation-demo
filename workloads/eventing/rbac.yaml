@@ -17,9 +17,18 @@ rules:
       - workflowtaskresults
       - workflowtasksets
     verbs: [get, list, watch, create, update, patch, delete]
+  # Workflow pods only need what the Argo executor uses (its v3.4+ path is
+  # workflowtaskresults, above; pods get/watch/patch + pods/log are the
+  # legacy executor contract, kept for safety). No secrets: every
+  # secretKeyRef in the WFTs is resolved by the kubelet, not this SA, and
+  # no artifact repository is configured. No configmaps: the scripts only
+  # write dashboard ConfigMaps in incident-dashboards (granted there).
   - apiGroups: [""]
-    resources: [pods, pods/log, configmaps, secrets]
-    verbs: [get, list, watch, create]
+    resources: [pods]
+    verbs: [get, watch, patch]
+  - apiGroups: [""]
+    resources: [pods/log]
+    verbs: [get, watch]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

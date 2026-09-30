@@ -5,6 +5,7 @@ import sys
 import time
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -210,16 +211,20 @@ class RxPowerOffsetTests(unittest.TestCase):
 
     def test_gray_failure_plateau_offsets_rx_power(self):
         state = self._state()
+        now = time.time()
         gf = dom_synth.GrayFailure(
             link_id="ring-n-e",
-            start_ts=time.time() - 50.0,   # halfway through 100s duration => plateau
+            start_ts=now - 50.0,   # halfway through 100s duration => plateau
             duration_s=100.0,
             peak_rx_offset_dbm=8.0,
             peak_errors_per_sec=120.0,
         )
-        baseline = self._rx_values(dom_synth.render_metrics(state=state, gray_failures={}))
-        degraded = self._rx_values(
-            dom_synth.render_metrics(state=state, gray_failures={"ring-n-e": gf}))
+        # Freeze the clock: baseline values are a sine of time.time(), so two
+        # renders a few microseconds apart can round differently at 4 places.
+        with mock.patch.object(dom_synth.time, "time", return_value=now):
+            baseline = self._rx_values(dom_synth.render_metrics(state=state, gray_failures={}))
+            degraded = self._rx_values(
+                dom_synth.render_metrics(state=state, gray_failures={"ring-n-e": gf}))
 
         # Both ports of ring-n-e are 8.0 dBm lower (full peak at plateau).
         for port in [("hub-n", "ethernet-1/1"), ("hub-e", "ethernet-1/2")]:

@@ -48,7 +48,9 @@ def finalize(action, link_id, valkey_url):
 
 def lookup_thread_ts(link_id, valkey_url):
     """Find the Slack thread of the incident this remediation belongs to:
-    newest incident:<fp> ledger record is close enough for the demo."""
+    the newest incident:<fp> ledger record for this link_id (notify.py
+    stores it), falling back to the newest record overall for ledgers
+    written before link_id was recorded."""
     try:
         import json
 
@@ -59,7 +61,8 @@ def lookup_thread_ts(link_id, valkey_url):
         return None, None
     try:
         r = valkey.from_url(valkey_url, decode_responses=True)
-        latest, latest_seen = None, None
+        # [any record, record for this link]: (first_seen, record)
+        best = [(None, None), (None, None)]
         for key in r.scan_iter("incident:*"):
             raw = r.get(key)
             if not raw:
@@ -68,9 +71,14 @@ def lookup_thread_ts(link_id, valkey_url):
                 record = json.loads(raw)
             except (TypeError, ValueError):
                 continue
+            if not isinstance(record, dict):
+                continue
             seen = record.get("first_seen") or ""
-            if latest_seen is None or seen > latest_seen:
-                latest_seen, latest = seen, record
+            slots = [0, 1] if link_id and record.get("link_id") == link_id else [0]
+            for i in slots:
+                if best[i][0] is None or seen > best[i][0]:
+                    best[i] = (seen, record)
+        latest = best[1][1] or best[0][1]
         if latest:
             return latest.get("channel"), latest.get("ts")
     except Exception as e:
@@ -84,15 +92,20 @@ def post_slack(text, channel=None, thread_ts=None):
     except ImportError:
         print("slack_sdk not installed; skipping", file=sys.stderr, flush=True)
         return False
-    client = WebClient(token=os.environ["SLACK_BOT_TOKEN"])
     kwargs = {
-        "channel": channel or os.environ["SLACK_CHANNEL_ID"],
+        "channel": channel or os.environ.get("SLACK_CHANNEL_ID", ""),
         "text": text,
         "mrkdwn": True,
     }
-    if thread_ts:
+    # notify.py writes this placeholder when Slack was unconfigured.
+    if thread_ts and thread_ts != "unconfigured.000000":
         kwargs["thread_ts"] = thread_ts
-    resp = client.chat_postMessage(**kwargs)
+    try:
+        client = WebClient(token=os.environ.get("SLACK_BOT_TOKEN", ""))
+        resp = client.chat_postMessage(**kwargs)
+    except Exception as e:  # a Slack failure must never fail the workflow
+        print(f"slack post failed (non-fatal): {e}", file=sys.stderr, flush=True)
+        return False
     print(f"posted remediation note ts={resp['ts']}", flush=True)
     return True
 
