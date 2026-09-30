@@ -26,46 +26,49 @@ Examples:
 EOF
 }
 
+# Node names are plain hostnames; reject anything else up front.
+check_node() {
+  if [[ ! "$1" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*$ ]]; then
+    echo "invalid node name: $1" >&2
+    exit 1
+  fi
+}
+
+# Build the Workflow as JSON with jq --arg so node/comment values are
+# always properly escaped (JSON is valid YAML for `kubectl create -f -`),
+# instead of interpolating raw strings into a YAML heredoc.
+submit() {
+  local template=$1; shift
+  jq -n --arg tmpl "$template" "$@" '{
+    apiVersion: "argoproj.io/v1alpha1",
+    kind: "Workflow",
+    metadata: {generateName: ($tmpl + "-")},
+    spec: {
+      workflowTemplateRef: {name: $tmpl},
+      arguments: {parameters: [$ARGS.named | to_entries[]
+        | select(.key != "tmpl") | {name: .key, value: .value}]}
+    }
+  }' | kubectl -n argo-events create -f -
+}
+
 start() {
   local node=${1:-}
   local hours=${2:-2}
   local comment=${3:-scheduled maintenance}
   if [[ -z "$node" ]]; then usage; exit 1; fi
-  cat <<YAML | kubectl -n argo-events create -f -
-apiVersion: argoproj.io/v1alpha1
-kind: Workflow
-metadata:
-  generateName: maintenance-on-
-spec:
-  workflowTemplateRef:
-    name: maintenance-on
-  arguments:
-    parameters:
-      - name: node
-        value: "${node}"
-      - name: duration_hours
-        value: "${hours}"
-      - name: comment
-        value: "${comment}"
-YAML
+  check_node "$node"
+  if [[ ! "$hours" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+    echo "invalid hours: $hours" >&2
+    exit 1
+  fi
+  submit maintenance-on --arg node "$node" --arg duration_hours "$hours" --arg comment "$comment"
 }
 
 end() {
   local node=${1:-}
   if [[ -z "$node" ]]; then usage; exit 1; fi
-  cat <<YAML | kubectl -n argo-events create -f -
-apiVersion: argoproj.io/v1alpha1
-kind: Workflow
-metadata:
-  generateName: maintenance-off-
-spec:
-  workflowTemplateRef:
-    name: maintenance-off
-  arguments:
-    parameters:
-      - name: node
-        value: "${node}"
-YAML
+  check_node "$node"
+  submit maintenance-off --arg node "$node"
 }
 
 list() {

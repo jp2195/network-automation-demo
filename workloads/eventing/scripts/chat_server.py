@@ -259,11 +259,15 @@ def create_app(model=None, lifetime_requests=None):
                 {"detail": "chat request budget for this pod is exhausted"},
                 status_code=429)
         state["remaining"] -= 1
-        # The anti-repeat guard is process-global and tuned for one
-        # investigation; a fresh question starts with a clean slate.
+        # The anti-repeat guard is tuned for one investigation; each
+        # question gets its own counts via a context-local scope (opened
+        # inside stream(), which runs the agent), so concurrent requests
+        # don't clear or inflate each other's. The module-level fallback
+        # is still cleared in case a tool ever runs outside that context.
         analyst_tools._seen_calls.clear()
 
         async def stream():
+            analyst_tools.new_repeat_scope()
             try:
                 async with agent.run_stream_events(
                         prompt, message_history=history,

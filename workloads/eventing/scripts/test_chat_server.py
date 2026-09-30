@@ -219,6 +219,44 @@ class EndpointTest(unittest.TestCase):
                json={"messages": [{"role": "user", "content": "hi"}]})
         self.assertEqual(analyst_tools._seen_calls, {})
 
+    def test_repeat_guard_is_request_scoped(self):
+        # Tool calls must count against a per-request scope (not the
+        # process-global dict another concurrent request could clear),
+        # including sync tools pydantic-ai runs in a worker thread.
+        import analyst_tools
+        from pydantic_ai.messages import ToolReturnPart
+        from pydantic_ai.models.function import DeltaToolCall
+
+        async def stream(messages, info):
+            returned = [p for m in messages for p in getattr(m, "parts", [])
+                        if isinstance(p, ToolReturnPart)]
+            if not returned:
+                yield {0: DeltaToolCall(name="query_prometheus",
+                                        json_args='{"promql": "up"}')}
+            else:
+                yield "done"
+
+        scoped = []
+
+        def fake_prom(url, q):
+            scoped.append(analyst_tools._seen_calls_ctx.get())
+            return []
+
+        analyst_tools._seen_calls.clear()
+        app = chat_server.create_app(model=FunctionModel(stream_function=stream))
+        c = TestClient(app)
+        with mock.patch("analyst_tools.prom_query", fake_prom), \
+                mock.patch.dict("os.environ", {"PROM_URL": "http://x"}):
+            for _ in range(2):
+                r = c.post("/api/chat",
+                           json={"messages": [{"role": "user", "content": "q"}]})
+                self.assertEqual(r.status_code, 200)
+        self.assertEqual(len(scoped), 2)
+        for s in scoped:
+            self.assertEqual(s, {("query_prometheus", "up"): 1})
+        self.assertIsNot(scoped[0], scoped[1])
+        self.assertEqual(analyst_tools._seen_calls, {})
+
 
 if __name__ == "__main__":
     unittest.main()

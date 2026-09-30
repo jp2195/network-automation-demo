@@ -11,10 +11,14 @@ import (
 	"io"
 	"io/fs"
 	"log"
+	"math"
+	"mime"
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -27,6 +31,7 @@ type server struct {
 	prom    string
 	argo    string
 	client  *http.Client
+	targets *targets
 }
 
 type httpStatusErr int
@@ -50,21 +55,170 @@ func writeJSON(w http.ResponseWriter, code int, v any) {
 	}
 }
 
-func (s *server) forward(w http.ResponseWriter, r *http.Request, endpoint string, allow map[string]bool) {
-	var body map[string]any
-	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<16)).Decode(&body); err != nil {
+// targets is the embedded console-targets.json allowlist. Every node,
+// node:interface pair and link id the console forwards must appear here.
+type targets struct {
+	nodes map[string]bool
+	ports map[string]bool // "node:interface"
+	links map[string]bool
+}
+
+func loadTargets() (*targets, error) {
+	raw, err := staticFS.ReadFile("static/console-targets.json")
+	if err != nil {
+		return nil, err
+	}
+	var doc struct {
+		Nodes []struct {
+			Name       string   `json:"name"`
+			Interfaces []string `json:"interfaces"`
+		} `json:"nodes"`
+		Links []struct {
+			ID string `json:"id"`
+		} `json:"links"`
+	}
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		return nil, err
+	}
+	t := &targets{nodes: map[string]bool{}, ports: map[string]bool{}, links: map[string]bool{}}
+	for _, n := range doc.Nodes {
+		t.nodes[n.Name] = true
+		for _, i := range n.Interfaces {
+			t.ports[n.Name+":"+i] = true
+		}
+	}
+	for _, l := range doc.Links {
+		t.links[l.ID] = true
+	}
+	return t, nil
+}
+
+var (
+	// Only SR Linux ports are cuttable (the cut WFT drives gNMI
+	// admin-state); FRR cabinet eth1 ports are deliberately excluded.
+	ifaceRe = regexp.MustCompile(`^ethernet-1/\d+$`)
+	linkRe  = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+)
+
+// maxMaintHours matches the max on the console's Hours input (index.html).
+const maxMaintHours = 48
+
+type reqError string
+
+func (e reqError) Error() string { return string(e) }
+
+// sameOrigin rejects cross-site browser POSTs: when an Origin header is
+// present its host must equal the request Host. Non-browser clients
+// (curl, scripts) send no Origin and are allowed through.
+func sameOrigin(r *http.Request) bool {
+	o := r.Header.Get("Origin")
+	if o == "" {
+		return true
+	}
+	u, err := url.Parse(o)
+	if err != nil || u.Host == "" {
+		return false
+	}
+	return strings.EqualFold(u.Host, r.Host)
+}
+
+// builder turns a decoded client body into the exact payload the upstream
+// sensor expects, copying only validated, expected keys.
+type builder func(t *targets, in map[string]any) (map[string]any, error)
+
+func str(in map[string]any, k string) string {
+	v, _ := in[k].(string)
+	return v
+}
+
+func buildCut(t *targets, in map[string]any) (map[string]any, error) {
+	node, iface := str(in, "node"), str(in, "interface")
+	if !t.nodes[node] {
+		return nil, reqError("unknown node")
+	}
+	if !ifaceRe.MatchString(iface) || !t.ports[node+":"+iface] {
+		return nil, reqError("invalid interface")
+	}
+	return map[string]any{"node": node, "interface": iface}, nil
+}
+
+func buildGray(t *targets, in map[string]any) (map[string]any, error) {
+	link := str(in, "link")
+	if !linkRe.MatchString(link) || !t.links[link] {
+		return nil, reqError("unknown link")
+	}
+	return map[string]any{"link": link}, nil
+}
+
+func buildMaintenance(t *targets, in map[string]any) (map[string]any, error) {
+	node := str(in, "node")
+	if !t.nodes[node] {
+		return nil, reqError("unknown node")
+	}
+	out := map[string]any{"node": node}
+	if str(in, "action") != "start" {
+		return out, nil
+	}
+	var h float64
+	switch v := in["hours"].(type) {
+	case nil:
+		return out, nil // sensor default applies
+	case float64:
+		h = v
+	case string:
+		f, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			return nil, reqError("invalid hours")
+		}
+		h = f
+	default:
+		return nil, reqError("invalid hours")
+	}
+	if math.IsNaN(h) || h <= 0 || h > maxMaintHours {
+		return nil, reqError("invalid hours")
+	}
+	out["hours"] = h
+	// Free-text comment is intentionally dropped: the UI never sends one
+	// and the sensor supplies a fixed default.
+	return out, nil
+}
+
+func (s *server) forward(w http.ResponseWriter, r *http.Request, endpoint string, allow map[string]bool, build builder) {
+	if r.Method != http.MethodPost {
+		w.Header().Set("Allow", http.MethodPost)
+		writeJSON(w, 405, map[string]any{"ok": false, "detail": "method not allowed"})
+		return
+	}
+	if mt, _, err := mime.ParseMediaType(r.Header.Get("Content-Type")); err != nil || mt != "application/json" {
+		writeJSON(w, 415, map[string]any{"ok": false, "detail": "content-type must be application/json"})
+		return
+	}
+	if !sameOrigin(r) {
+		writeJSON(w, 403, map[string]any{"ok": false, "detail": "cross-origin request rejected"})
+		return
+	}
+	var in map[string]any
+	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<16)).Decode(&in); err != nil {
 		writeJSON(w, 400, map[string]any{"ok": false, "detail": "bad json"})
 		return
 	}
-	act, _ := body["action"].(string)
+	act := str(in, "action")
 	if !allow[act] {
 		writeJSON(w, 400, map[string]any{"ok": false, "detail": "invalid action"})
 		return
 	}
+	body, err := build(s.targets, in)
+	if err != nil {
+		writeJSON(w, 400, map[string]any{"ok": false, "detail": err.Error()})
+		return
+	}
+	body["action"] = act
 	buf, _ := json.Marshal(body)
 	resp, err := s.client.Post(s.webhook+endpoint, "application/json", bytes.NewReader(buf))
 	if err != nil {
-		writeJSON(w, 502, map[string]any{"ok": false, "detail": err.Error()})
+		// Log the detail (it carries the in-cluster URL); return a generic error.
+		log.Printf("forward %s: %v", endpoint, err)
+		writeJSON(w, 502, map[string]any{"ok": false, "detail": "upstream unavailable"})
 		return
 	}
 	defer resp.Body.Close()
@@ -73,15 +227,15 @@ func (s *server) forward(w http.ResponseWriter, r *http.Request, endpoint string
 }
 
 func (s *server) handleCut(w http.ResponseWriter, r *http.Request) {
-	s.forward(w, r, "/manual-cut", map[string]bool{"disable": true, "enable": true})
+	s.forward(w, r, "/manual-cut", map[string]bool{"disable": true, "enable": true}, buildCut)
 }
 
 func (s *server) handleGray(w http.ResponseWriter, r *http.Request) {
-	s.forward(w, r, "/gray-failure", map[string]bool{"start": true, "end": true})
+	s.forward(w, r, "/gray-failure", map[string]bool{"start": true, "end": true}, buildGray)
 }
 
 func (s *server) handleMaintenance(w http.ResponseWriter, r *http.Request) {
-	s.forward(w, r, "/maintenance", map[string]bool{"start": true, "end": true})
+	s.forward(w, r, "/maintenance", map[string]bool{"start": true, "end": true}, buildMaintenance)
 }
 
 func (s *server) promScalar(query string) (int, error) {
@@ -207,7 +361,12 @@ func (s *server) routes() http.Handler {
 }
 
 func main() {
+	tg, err := loadTargets()
+	if err != nil {
+		log.Fatalf("console-targets.json: %v", err)
+	}
 	s := &server{
+		targets: tg,
 		webhook: envOr("WEBHOOK_URL", "http://webhook-eventsource-svc.argo-events.svc.cluster.local:12000"),
 		prom:    envOr("PROM_URL", "http://kps-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"),
 		argo:    envOr("ARGO_API", "http://argo-workflows-server.argo.svc.cluster.local:2746"),

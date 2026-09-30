@@ -73,6 +73,79 @@ def compute_backup_path(alert, affected_role=None):
             "detail": "corridor ring intact"}
 
 
+def _own_interface(cable, device):
+    """Name of `device`'s interface on this cable, or None."""
+    for side in ("a_terminations", "b_terminations"):
+        for t in cable.get(side, []):
+            obj = t.get("object") or {}
+            if (obj.get("device") or {}).get("name") == device:
+                return obj.get("name")
+    return None
+
+
+def failed_cable_peers(cables, affected_device, cable_id=None, interface=""):
+    """Peers on the far side of the FAILED cable only.
+
+    `cables` is every cable touching the device; an interface alert affects
+    just one of them. Scope by the enriched cable id, else by the alerting
+    interface name. Only when neither identifies a cable (device-wide
+    alerts, degraded enrichment) fall back to all peers, so impact is
+    never silently under-reported.
+    """
+    scoped = [c for c in cables if cable_id is not None and c.get("id") == cable_id]
+    if not scoped and interface:
+        scoped = [c for c in cables if _own_interface(c, affected_device) == interface]
+    if not scoped:
+        scoped = cables
+
+    peers = []
+    for cable in scoped:
+        for side in ("a_terminations", "b_terminations"):
+            for t in cable.get(side, []):
+                if t.get("object_type") != "dcim.interface":
+                    continue
+                obj = t.get("object") or {}
+                pdev = (obj.get("device") or {}).get("name", "")
+                if not pdev or pdev == affected_device:
+                    # Skip the affected device's own termination — the
+                    # peer is on the OTHER side of the cable.
+                    continue
+                peers.append({
+                    "device": pdev,
+                    "interface": obj.get("name", ""),
+                    "cable_label": cable.get("label"),
+                })
+    return peers
+
+
+def stranded_cabinet_peers(cables, affected_device, down_ifaces):
+    """Cabinets cut off because EVERY backbone cable on the device is down.
+
+    A single ring cut leaves the hub reachable the other way around the
+    ring; lose all of them (the hurricane scenario) and the hub's
+    single-homed field cabinets are stranded even though their own drops
+    are still up.
+    """
+    backbone, cabinets = [], []
+    for cable in cables:
+        for peer in failed_cable_peers([cable], affected_device, cable_id=cable.get("id")):
+            if peer["device"].startswith(CABINET_NAME_PREFIX):
+                cabinets.append(peer)
+            else:
+                backbone.append(_own_interface(cable, affected_device))
+    if backbone and all(i in down_ifaces for i in backbone):
+        return cabinets
+    return []
+
+
+def _down_interfaces(prom_url, device):
+    rows = prom_query(
+        prom_url,
+        'srl_nokia_interfaces_interface_oper_state{node="%s"} == 2' % device,
+    )
+    return {r.get("metric", {}).get("interface") for r in rows}
+
+
 _nb = Client()
 get = _nb.get
 
@@ -90,23 +163,18 @@ def main():
         "/api/dcim/cables/", device=affected_device, limit=100,
     ).get("results", [])
 
-    downstream = []
-    for cable in cables:
-        for side in ("a_terminations", "b_terminations"):
-            for t in cable.get(side, []):
-                if t.get("object_type") != "dcim.interface":
-                    continue
-                obj = t.get("object") or {}
-                pdev = (obj.get("device") or {}).get("name", "")
-                if not pdev or pdev == affected_device:
-                    # Skip the affected device's own termination — the
-                    # peer is on the OTHER side of the cable.
-                    continue
-                downstream.append({
-                    "device": pdev,
-                    "interface": obj.get("name", ""),
-                    "cable_label": cable.get("label"),
-                })
+    alert = enrichment.get("alert", {}) or {}
+    downstream = failed_cable_peers(
+        cables, affected_device,
+        cable_id=(enrichment.get("cable") or {}).get("id"),
+        interface=alert.get("interface") or "",
+    )
+    prom_url = os.environ.get("PROM_URL")
+    if prom_url and affected_device:
+        down = _down_interfaces(prom_url, affected_device) | {alert.get("interface")}
+        seen = {d["device"] for d in downstream}
+        downstream += [p for p in stranded_cabinet_peers(cables, affected_device, down)
+                       if p["device"] not in seen]
 
     site_slug = enrichment.get("device", {}).get("site_slug")
 
@@ -136,7 +204,6 @@ def main():
             return role == ROLE_FIELD_CABINET
         return dev.startswith(CABINET_NAME_PREFIX)
 
-    alert = enrichment.get("alert", {}) or {}
     alert_severity = alert.get("severity", "")
 
     severity_class = SEVERITY_LOW
