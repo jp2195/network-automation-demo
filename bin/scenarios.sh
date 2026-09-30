@@ -42,7 +42,7 @@ push_restore() { RESTORE_QUEUE+=("$1:$2"); }
 push_gray()    { GRAY_QUEUE+=("$1"); }
 # valkey-io/valkey-helm deploys as a Deployment; pod name has a hash suffix.
 valkey_pod()   { kubectl -n valkey get pods -l app.kubernetes.io/name=valkey -o jsonpath='{.items[0].metadata.name}' 2>/dev/null; }
-delete_gray()  { local p; p=$(valkey_pod) && [ -n "$p" ] && kubectl -n valkey exec "$p" -- valkey-cli -n 3 DEL "gray:$1" >/dev/null 2>&1 || true; }
+delete_gray()  { local p; p=$(valkey_pod) && [ -n "$p" ] && kubectl -n valkey exec "$p" -c valkey -- valkey-cli -n 3 DEL "gray:$1" >/dev/null 2>&1 || true; }
 
 # Portable epoch -> human date: GNU `date -d @N`, BSD/macOS `date -r N`.
 fmt_epoch() { date -d "@$1" 2>/dev/null || date -r "$1" 2>/dev/null || echo "epoch $1"; }
@@ -250,7 +250,7 @@ gray_failure() {
   fi
   # Queue before writing so a Ctrl-C mid-write still clears the key.
   push_gray "$link"
-  if ! kubectl -n valkey exec "$p" -- \
+  if ! kubectl -n valkey exec "$p" -c valkey -- \
     valkey-cli -n 3 SET "gray:$link" "$json" EX "$ttl" >/dev/null; then
     echo "failed to write gray:$link to valkey" >&2
     return 1
