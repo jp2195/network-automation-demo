@@ -33,7 +33,7 @@ const (
 	// docker (it prepends `docker.io/` and the ref becomes invalid).
 	// The pre-baked frr-snmpd Dockerfile + `make build` slot remain in
 	// place for a future imagePullThrough fix.
-	ImageFRR    = "quay.io/frrouting/frr:10.6.1"
+	ImageFRR    = "quay.io/frrouting/frr:10.6.2"
 	ImagePython = "python:3.12-slim"
 	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.44.1"
 	// ImageEventingPy is the pre-baked eventing image (python + slack-sdk +
