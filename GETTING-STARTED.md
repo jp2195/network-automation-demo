@@ -10,14 +10,16 @@ don't need this file — the [README](README.md) has the short version.
 
 > ### ⚠️ Honest expectations first
 >
-> This is an **advanced networking lab**. It runs a miniature data-center's
+> This is an **advanced networking lab**. It runs a miniature data center's
 > worth of software on your laptop — a small Kubernetes cluster, a dozen
 > simulated routers, a monitoring stack, and an automation pipeline. That's
 > genuinely a lot.
 >
-> - It needs a **powerful computer**: ideally **32 GB of RAM** and about
->   **30 GB of free disk space**. It can limp along on 16 GB but may be slow.
-> - The first start **downloads several gigabytes** and takes **10–20 minutes**.
+> - It needs a **powerful computer**: at least **32 GB of RAM** (Docker
+>   itself must be given **24 GB or more** of it; Part 2 shows how) and about
+>   **30 GB of free disk space**. The whole stack uses about 25 GB of memory,
+>   so a 16 GB machine can't run it.
+> - The first start **downloads several gigabytes** and takes **15–25 minutes**.
 > - Some steps may still feel hard even with this guide. That's normal. Go
 >   slowly, and use the troubleshooting section at the bottom.
 >
@@ -65,9 +67,10 @@ prompt, it's probably still working. Be patient.
 
 | Need | Why | Minimum |
 |---|---|---|
-| RAM (memory) | Runs ~12 simulated routers + a monitoring stack | 16 GB (32 GB strongly recommended) |
+| RAM (memory) | Runs ~12 simulated routers + a monitoring stack | 32 GB, with ≥ 24 GB assigned to Docker |
+| CPU | Same | 6+ cores assigned to Docker |
 | Free disk space | Downloaded software images | ~30 GB |
-| Operating system | — | macOS, Windows 10/11, or Linux |
+| Operating system | — | macOS (Apple Silicon verified), Windows 10/11 via WSL 2, or Linux |
 | Internet | First run downloads several GB | A decent connection |
 
 You'll install a small set of free tools (next section). Don't worry about
@@ -77,21 +80,21 @@ what each one is yet — there's a one-line explanation beside each.
 
 ## Part 2 — Install the tools (pick your operating system)
 
-You need these five tools. The per-OS instructions below install all of them.
+You need these tools. The per-OS instructions below install all of them.
 
 | Tool | What it is, in one line |
 |---|---|
-| **Docker** | Runs software in isolated "containers" — the foundation everything else sits on. |
+| **Docker** (with `buildx`) | Runs software in isolated "containers" — the foundation everything else sits on. `buildx` is Docker's image builder; Docker Desktop and OrbStack include it. |
 | **k3d** | Starts a tiny Kubernetes cluster (a software system that runs and manages containers) inside Docker. |
 | **kubectl** | The command you use to talk to that Kubernetes cluster. |
 | **helm** | A tool for installing pre-packaged software onto Kubernetes. |
-| **make** | Runs the project's shortcut commands (like `make up`). |
+| **make** | Runs the project's shortcut commands (like `make demo`). |
+| **python3** and **jq** | Small helpers the project's status and readiness scripts use. |
 
-(There's an optional sixth tool, **Go**, needed only if you want to *change*
-the network design. You can skip it. The install commands below also grab
-two small helpers the project's status scripts use: **jq** and **python3**.)
+(There's one optional extra, **Go**, needed only if you want to *change*
+the network design. You can skip it.)
 
-### 🍎 macOS  *(⚠️ instructions below need testing on a real Mac)*
+### 🍎 macOS
 
 1. **Install Docker.** Download **Docker Desktop** from
    <https://www.docker.com/products/docker-desktop/> and install it like any
@@ -109,13 +112,26 @@ two small helpers the project's status scripts use: **jq** and **python3**.)
 3. **Install the rest** with Homebrew:
 
    ```bash
-   brew install k3d kubectl helm make jq
+   brew install k3d kubectl helm make jq python3
    ```
 
    (`make` and `git` usually come with Apple's developer tools; if `make`
    isn't found later, run `xcode-select --install`.)
 
-### 🪟 Windows  *(⚠️ instructions below need testing on a real Windows machine)*
+4. **Give Docker enough memory.** The default is far too small for this
+   demo.
+   - **Docker Desktop:** whale icon → **Settings → Resources → Advanced**.
+     Set **Memory** to at least **24 GB** and **CPUs** to at least **6**,
+     then click **Apply & restart**.
+   - **OrbStack:** menu bar icon → **Settings → System**. Set the
+     **Memory limit** to at least **24 GB** (OrbStack uses all CPUs by
+     default).
+
+### 🪟 Windows
+
+*(Windows runs the same Linux path through WSL 2. It is less tested than
+macOS and Linux, so if a step here doesn't match what you see, please open an
+issue.)*
 
 On Windows the cleanest path is **WSL** — "Windows Subsystem for Linux" — which
 runs a real Ubuntu Linux inside Windows. This demo is built for Linux/Mac
@@ -137,6 +153,19 @@ tools, and WSL gives you exactly that without leaving Windows.
    Desktop → **Settings → Resources → WSL Integration** and turn it **on** for
    your Ubuntu distribution. Leave Docker Desktop running.
 
+   Then give WSL enough memory. In Windows, create or edit the file
+   `%UserProfile%\.wslconfig` (for example `C:\Users\you\.wslconfig`) so it
+   contains:
+
+   ```ini
+   [wsl2]
+   memory=24GB
+   processors=6
+   ```
+
+   Then run `wsl --shutdown` in PowerShell and reopen Ubuntu and Docker
+   Desktop.
+
 3. **Open the Ubuntu terminal** (Start menu → type `Ubuntu` → Enter). From
    here on, **you are in Linux** — run all the project commands here, not in
    PowerShell. Install the tools:
@@ -157,8 +186,18 @@ tools, and WSL gives you exactly that without leaving Windows.
 
    ```bash
    sudo sysctl fs.inotify.max_user_instances=1024
-   echo 'fs.inotify.max_user_instances=1024' | sudo tee /etc/sysctl.d/99-inotify.conf
    ```
+
+   That lasts until WSL restarts. Unless your WSL has systemd enabled, the
+   usual `/etc/sysctl.d/` file isn't applied at boot, so make it permanent
+   with a boot command instead:
+
+   ```bash
+   printf '[boot]\ncommand = sysctl -w fs.inotify.max_user_instances=1024\n' | sudo tee -a /etc/wsl.conf
+   ```
+
+   (If `/etc/wsl.conf` already has a `[boot]` section, add the `command`
+   line to it by hand instead.)
 
 ### 🐧 Linux
 
@@ -169,6 +208,11 @@ tools, and WSL gives you exactly that without leaving Windows.
    ```bash
    sudo usermod -aG docker $USER    # then log out and back in
    ```
+
+   Make sure the `buildx` plugin is installed too (`docker buildx version`).
+   On Debian/Ubuntu with Docker's own repository it's the
+   `docker-buildx-plugin` package. Docker Engine on Linux uses all of the
+   host's memory, so there's no memory setting to change.
 
 2. **Install the tools:**
 
@@ -197,11 +241,26 @@ found"):
 
 ```bash
 docker version
+docker buildx version
 k3d version
 kubectl version --client
 helm version
 make --version
+jq --version
+python3 --version
 ```
+
+Then let the project check your machine for you (run it from the project
+folder once you've done Part 3):
+
+```bash
+make doctor
+```
+
+It checks the tools above, that Docker is running and has enough memory,
+that ports 8080, 8443, and 5001 are free, that you have enough disk space,
+that the demo's web addresses resolve, and the Linux `inotify` limit. Fix
+anything it flags before moving on.
 
 ---
 
@@ -223,8 +282,9 @@ type `cd ` and drag the folder onto the terminal window, then press Enter.)
 > GitHub page, not from the copy on your disk. So **running the official demo
 > as-is works out of the box**. But if you want to *change* the design, you
 > have to put your changed copy on your own GitHub account (a "fork") and point
-> the project at it first. That's an advanced topic — the [README](README.md)
-> covers it under "Quickstart". For just trying the demo, ignore this.
+> the project at it first with `make repoint`. That's an advanced topic; the
+> [README](README.md#quickstart) covers it under "Quickstart". For just trying
+> the demo, ignore this.
 
 ---
 
@@ -234,29 +294,38 @@ Make sure **Docker is running** (the whale icon / Docker Desktop is open),
 then, from inside the project folder:
 
 ```bash
-make up
+make doctor
+make demo
 ```
 
-This one command does everything: creates the tiny Kubernetes cluster, builds
-some software images, and installs all the pieces. **It will take 10–20
-minutes the first time** and print a lot of text. That's normal.
+`make doctor` double-checks your machine. `make demo` does everything else:
+it creates the tiny Kubernetes cluster, builds some software images, installs
+all the pieces, **waits until the demo actually works**, and then prints the
+web addresses to open. **It will take 15–25 minutes the first time** and print
+a lot of text. That's normal. (Add `OPEN=1`, as in `make demo OPEN=1`, to
+have it open the scenario console in your browser when it's done.)
+
+If it stops with an error, fix what it complains about and run `make demo`
+again; it's safe to re-run.
 
 > ### About that "inotify" warning
-> If `make up` prints a warning about `fs.inotify.max_user_instances`, it means
-> a Linux system limit is too low and the automation pipeline (the part that
-> reacts to network failures) won't fire. The fix is the one-time command shown
-> in your OS's install section above (Part 2). The cluster and dashboards still
-> work without it — only the automatic incident response is affected.
+> If `make doctor` (or `make demo`) prints a warning about
+> `fs.inotify.max_user_instances`, it means a Linux system limit is too low
+> and the automation pipeline (the part that reacts to network failures)
+> won't fire. The fix is the one-time command shown in your OS's install
+> section above (Part 2). The cluster and dashboards still work without it —
+> only the automatic incident response is affected.
 >
-> This check is **Linux-only**. On **macOS and Windows** the limit lives inside
-> Docker's own virtual machine rather than on your host, where the default is
-> ample — so `make up` prints `preflight: no /proc/sys/fs/inotify on Darwin —
-> skipping` and moves on. That line is expected, not a problem. If the pipeline
-> misbehaves there anyway, see the troubleshooting runbook.
+> This check applies on **Linux and inside WSL** (Windows). On **macOS** the
+> limit lives inside Docker's own virtual machine rather than on your host,
+> where the default is ample — so the check prints a "skipping" note and
+> moves on. That line is expected, not a problem. If the pipeline misbehaves
+> there anyway, see the troubleshooting runbook.
 
 ### How do I know it's ready?
 
-`make up` finishes by printing a status summary. The pieces install
+`make demo` only returns once the lab is ready, so if it printed the web
+addresses, you're done. If you used `make up` instead, the pieces install
 themselves over a few more minutes. Check progress with:
 
 ```bash
@@ -264,7 +333,8 @@ make status
 ```
 
 You're looking for the Applications to become **Synced / Healthy**. There are
-**21** of them, and they all sync on their own — give it a few minutes.
+**22** rows (the `root` Application plus the 21 it creates), and they all sync
+on their own — give it a few minutes.
 (`netbox-seed` shows "Progressing" briefly while it loads the network
 inventory; that's normal and clears itself.)
 
@@ -278,7 +348,7 @@ It verifies what actually has to work — gNMI + SNMP telemetry flowing, the
 eventing pipeline wired, all 4 cabinets polling, NetBox seeded — and exits
 non-zero until they are. On a clean `make up` it reaches all-green **with no
 manual steps** (the FRR cabinets install `snmpd` in the background as they
-boot). Timing: first boot is the ~10–20 min above (image downloads); a warm
+boot). Timing: first boot is the ~15–25 min above (image downloads); a warm
 rebuild — `make down` then `make up` with images cached — reaches all-green in
 ~8 minutes.
 
@@ -294,18 +364,21 @@ kubectl -n argocd get applications
 
 Once things are healthy, open these in your web browser. (If a page doesn't
 load immediately, wait a minute — the software may still be starting.)
+`make urls` prints this list at any time, including the ArgoCD password.
 
 | What | Address | How to log in |
 |---|---|---|
 | **Scenario console** (point-and-click demo) | <http://console.127-0-0-1.nip.io:8080> | no login |
 | **Grafana** (dashboards & graphs) | <http://grafana.127-0-0-1.nip.io:8080> | `admin` / `admin` |
-| **ArgoCD** (shows all the pieces) | <http://argocd.127-0-0-1.nip.io:8080> | `admin` / run `make status` for the password |
+| **ArgoCD** (shows all the pieces) | <http://argocd.127-0-0-1.nip.io:8080> | `admin` / run `make urls` for the password |
 | **NetBox** (the network "source of truth") | <http://netbox.127-0-0-1.nip.io:8080> | `admin` / `admin` |
 | **Argo Workflows** (the automation runs) | <http://workflows.127-0-0-1.nip.io:8080> | no login |
 | **Clabernetes** (the simulated routers) | <http://clabernetes.127-0-0-1.nip.io:8080> | no login |
 
 (Those `127-0-0-1.nip.io` addresses are a trick that always points back to
-your own computer — you don't need to configure anything. `https://` versions
+your own computer — usually you don't need to configure anything. Some
+office, hotel, and conference Wi-Fi networks block them; see Part 8 if the
+pages say the address can't be found. `https://` versions
 on port `8443` also work but will show a "not secure" warning because the demo
 uses a self-signed certificate; the `http://…:8080` versions above avoid that.)
 
@@ -360,7 +433,7 @@ frees the memory and disk it was using. Your project files stay put.
 make down
 ```
 
-To run it again later, just `make up` again.
+To run it again later, just `make demo` again.
 
 ---
 
@@ -371,16 +444,24 @@ A few common newcomer snags:
 - **"command not found"** — the tool isn't installed or your terminal can't
   find it. Re-check Part 2 for that tool. On Windows, make sure you're in the
   **Ubuntu** terminal, not PowerShell.
-- **`make up` errors about Docker** — Docker isn't running. Open Docker Desktop
-  (or start the Docker service on Linux) and try again.
+- **`make demo` / `make up` errors about Docker** — Docker isn't running.
+  Open Docker Desktop (or start the Docker service on Linux) and try again.
+- **"port is already allocated"** — another program is using port 8080,
+  8443, or 5001. `make doctor` tells you which; close that program and re-run.
+- **Pages say the address can't be found** (DNS error, not a timeout) — your
+  network is blocking `nip.io`. The troubleshooting runbook has a one-line
+  fix ("Browser can't resolve").
+- **Things stay "Pending" forever or keep restarting** — Docker doesn't have
+  enough memory. Recheck the 24 GB setting from Part 2, then `make down` and
+  `make demo`.
 - **Pages won't load in the browser** — give it a few more minutes; run
   `make status` and wait for apps to be Healthy. Make sure you used the
   `http://…:8080` address exactly.
 - **The automatic incident response doesn't fire** (graphs react but no Slack/
   workflow) — almost always the `inotify` limit from Part 2/Part 4. Apply the
-  one-time fix and run `make down` then `make up`.
+  one-time fix and run `make down` then `make demo`.
 - **Everything is very slow / your fans roar** — this stack is heavy. Close
-  other apps; 32 GB RAM helps a lot.
+  other apps and make sure Docker has at least 24 GB of memory.
 
 For anything deeper, the maintainers' troubleshooting guide is
 [`docs/runbook-troubleshoot.md`](docs/runbook-troubleshoot.md) — it's written

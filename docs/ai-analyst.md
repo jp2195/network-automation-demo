@@ -83,7 +83,7 @@ Silicon, an **MLX** build is fastest; `qwen3.6:35b-mlx` and the smaller
   timestamp matching no log line at all, at 0.95 confidence.
 
   Three guards now push against it — `query_loki`'s `around` window is weighted
-  before the fault rather than centred on it; log timestamps arrive
+  before the fault rather than centered on it; log timestamps arrive
   pre-formatted so the model never does epoch arithmetic to quote one; and the
   system prompt carries an explicit causality rule (anything after `startsAt`
   is the fault's consequence or somebody's response, never its cause) plus a

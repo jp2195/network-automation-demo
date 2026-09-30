@@ -4,7 +4,7 @@ This is the guided tour. Each feature below has the same shape: **what it is**
 (in plain language), **why it matters**, **how to try it**, and **what you'll
 see**.
 
-Before you start, make sure the demo is running (`make up`) and you can open
+Before you start, make sure the demo is running (`make demo`) and you can open
 **Grafana** at <http://grafana.127-0-0-1.nip.io:8080> (`admin` / `admin`). If
 not, see [GETTING-STARTED.md](GETTING-STARTED.md).
 
@@ -20,7 +20,7 @@ The router names you'll use in commands:
 
 - **Backbone (modern):** `tmc-1`, `tmc-2`, `hub-n`, `hub-e`, `hub-i20e`,
   `hub-nw`, `hub-sw`, `hub-i20w`
-- **Field cabinets (legacy):** `fc-i20e`, and other `fc-*` names
+- **Field cabinets (legacy):** `fc-n`, `fc-nw`, `fc-i20e`, `fc-sw`
 
 ---
 
@@ -55,10 +55,11 @@ make demo-restore NODE=hub-i20e INTERFACE=ethernet-1/4
 - In **Grafana** (Geomap or Overview dashboard): the affected node and link
   turn **red**, then green again after restore.
 - In **Argo Workflows** (<http://workflows.127-0-0-1.nip.io:8080>): a workflow
-  named `enrich-notify-…` runs the enrich → analyze → notify steps.
+  named `enrich-notify-…` runs its five steps: enrich → analyze → notify →
+  dashboard, plus a postmortem once the alert resolves.
 - The incident message itself is built even without Slack configured — it's
-  printed to the workflow's logs. To send it to a real Slack channel, see
-  [SECRETS.md](SECRETS.md) (optional).
+  printed to the workflow's logs, and `make last-notify` shows the latest one.
+  To send it to a real Slack channel, see [SECRETS.md](SECRETS.md) (optional).
 
 <img src="docs/assets/slack-incident.png" alt="Slack incident thread — resolved severity card with the threaded AI analyst reply" width="420">
 
@@ -220,10 +221,11 @@ shows it clean again.
 
 **…and *who* made it.** Drift tells you *what* changed; the **change-attribution**
 trail tells you *who*. Changes are made as **named operators**, not a shared
-`admin`: a manual cut authenticates as **`noc-ops`** — from `make demo-cut` and
-from the scenario console's **Cut** button alike, since both drive the same
-`cut-fiber` WorkflowTemplate — and the closed-loop remediation authenticates as
-**`svc-automation`** (both via gNMI). SR Linux logs
+`admin`: a manual cut authenticates as **`noc-ops`** from `make demo-cut` and
+from the scenario console's **Cut** button alike (the Makefile runs a gNMI Set
+directly through the gNMIc pod; the console POSTs to the `/manual-cut` webhook,
+whose Sensor launches the `cut-fiber` WorkflowTemplate), and the closed-loop
+remediation authenticates as **`svc-automation`**. All three go over gNMI. SR Linux logs
 each commit to its AAA syslog — `committed successfully by user noc-ops session
 189`, with the source host — which flows to Loki. The **Audit feed** dashboard's
 *"Change attribution"* panel shows the live feed, and the AI analyst reads the
@@ -286,8 +288,8 @@ make demo-cut NODE=hub-i20e INTERFACE=ethernet-1/4
 
 **What you'll see.** Alongside the normal pipeline, an `ai-analyze-…` workflow
 runs and publishes its analysis — visible on the **Alert console** dashboard in
-Grafana, folded into the postmortem, and (if you set up the per-incident
-dashboard below) rendered right on the incident's own dashboard.
+Grafana, folded into the postmortem, and rendered right on the incident's own
+auto-generated dashboard (feature 8).
 
 ---
 
@@ -353,7 +355,9 @@ top bar and remembered.
 **Why it matters.** You can run the whole demo from one browser tab while
 Grafana narrates on another — no terminal needed. The console has **no power
 to touch devices**: every button just asks the existing pipeline to act
-(it POSTs events; the workflows do the work), so it's safe to hand to anyone.
+(it POSTs events; the workflows do the work). It only accepts nodes,
+interfaces, and links from its rendered allowlist and rejects cross-origin
+POSTs, so another web page can't drive it from your browser.
 Everything it shows is real — the status tiles come straight from Prometheus/
 Argo and the log records the actual commands and their outcomes (no faked
 telemetry).

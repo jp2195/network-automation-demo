@@ -1,7 +1,8 @@
 # Demo runbook
 
 A repeatable script for running the live demo end-to-end. Assumes the
-reader has already followed the README to bring `atlas-demo` up.
+reader has already followed the README to bring `atlas-demo` up
+(`make doctor && make demo`), and that `make ready` is green.
 
 ## Pre-demo checklist
 
@@ -10,26 +11,30 @@ Run all of these before you stand in front of an audience.
 ```bash
 # 1. cluster + apps healthy
 kubectl -n argocd get applications --no-headers | awk '$2!="Synced" || $3!="Healthy"'
-# expected: empty — all 21 Applications auto-sync to Synced/Healthy.
+# expected: empty — all 22 rows (the `root` Application plus the 21 it
+# generates) auto-sync to Synced/Healthy.
 # (netbox-seed shows Progressing for a minute while its seed Job runs.)
 
 # 2. all 12 lab pods ready
 kubectl -n clabernetes get pods | awk '/atlanta/ && !/1\/1.*Running/'
 # expected: empty output
 
-# 3. IS-IS converged (each SR Linux node has 3 adjacencies)
+# 3. IS-IS converged (adjacency count = backbone links on that node)
 for n in tmc-1 tmc-2 hub-n hub-e hub-i20e hub-nw hub-sw hub-i20w; do
   P=$(kubectl -n clabernetes get pods -l clabernetes/topologyOwner=atlanta,clabernetes/topologyNode=$n -o jsonpath='{.items[0].metadata.name}')
   CNT=$(kubectl -n clabernetes exec "$P" -- docker exec $n bash -c "echo 'show network-instance default protocols isis adjacency' | sr_cli" 2>/dev/null | grep -c "| up ")
   printf "%-12s %s adjacencies\n" "$n" "$CNT"
 done
-# expected: tmc-1=3 tmc-2=3 hub-* = 3 each
+# expected: tmc-1=3 tmc-2=3 hub-n=3 hub-e=3 hub-nw=3 hub-sw=3
+#           hub-i20e=2 hub-i20w=2 (ring only — no TMC uplink)
+# Cabinet links run eBGP, not IS-IS, so they never count here.
 
 # 4. gnmic emits oper_state metrics
 kubectl -n monitoring port-forward svc/gnmic 9804:9804 >/dev/null 2>&1 &
 sleep 2
 curl -s http://127.0.0.1:9804/metrics | grep -c "^srl_nokia_interfaces_interface_oper_state{"
-# expected: ~272 series (8 nodes × 34 ports, varies)
+# expected: ~272 series (8 nodes × 34 IXR-D3 ports; only 26 are cabled,
+# the other ~246 report down and are filtered out of alerting)
 
 # 5. snmp probes return 200
 for n in fc-n fc-nw fc-i20e fc-sw; do
@@ -56,8 +61,12 @@ curl -s http://console.127-0-0-1.nip.io:8080/api/chat/status
 
 ## URLs to have open in tabs
 
+`make urls` prints all of these, plus the credentials (including the
+generated Argo CD admin password).
+
 | Tab | URL |
 |---|---|
+| Scenario console | http://console.127-0-0-1.nip.io:8080 |
 | Grafana — Network overview | http://grafana.127-0-0-1.nip.io:8080/d/network-overview |
 | Grafana — Atlanta metro Geomap | http://grafana.127-0-0-1.nip.io:8080/d/geomap |
 | Grafana — Device detail | http://grafana.127-0-0-1.nip.io:8080/d/device-detail |
@@ -66,7 +75,7 @@ curl -s http://console.127-0-0-1.nip.io:8080/api/chat/status
 | ArgoCD | http://argocd.127-0-0-1.nip.io:8080 |
 | NetBox | http://netbox.127-0-0-1.nip.io:8080 |
 | Argo Workflows UI | http://workflows.127-0-0-1.nip.io:8080 |
-| clabernetes UI | http://clabernetes.127-0-0-1.nip.io:8080 |
+| Clabernetes UI | http://clabernetes.127-0-0-1.nip.io:8080 |
 
 ## The demo (≈10 minutes)
 
@@ -76,7 +85,7 @@ Open **Geomap** first.
 
 > Atlas DOT runs a metro fiber network across Atlanta — eight SR Linux
 > backbone routers, a closed FOC ring, four legacy field cabinets at the
-> edge running FRR. All twelve sites here are real Atlanta neighborhoods.
+> edge running FRR. All twelve sites here are real metro-Atlanta locations.
 
 Click into **Network overview**.
 
@@ -96,47 +105,66 @@ Click into **Device detail** for one of the corridor hubs.
 
 ### Act 2 — cut the fiber (≈3 min)
 
-> Watch the Geomap. I'm going to admin-disable a single interface — same
-> effect on neighbours as a fiber cut. The peer end is still cabled, the
-> link goes oper-down on both sides.
+> Watch the Geomap. A backhoe just went through the fiber drop that feeds
+> the I-20 East field cabinet in Conyers. This is a real carrier loss, not
+> a shutdown: the interface goes oper-down while its admin-state stays
+> enabled.
 
 ```bash
-make demo-cut NODE=hub-i20e INTERFACE=ethernet-1/2
+make demo-cut-fiber NODE=hub-i20e INTERFACE=ethernet-1/4
 ```
 
-> Twenty seconds later — Prometheus picks up oper_state=2. The alert is
-> in pending. Thirty seconds after that — firing.
+> About twenty seconds later (18 s median, measured; see
+> [results/RESULTS-SUMMARY.md](../results/RESULTS-SUMMARY.md)) the alert is
+> firing. There's no pending phase: `SRLInterfaceOperDown` has `for: 0s`,
+> so detection is bounded by the scrape and rule-evaluation intervals, not
+> by a debounce.
 
 Switch to **Alert console**.
 
 > One row appears, severity-coded. Notice the Link column already has
-> the link_id — `ring-e-i20e` — and the Kind column says `backbone`.
+> the link_id — `hubi20e-fci20e` — and the Kind column says `cabinet`.
 > That came from the recording rule join, not from the alert template.
 
 Switch to the **Argo Workflows UI**.
 
 > A new `enrich-notify-XXXXX` workflow ran. Click it.
 >
-> Three steps. The `enrich` step hit NetBox — site, agency, cable
-> label. The `analyze` step walked the cable graph from there:
-> hub-i20e is a corridor hub, so taking it down isolates its
-> field cabinet (fc-i20e) AND removes one ring segment.
-> Severity: high.
+> Five steps. The `enrich` step hit NetBox — site, agency, cable
+> label, provider, restoration SLA. The `analyze` step walked the cable
+> graph from there: fc-i20e is single-homed on this drop, so it's
+> isolated, along with the three agencies it serves (Lakeside County DOT,
+> Eastfield County DOT, ADOT Region 7). Severity: high, and the backup
+> path is reported honestly as "none — single-homed field cabinet".
 >
-> The `notify` step would post to Slack — for this demo it's
-> short-circuited to stderr because we deliberately don't ship a Slack
-> token in the public repo.
+> The `notify` step would post to Slack. For this demo it's
+> short-circuited to the step log because we deliberately don't ship a
+> Slack token in the public repo; `make last-notify` shows the exact Block
+> Kit payload it built. The `dashboard` step generated a Grafana dashboard
+> just for this incident (look in the **Incidents** folder). The
+> `postmortem` step is skipped on the firing run; it writes the report
+> when the alert resolves.
+
+If the AI Secret is set, an `ai-analyze-*` workflow runs alongside it.
+Because this was a carrier loss, the analyst sees `admin-state=enable`
+plus a physical `oper-down-reason` and calls it a link/hardware failure.
+Run the same cut with `make demo-cut` (an admin-disable issued as
+`noc-ops`) and it instead reports a deliberate configuration change and
+names who made it. That contrast is worth showing if you have time.
 
 ### Act 3 — restore + close (≈2 min)
 
 ```bash
-make demo-restore NODE=hub-i20e INTERFACE=ethernet-1/2
+make demo-restore-fiber NODE=hub-i20e INTERFACE=ethernet-1/4
 ```
 
-> Within a minute the alert clears. The line on the Geomap goes green
-> again. If we'd posted to Slack, you'd now see the original message
-> updated with a ✅ + downtime computed from `alert.startsAt → endsAt`,
-> plus a threaded resolution summary. The Valkey ledger key gets DEL'd.
+> Within a minute or two the alert clears (Alertmanager sends the resolve
+> on its next group interval). The line on the Geomap goes green again,
+> the per-incident dashboard disappears, and `make postmortem` lists the
+> new write-up. If we'd posted to Slack, you'd now see the original
+> message updated in place with a ✅ and the downtime computed from
+> `alert.startsAt → endsAt`, plus a threaded resolution summary. The
+> Valkey ledger key gets DEL'd.
 
 ### Act 3½ (optional, needs the AI Secret) — ask the network (≈2 min)
 
@@ -201,16 +229,10 @@ make demo-restore-cabinet NODE=fc-n INTERFACE=eth1
 
 ## Optional Slack hook-up
 
-If you want real Slack messages instead of stderr:
-
-```bash
-kubectl -n argo-events create secret generic slack-bot \
-  --from-literal=bot_token='xoxb-...' \
-  --from-literal=channel_id='C0123456789'
-```
-
+To post real Slack messages instead of logging the payload, create the
+`slack-bot` Secret as described in [SECRETS.md](../SECRETS.md#override-pattern-a-hand-applied-in-cluster-secret-quick-start).
 The next workflow run picks it up via `secretKeyRef.optional: true`.
-Resolution updates the original message and threads a summary.
+Without it, `make last-notify` shows what would have been posted.
 
 ## Soft reset
 
@@ -224,7 +246,7 @@ kubectl -n argo-events get sensors interface-down -o yaml | \
 ```
 
 Hard reset (re-creates everything from git): see
-`docs/runbook-troubleshoot.md`.
+[runbook-troubleshoot.md](runbook-troubleshoot.md#hard-reset--nuke-and-pave).
 
 ## Gray-failure smoke test
 
@@ -268,11 +290,10 @@ warning-severity branch of the enriched-notify pipeline. It auto-recovers.
    also fires.
 
 6. If Slack is wired (`slack-bot` Secret present), confirm two yellow
-   Block Kit messages in the channel. Otherwise:
+   (warning-severity) Block Kit messages in the channel. Otherwise:
 
    ```bash
-   kubectl -n argo-events logs -l workflows.argoproj.io/workflow \
-     --tail=200 -c main | grep -A40 "block_kit"
+   make last-notify
    ```
 
 7. At the end of the duration, both alerts resolve and the original
@@ -312,17 +333,21 @@ read-only and publishes a structured `IncidentAnalysis`.
 
 1. Enable the lane (optional; without it every `ai-analyze-*` workflow
    no-ops with "AI disabled"): create the `ai-analyst` Secret per
-   `SECRETS.md` — any OpenAI-compatible endpoint works, including a
+   [SECRETS.md](../SECRETS.md) — any OpenAI-compatible endpoint works, including a
    local Ollama at zero cost.
-2. Trigger an incident with agency impact:
-   `make demo-cut NODE=hub-i20e INTERFACE=ethernet-1/4`
+2. Trigger an incident with agency impact. A carrier loss gives the
+   analyst a physical fault to diagnose:
+   `make demo-cut-fiber NODE=hub-i20e INTERFACE=ethernet-1/4`
+   (or `make demo-cut …` for an admin-disable it should attribute to
+   `noc-ops`). Leave the fault in place until the analysis finishes; it
+   reasons over live state.
 3. Watch the lane: `kubectl -n argo-events get workflows` — an
    `ai-analyze-*` workflow runs alongside `enrich-notify-*`, never
    blocking it. Its pod log ends with one
    `INCIDENT_ANALYSIS_V1 {...}` line.
 4. See it on the **Alert console** dashboard — "AI analyst —
    IncidentAnalysis (advisory lane)" panel.
-5. Restore (`make demo-restore NODE=hub-i20e INTERFACE=ethernet-1/4`)
+5. Restore (`make demo-restore-fiber NODE=hub-i20e INTERFACE=ethernet-1/4`)
    and fetch the postmortem (`make postmortem FP=<fingerprint>`): the
    analysis appears as the "Analyst narrative (AI)" section.
 

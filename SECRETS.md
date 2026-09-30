@@ -41,7 +41,7 @@ the Secret at startup, so after creating or changing it:
 To enable it, point the Secret at any OpenAI-compatible endpoint.
 A hosted frontier model gives the best analyses with zero tuning:
 
-```
+```bash
 kubectl create secret generic ai-analyst \
   --namespace argo-events \
   --from-literal=base_url='https://api.openai.com/v1' \
@@ -62,7 +62,7 @@ window big enough for tool results, thinking disabled, and a low
 temperature. One-time Ollama server config (the same override you
 already need so k3d pods can reach the host at all):
 
-```
+```ini
 # /etc/systemd/system/ollama.service.d/override.conf
 [Service]
 Environment="OLLAMA_HOST=0.0.0.0"
@@ -83,12 +83,13 @@ Then the Secret. Verified end-to-end on Apple Silicon with `qwen3.6:35b-mlx`
 disable from a real fiber cut at 0.95 confidence, once the gNMI tool was pointed
 at SR Linux native paths (not OpenConfig `/state/...`):
 
-```
+```bash
+# Swap model= for qwen3.5:9b for a smaller/faster lane.
 kubectl create secret generic ai-analyst \
   --namespace argo-events \
   --from-literal=base_url='http://host.k3d.internal:11434/v1' \
   --from-literal=api_key='ollama' \
-  --from-literal=model='qwen3.6:35b-mlx' \   # or qwen3.5:9b for a smaller/faster lane
+  --from-literal=model='qwen3.6:35b-mlx' \
   --from-literal=reasoning_effort='none' \
   --from-literal=temperature='0.2'
 ```
@@ -118,7 +119,7 @@ of scope here.)
 
 **Docker sidecar (Ollama with GPU), no host install:**
 
-```
+```bash
 docker run -d --gpus=all -p 11434:11434 -v ollama:/root/.ollama \
   -e OLLAMA_HOST=0.0.0.0 -e OLLAMA_CONTEXT_LENGTH=16384 \
   --name ollama ollama/ollama
@@ -135,7 +136,7 @@ works exactly like the above. It's higher-throughput but VRAM-hungry and is
 overkill for this lane's one structured call per incident — reach for it only
 if you already run it.
 
-```
+```bash
 docker run -d --gpus=all -p 8000:8000 \
   vllm/vllm-openai --model Qwen/Qwen2.5-7B-Instruct --api-key local
 ```
@@ -171,9 +172,9 @@ remediation. Remove with `kubectl -n argo-events delete secret ai-analyst`.
 |---|---|---|
 | NetBox API token (`argo-events/netbox-api` Secret) | not committed — minted at runtime by the netbox-seed Job and read via `secretKeyRef` in the eventing/maintenance WorkflowTemplates | Provisioned in-cluster, never in git. Consumers mark the ref `optional: true` so they start before the seed completes. |
 | NetBox superuser `admin` / `admin` | `workloads/netbox/chart-values.yaml` | Demo default; NetBox runs behind in-cluster ingress on a `nip.io` host bound to localhost. |
-| NetBox `secret_key` `"atlas-demo-not-secret-…"` | `workloads/netbox/chart-values.yaml` | Self-labelling demo string used only for Django session signing on a single-laptop cluster. |
+| NetBox `secret_key` `"atlas-demo-not-secret-…"` | `workloads/netbox/chart-values.yaml` | Self-labeling demo string used only for Django session signing on a single-laptop cluster. |
 | Grafana admin `admin` / `admin` | `platform/values/kube-prometheus-stack.yaml` | Demo default. |
-| SR Linux gNMI password `NokiaSrl1!` | `workloads/gnmic/targets.yaml`, `workloads/eventing/wft-cut-fiber.yaml` | The publicly documented default for SR Linux containers. |
+| SR Linux gNMI password `NokiaSrl1!` | `workloads/gnmic/targets.yaml`, `workloads/eventing/wft-ai-analyst.yaml`, `workloads/eventing/wft-drift-audit.yaml`, `workloads/eventing/wft-incident-collector.yaml` (all rendered from `tools/render/constants.go`) | The publicly documented default for SR Linux containers. |
 | SR Linux operator accounts `noc-ops` / `NocOps1!` and `svc-automation` / `SvcAuto1!` | `tools/render/constants.go` (rendered into `workloads/topology/startup-configs/*.cfg`, `workloads/eventing/wft-cut-fiber.yaml` + `workloads/eventing/wft-remediation.yaml`) | Named accounts so a change is attributed to who made it (manual cut = `noc-ops`, both from `make demo-cut` and the console's Cut button; auto-remediation = `svc-automation`) in the AAA syslog. Demo passwords, same status as the gNMI default — not real credentials. |
 
 None of these should be used in any environment that anyone other than
@@ -197,7 +198,7 @@ notifications. The Secret is created in the cluster, never goes near git.
 
 After `make up`, before or after the eventing Application has synced:
 
-```
+```bash
 kubectl create secret generic slack-bot \
   --namespace argo-events \
   --from-literal=bot_token='xoxb-YOUR-REAL-TOKEN' \
@@ -239,7 +240,10 @@ controller can decrypt them. Safe in a public repo.
 
 This isn't deployed by default. To add it:
 
-1. Add an entry to `argocd/manifests/platform/sealed-secrets.yaml`:
+1. Create `argocd/manifests/platform/sealed-secrets.yaml` (the `atlas-demo`
+   ApplicationSet generates an Application from every file in that
+   directory), plus a values file at `platform/values/sealed-secrets.yaml`
+   (it can be empty to take the chart defaults):
 
    ```yaml
    # argocd/manifests/platform/sealed-secrets.yaml
@@ -256,13 +260,13 @@ This isn't deployed by default. To add it:
 
 2. After the controller is running, fetch its public cert:
 
-   ```
+   ```bash
    kubeseal --fetch-cert > pub-cert.pem
    ```
 
 3. Build the cleartext Secret locally (do **not** commit), then seal:
 
-   ```
+   ```bash
    cat <<EOF > /tmp/slack-bot.yaml
    apiVersion: v1
    kind: Secret
@@ -291,7 +295,7 @@ This isn't deployed by default. To add it:
 
 ## Override pattern C: SOPS + age (alternative to sealed-secrets)
 
-[`mozilla/sops`](https://github.com/mozilla/sops) with `age` keys is a
+[`getsops/sops`](https://github.com/getsops/sops) with `age` keys is a
 popular alternative. Encrypted files live in git; ArgoCD decrypts via
 [argocd-vault-plugin](https://github.com/argoproj-labs/argocd-vault-plugin)
 or a SOPS-aware Kustomize plugin. Heavier setup; not covered in this
@@ -301,7 +305,7 @@ demo.
 
 Run this before any push, especially the first push to a public repo:
 
-```
+```bash
 # Real-looking credential prefixes (length-bounded so we don't false-match
 # things like SR Linux's `mask-length-range` keyword).
 git grep -E "xoxb-[0-9]{10,}-[0-9]{10,}-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9]{30,}|AKIA[A-Z0-9]{16}"
