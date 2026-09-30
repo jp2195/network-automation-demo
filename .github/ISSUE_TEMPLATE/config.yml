@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Setup troubleshooting runbook
+    url: https://github.com/jp2195/network-automation-demo/blob/main/docs/runbook-troubleshoot.md
+    about: Common setup failures (memory, ports, inotify, DNS) and their fixes — check here first.

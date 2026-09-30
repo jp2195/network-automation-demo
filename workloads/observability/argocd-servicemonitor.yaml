@@ -1,0 +1,27 @@
+# Scrapes ArgoCD's own metrics (argocd_app_sync_total drives the audit-feed
+# "syncs" panel). Lives here rather than in the argo-cd chart because the
+# chart is installed at bootstrap, before the ServiceMonitor CRD exists.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: argocd
+  labels:
+    app.kubernetes.io/name: argocd
+spec:
+  namespaceSelector:
+    matchNames:
+      - argocd
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: argocd
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - argocd-metrics               # application-controller + applicationset-controller
+          - argocd-server-metrics
+          - argocd-repo-server-metrics
+  endpoints:
+    - port: http-metrics
+      interval: 30s
+      path: /metrics

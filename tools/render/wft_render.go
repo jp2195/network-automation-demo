@@ -33,7 +33,7 @@ var wftAIAnalystTmpl string
 var wftGrayFailureTmpl string
 
 // WriteWFTCutFiber emits the cut-fiber WorkflowTemplate. The clabernetes
-// FQDN baked into the gnmic -a flag is parameterised from
+// FQDN baked into the gnmic -a flag is parameterized from
 // spec.Metadata.Name so renaming the cluster doesn't break the demo.
 //
 // The Set authenticates as NocOps, NOT admin: this template is the console's
@@ -48,7 +48,7 @@ func WriteWFTCutFiber(w io.Writer, s *Spec) error {
 
 // WriteWFTIncidentCollector emits the incident-collector WorkflowTemplate.
 // The cluster FQDN (gather-device), IS-IS instance name, and the
-// eventing-py bundle image are parameterised from spec.Metadata.Name,
+// eventing-py bundle image are parameterized from spec.Metadata.Name,
 // ISISInstance, and ImageEventingPy.
 func WriteWFTIncidentCollector(w io.Writer, s *Spec) error {
 	_, err := fmt.Fprintf(w, wftIncidentCollectorTemplate, s.Metadata.Name, ISISInstance, ImageEventingPy)
@@ -72,7 +72,7 @@ func WriteWFTMaintenance(w io.Writer, _ *Spec) error {
 
 // WriteWFTRemediation emits the remediate-link WorkflowTemplate from its
 // embedded template. The clabernetes FQDN prefix, eventing-py image, and
-// IS-IS instance name are parameterised; the gnmic set-metric /
+// IS-IS instance name are parameterized; the gnmic set-metric /
 // clear-metric steps are the only config-write capability in the cluster.
 func WriteWFTRemediation(w io.Writer, s *Spec) error {
 	body := strings.NewReplacer(
@@ -92,7 +92,7 @@ func WriteWFTRemediation(w io.Writer, s *Spec) error {
 
 // WriteWFTAIAnalyst emits the advisory-lane WorkflowTemplate from its
 // embedded template. The analyst image, clabernetes FQDN prefix, and
-// IS-IS instance name are parameterised; the lane is read-only by
+// IS-IS instance name are parameterized; the lane is read-only by
 // construction (analyst_tools allowlists + gnmi_readonly Get-only).
 func WriteWFTAIAnalyst(w io.Writer, s *Spec) error {
 	body := strings.NewReplacer(
@@ -135,7 +135,7 @@ spec:
           - name: interface
           - name: action
       container:
-        image: ghcr.io/openconfig/gnmic:0.44.1
+        image: ` + ImageGNMIC + `
         command: [/app/gnmic]
         args:
           - -a
@@ -275,7 +275,7 @@ spec:
         parameters:
           - name: alert
       script:
-        image: python:3.12-slim
+        image: ` + ImagePython + `
         command: [python3]
         source: |
           import sys, runpy
@@ -320,7 +320,7 @@ spec:
           - name: interface
           - name: role
       script:
-        image: ghcr.io/openconfig/gnmic:0.44.1
+        image: ` + ImageGNMIC + `
         command: [sh, -c]
         source: |
           set -u
@@ -361,7 +361,7 @@ spec:
           - name: peer
           - name: peer_iface
       script:
-        image: python:3.12-slim
+        image: ` + ImagePython + `
         command: [python3]
         source: |
           import sys, runpy
