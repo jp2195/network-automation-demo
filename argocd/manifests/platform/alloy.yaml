@@ -4,6 +4,6 @@ syncWave: "1"
 chart:
   repo: https://grafana.github.io/helm-charts
   name: alloy
-  version: 1.8.2
+  version: 1.13.0
   releaseName: alloy
   values: platform/values/alloy.yaml
