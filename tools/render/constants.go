@@ -27,7 +27,7 @@ const (
 // workloads/versions.yaml so dom-synth, eventing, and topology can
 // all reference one source.
 const (
-	ImageSRLinux = "ghcr.io/nokia/srlinux:25.3.3"
+	ImageSRLinux = "ghcr.io/nokia/srlinux:26.7.2"
 	// FRR stays on the public image — clabernetes' containerlab can't
 	// resolve atlas-demo-registry:5001/... refs from inside the nested
 	// docker (it prepends `docker.io/` and the ref becomes invalid).
