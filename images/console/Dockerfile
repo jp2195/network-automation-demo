@@ -2,7 +2,7 @@
 # binary, ship it on distroless/static — no shell, no package manager,
 # ~10-20 MB. The page + console-targets.json are //go:embed-ed into the
 # binary, so the final image is just the binary. Build context = repo root.
-FROM golang:1.26 AS build
+FROM golang:1.27 AS build
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download

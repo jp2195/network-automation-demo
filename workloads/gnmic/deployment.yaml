@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: gnmic
-          image: ghcr.io/openconfig/gnmic:0.44.1
+          image: ghcr.io/openconfig/gnmic:0.49.0
           args:
             - --config
             - /etc/gnmic/gnmic.yaml

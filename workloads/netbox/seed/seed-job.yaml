@@ -27,7 +27,7 @@ spec:
       serviceAccountName: netbox-seed
       containers:
         - name: seed
-          image: python:3.12-slim
+          image: python:3.14-slim
           command: ["python3", "/scripts/seed.py"]
           env:
             - name: NETBOX_URL
