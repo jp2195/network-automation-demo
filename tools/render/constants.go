@@ -27,15 +27,15 @@ const (
 // workloads/versions.yaml so dom-synth, eventing, and topology can
 // all reference one source.
 const (
-	ImageSRLinux = "ghcr.io/nokia/srlinux:25.3.3"
+	ImageSRLinux = "ghcr.io/nokia/srlinux:25.10.5"
 	// FRR stays on the public image — clabernetes' containerlab can't
 	// resolve atlas-demo-registry:5001/... refs from inside the nested
 	// docker (it prepends `docker.io/` and the ref becomes invalid).
 	// The pre-baked frr-snmpd Dockerfile + `make build` slot remain in
 	// place for a future imagePullThrough fix.
-	ImageFRR    = "quay.io/frrouting/frr:10.6.2"
-	ImagePython = "python:3.12-slim"
-	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.44.1"
+	ImageFRR    = "quay.io/frrouting/frr:10.7.1"
+	ImagePython = "python:3.14-slim"
+	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.49.0"
 	// ImageEventingPy is the pre-baked eventing image (python + slack-sdk +
 	// valkey + scripts) pushed to the in-cluster registry. Single source for
 	// the incident-collector bundle step and the enriched-notify WFT.
