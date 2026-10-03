@@ -6,7 +6,7 @@
 # /scripts/* at runtime; the baked copy keeps the image runnable standalone.
 FROM python:3.14.7-slim
 
-RUN pip install --no-cache-dir "pydantic-ai-slim[openai]==2.51.0" fastapi==0.142.0 uvicorn==0.54.0
+RUN pip install --no-cache-dir "pydantic-ai-slim[openai]==2.54.0" fastapi==0.142.2 uvicorn==0.54.0
 
 # Build context is workloads/eventing/.
 COPY scripts/ /scripts/
