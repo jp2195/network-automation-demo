@@ -4,6 +4,6 @@ syncWave: "3"
 chart:
   repo: ghcr.io/netbox-community/netbox-chart
   name: netbox
-  version: 8.2.9
+  version: 8.3.91
   releaseName: netbox
   values: workloads/netbox/chart-values.yaml
