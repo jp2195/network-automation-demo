@@ -43,7 +43,7 @@ jobs:
       UV_PYTHON: "3.12"
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.2.0  # no floating major tag upstream
+      - uses: astral-sh/setup-uv@v10.3.0  # no floating major tag upstream
       - name: Eventing suites
         working-directory: workloads/eventing/scripts
         run: >-
