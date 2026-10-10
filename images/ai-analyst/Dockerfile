@@ -7,7 +7,7 @@
 # runtime; the baked copy keeps the image runnable standalone.
 FROM python:3.14.7-slim
 
-RUN pip install --no-cache-dir "pydantic-ai-slim[openai]==2.51.0" pygnmi==0.8.15 puresnmp==2.0.1 slack-sdk==3.44.1 valkey==6.1.1
+RUN pip install --no-cache-dir "pydantic-ai-slim[openai]==2.55.0" pygnmi==0.8.15 puresnmp==2.0.1 slack-sdk==3.45.0 valkey==6.1.1
 
 # Build context is workloads/eventing/.
 COPY scripts/ /scripts/
