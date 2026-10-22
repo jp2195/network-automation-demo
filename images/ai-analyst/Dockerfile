@@ -5,7 +5,7 @@
 # thread ts (so the analysis threads under it). Same convention as
 # eventing-py: the workflow-scripts ConfigMap mount overrides /scripts/* at
 # runtime; the baked copy keeps the image runnable standalone.
-FROM python:3.14.7-slim
+FROM python:3.15.1-slim
 
 RUN pip install --no-cache-dir "pydantic-ai-slim[openai]==2.59.0" pygnmi==0.8.15 puresnmp==2.0.1 slack-sdk==3.45.0 valkey==6.2.0
 
