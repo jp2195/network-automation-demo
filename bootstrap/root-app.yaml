@@ -12,7 +12,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/jp2195/network-automation-demo.git
-    targetRevision: main
+    targetRevision: deps/refresh
     path: argocd
     directory:
       include: 'applicationset.yaml'

@@ -9,7 +9,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/jp2195/network-automation-demo.git
-        revision: main
+        revision: deps/refresh
         files:
           - path: argocd/manifests/platform/*.yaml
           - path: argocd/manifests/workloads/*.yaml
@@ -57,12 +57,12 @@ spec:
             skipCrds: {{ .chart.skipCrds }}
             {{- end }}
         - repoURL: https://github.com/jp2195/network-automation-demo.git
-          targetRevision: main
+          targetRevision: deps/refresh
           ref: values
       {{- else }}
       source:
         repoURL: https://github.com/jp2195/network-automation-demo.git
-        targetRevision: main
+        targetRevision: deps/refresh
         path: '{{ .appPath }}'
       {{- end }}
       {{- if ne .automated false }}
