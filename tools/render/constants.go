@@ -34,7 +34,7 @@ const (
 	// The pre-baked frr-snmpd Dockerfile + `make build` slot remain in
 	// place for a future imagePullThrough fix.
 	ImageFRR    = "quay.io/frrouting/frr:10.7.1"
-	ImagePython = "python:3.15-slim"
+	ImagePython = "python:3.12-slim"
 	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.44.1"
 	// ImageEventingPy is the pre-baked eventing image (python + slack-sdk +
 	// valkey + scripts) pushed to the in-cluster registry. Single source for

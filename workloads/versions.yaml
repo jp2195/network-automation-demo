@@ -7,5 +7,5 @@ metadata:
 data:
   srlinux: "ghcr.io/nokia/srlinux:25.3.3"
   frr: "quay.io/frrouting/frr:10.7.1"
-  python: "python:3.15-slim"
+  python: "python:3.12-slim"
   gnmic: "ghcr.io/openconfig/gnmic:0.44.1"
