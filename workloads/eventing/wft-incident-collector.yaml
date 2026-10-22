@@ -113,7 +113,7 @@ spec:
         parameters:
           - name: alert
       script:
-        image: python:3.15-slim
+        image: python:3.12-slim
         command: [python3]
         source: |
           import sys, runpy
@@ -199,7 +199,7 @@ spec:
           - name: peer
           - name: peer_iface
       script:
-        image: python:3.15-slim
+        image: python:3.12-slim
         command: [python3]
         source: |
           import sys, runpy
