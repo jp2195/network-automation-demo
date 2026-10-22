@@ -132,7 +132,7 @@ interconnect, and 4 single-homed cabinet drops.
 Apple Silicon / ARM64 is tested: the whole stack runs **natively** on arm64
 (no x86 emulation). Clabernetes 0.6.0 ships multi-arch manager/launcher
 images, and the node images are multi-arch too (SR Linux
-`ghcr.io/nokia/srlinux` 25.3.3, FRR 10.6.2). Verified end-to-end on an Apple
+`ghcr.io/nokia/srlinux` 25.3.3, FRR 10.7.1). Verified end-to-end on an Apple
 Silicon Mac via k3d: full platform up, `atlanta` topology ready, all 12 nodes
 `aarch64`.
 
