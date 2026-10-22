@@ -73,6 +73,16 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
+        # Sync waves don't order ApplicationSet-generated Apps, so apps that
+        # ship ServiceMonitors can race kube-prometheus-stack's CRDs. Argo's
+        # default 5 retries (~2.5 min) give up before a slow chart pull
+        # lands them; keep retrying for ~20 min instead.
+        retry:
+          limit: 10
+          backoff:
+            duration: 10s
+            factor: 2
+            maxDuration: 3m
       {{- end }}
       {{- if .ignoreDifferences }}
       ignoreDifferences:
