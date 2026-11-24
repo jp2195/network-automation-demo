@@ -35,7 +35,7 @@ const (
 	// place for a future imagePullThrough fix.
 	ImageFRR    = "quay.io/frrouting/frr:10.7.1"
 	ImagePython = "python:3.15-slim"
-	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.50.0"
+	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.49.1"
 	// ImageEventingPy is the pre-baked eventing image (python + slack-sdk +
 	// valkey + scripts) pushed to the in-cluster registry. Single source for
 	// the incident-collector bundle step and the enriched-notify WFT.

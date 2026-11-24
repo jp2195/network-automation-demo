@@ -6,15 +6,10 @@ replica:
 auth:
   enabled: false
 
-# Chart 1.0 replaced dataStorage with persistence (and refuses to render
-# while dataStorage is set). The ledger is ephemeral demo state: emptyDir.
-persistence:
+# The ledger is ephemeral demo state: emptyDir. (valkey-helm 1.0 renames
+# this block to `persistence` and refuses to render while dataStorage is set.)
+dataStorage:
   enabled: false
-
-# 1.0 defaults standalone to Recreate (for RWO volumes). Without a volume,
-# RollingUpdate keeps upgrades downtime-free and avoids the server-side-apply
-# "rollingUpdate may not be specified" error on clusters created on 0.x.
-deploymentStrategy: RollingUpdate
 
 service:
   type: ClusterIP

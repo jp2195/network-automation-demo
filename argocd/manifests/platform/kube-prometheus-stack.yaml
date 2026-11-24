@@ -4,7 +4,7 @@ syncWave: "0"
 chart:
   repo: https://prometheus-community.github.io/helm-charts
   name: kube-prometheus-stack
-  version: 93.10.0
+  version: 93.1.2
   releaseName: kps
   values: platform/values/kube-prometheus-stack.yaml
   skipCrds: false
