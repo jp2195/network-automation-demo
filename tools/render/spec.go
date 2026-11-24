@@ -243,6 +243,17 @@ func (s *Spec) Validate() error {
 	return nil
 }
 
+// ProviderName returns the display name for a provider slug, or "" when the
+// slug isn't in spec.providers.
+func (s *Spec) ProviderName(slug string) string {
+	for _, p := range s.Providers {
+		if p.Slug == slug {
+			return p.Name
+		}
+	}
+	return ""
+}
+
 func (s *Spec) NodeByName(name string) *Node {
 	if s.nodesByName != nil {
 		return s.nodesByName[name]

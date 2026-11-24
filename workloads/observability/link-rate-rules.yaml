@@ -16,7 +16,7 @@ spec:
             srl_nokia_interfaces_interface_oper_state
               * on(node, interface)
               group_left(link_id, link_kind, corridor, cable_label, provider,
-                         restoration_sla_hours, site, city, role)
+                         provider_name, restoration_sla_hours, site, city, role)
             link_membership_info
         - record: link:rate_in_bps:1m
           expr: |

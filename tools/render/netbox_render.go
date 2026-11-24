@@ -350,10 +350,6 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 		}
 	}
 
-	providerNameBySlug := map[string]string{}
-	for _, p := range s.Providers {
-		providerNameBySlug[p.Slug] = p.Name
-	}
 	for _, l := range s.Links {
 		out.Cables = append(out.Cables, nbCable{
 			Label:       l.Cable.Label,
@@ -361,7 +357,7 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 			B:           nbCableTermination{Device: l.B.Node, Interface: l.B.Intf},
 			Status:      "connected",
 			Type:        "smf-os2",
-			Owner:       providerNameBySlug[l.Cable.Provider],
+			Owner:       s.ProviderName(l.Cable.Provider),
 			Description: l.Cable.RouteDescription,
 			Length:      l.Cable.LengthKm,
 			LengthUnit:  "km",

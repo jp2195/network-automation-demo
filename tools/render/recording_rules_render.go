@@ -34,7 +34,7 @@ func WriteLinkRateRules(w io.Writer, _ *Spec) error {
 	p("            srl_nokia_interfaces_interface_oper_state")
 	p("              * on(node, interface)")
 	p("              group_left(link_id, link_kind, corridor, cable_label, provider,")
-	p("                         restoration_sla_hours, site, city, role)")
+	p("                         provider_name, restoration_sla_hours, site, city, role)")
 	p("            link_membership_info")
 	p("        - record: link:rate_in_bps:1m")
 	p("          expr: |")
