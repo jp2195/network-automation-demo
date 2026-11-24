@@ -5,7 +5,7 @@
 # the baked copy at runtime.
 FROM python:3.14.7-slim
 
-RUN pip install --no-cache-dir valkey==6.1.1
+RUN pip install --no-cache-dir valkey==6.2.0
 
 COPY dom_synth.py /app/dom_synth.py
 
