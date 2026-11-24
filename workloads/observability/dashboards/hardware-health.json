@@ -168,9 +168,9 @@
           },
           "custom": {
             "drawStyle": "line",
-            "fillOpacity": 20,
+            "fillOpacity": 0,
             "lineInterpolation": "smooth",
-            "lineWidth": 2,
+            "lineWidth": 1,
             "spanNulls": true
           },
           "unit": "celsius"
@@ -238,7 +238,7 @@
               }
             ]
           },
-          "unit": "rpm"
+          "unit": "rotrpm"
         }
       },
       "gridPos": {
@@ -249,7 +249,7 @@
       },
       "id": 3,
       "options": {
-        "displayMode": "gradient",
+        "displayMode": "basic",
         "minVizHeight": 18,
         "orientation": "horizontal",
         "reduceOptions": {
@@ -264,7 +264,7 @@
       "targets": [
         {
           "expr": "min by (node) (fan_speed_rpm)",
-          "legendFormat": "{{node}}/{{fan}}",
+          "legendFormat": "{{node}}",
           "refId": "A"
         }
       ],
@@ -283,8 +283,8 @@
             "mode": "thresholds"
           },
           "decimals": 1,
-          "max": 250,
-          "min": 0,
+          "max": 240,
+          "min": 180,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -294,19 +294,19 @@
               },
               {
                 "color": "yellow",
-                "value": 200
+                "value": 195
               },
               {
                 "color": "green",
-                "value": 205
+                "value": 200
               },
               {
                 "color": "yellow",
-                "value": 215
+                "value": 225
               },
               {
                 "color": "red",
-                "value": 220
+                "value": 235
               }
             ]
           },
@@ -321,7 +321,7 @@
       },
       "id": 4,
       "options": {
-        "displayMode": "gradient",
+        "displayMode": "basic",
         "minVizHeight": 18,
         "orientation": "horizontal",
         "reduceOptions": {
@@ -336,7 +336,7 @@
       "targets": [
         {
           "expr": "min by (node) (psu_input_voltage_volts)",
-          "legendFormat": "{{node}}/{{psu}}",
+          "legendFormat": "{{node}}",
           "refId": "A"
         }
       ],
@@ -348,7 +348,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Control-plane CPU per SR Linux node, 1-minute average, streamed over gNMI. Real data from the running routers.",
+      "description": "Control-plane CPU as SR Linux reports it over gNMI, 1-minute average across all cores. In a container SR Linux sees the host's CPUs, so this tracks the machine running the lab, not router hardware.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -398,12 +398,12 @@
       },
       "targets": [
         {
-          "expr": "max by (node) (srl_nokia_platform_platform_srl_nokia_platform_control_control_srl_nokia_platform_cpu_cpu_total_average_1)",
-          "legendFormat": "{{source}}",
+          "expr": "max by (node) (srl_nokia_platform_platform_srl_nokia_platform_control_control_srl_nokia_platform_cpu_cpu_total_average_1{cpu_index=\"all\"})",
+          "legendFormat": "{{node}}",
           "refId": "A"
         }
       ],
-      "title": "CPU utilization (real, from gNMIc)",
+      "title": "CPU utilization (from gNMIc)",
       "type": "bargauge"
     },
     {
@@ -411,7 +411,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Control-plane memory utilization per SR Linux node, streamed over gNMI. Real data from the running routers.",
+      "description": "Memory utilization as SR Linux reports it over gNMI. In a container this reflects the host machine running the lab, not router hardware.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -462,11 +462,11 @@
       "targets": [
         {
           "expr": "max by (node) (srl_nokia_platform_platform_srl_nokia_platform_control_control_srl_nokia_platform_memory_memory_utilization)",
-          "legendFormat": "{{source}}",
+          "legendFormat": "{{node}}",
           "refId": "A"
         }
       ],
-      "title": "Memory utilization (real, from gNMIc)",
+      "title": "Memory utilization (from gNMIc)",
       "type": "bargauge"
     },
     {

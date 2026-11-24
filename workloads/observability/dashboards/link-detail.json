@@ -285,13 +285,13 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Input errors and discards per second across both endpoints.",
+      "description": "Input errors and discards per minute across both endpoints.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 0,
+          "decimals": 1,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -305,7 +305,7 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "suffix: pkt/min"
         }
       },
       "gridPos": {
@@ -329,17 +329,17 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(srl_nokia_interfaces_interface_statistics_in_error_packets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}) or vector(0)",
+          "expr": "sum((rate(srl_nokia_interfaces_interface_statistics_in_error_packets[1m]) * 60) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}) or vector(0)",
           "legendFormat": "in-err",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(srl_nokia_interfaces_interface_statistics_in_discarded_packets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}) or vector(0)",
+          "expr": "sum((rate(srl_nokia_interfaces_interface_statistics_in_discarded_packets[1m]) * 60) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}) or vector(0)",
           "legendFormat": "in-disc",
           "refId": "B"
         }
       ],
-      "title": "Errors / s",
+      "title": "Errors / min",
       "type": "stat"
     },
     {
@@ -351,16 +351,11 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 30,
-            "lineInterpolation": "stepAfter",
-            "lineWidth": 3,
-            "pointSize": 6,
-            "showPoints": "always",
-            "spanNulls": true
+            "fillOpacity": 85,
+            "lineWidth": 0
           },
           "mappings": [
             {
@@ -377,9 +372,25 @@
               "type": "value"
             }
           ],
-          "max": 2.5,
-          "min": 0.5
-        }
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 1.5
+              }
+            ]
+          }
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -389,14 +400,18 @@
       },
       "id": 2,
       "options": {
+        "alignValue": "left",
         "legend": {
-          "calcs": [
-            "lastNotNull",
-            "min",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "right"
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": true,
+        "rowHeight": 0.8,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
@@ -406,8 +421,8 @@
           "refId": "A"
         }
       ],
-      "title": "Oper-state history (1=UP, 2=DOWN)",
-      "type": "timeseries"
+      "title": "Oper-state history",
+      "type": "state-timeline"
     },
     {
       "datasource": {
@@ -479,7 +494,8 @@
             "lineWidth": 1,
             "spanNulls": true
           },
-          "unit": "pps"
+          "decimals": 1,
+          "unit": "suffix: pkt/min"
         }
       },
       "gridPos": {
@@ -497,12 +513,12 @@
       },
       "targets": [
         {
-          "expr": "rate(srl_nokia_interfaces_interface_statistics_in_error_packets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}",
+          "expr": "(rate(srl_nokia_interfaces_interface_statistics_in_error_packets[1m]) * 60) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}",
           "legendFormat": "{{node}} {{interface}} in-errors",
           "refId": "A"
         },
         {
-          "expr": "rate(srl_nokia_interfaces_interface_statistics_in_discarded_packets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}",
+          "expr": "(rate(srl_nokia_interfaces_interface_statistics_in_discarded_packets[1m]) * 60) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}",
           "legendFormat": "{{node}} {{interface}} in-discards",
           "refId": "B"
         }

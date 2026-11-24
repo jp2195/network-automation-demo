@@ -365,6 +365,7 @@
           "exponent": 0.5,
           "fill": "dark-orange",
           "mode": "scheme",
+          "reverse": true,
           "scale": "exponential",
           "scheme": "Reds",
           "steps": 32
@@ -463,7 +464,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "mode": "gradient",
+                  "mode": "basic",
                   "type": "color-background"
                 }
               },
@@ -473,7 +474,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
+                      "color": "transparent",
                       "value": null
                     },
                     {
@@ -498,7 +499,7 @@
               {
                 "id": "custom.cellOptions",
                 "value": {
-                  "mode": "gradient",
+                  "mode": "basic",
                   "type": "color-background"
                 }
               },
@@ -508,16 +509,16 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
+                      "color": "transparent",
                       "value": null
                     },
                     {
                       "color": "yellow",
-                      "value": 5
+                      "value": 1
                     },
                     {
                       "color": "red",
-                      "value": 20
+                      "value": 4
                     }
                   ]
                 }

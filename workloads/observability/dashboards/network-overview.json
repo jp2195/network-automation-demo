@@ -656,7 +656,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Every modeled link with live state. Click a link to open it.",
+      "description": "Every modeled link, one row each, with its two ends and live state (DOWN if either end is down). Click a link to open it.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -680,7 +680,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value"
+              "options": "State"
             },
             "properties": [
               {
@@ -707,23 +707,10 @@
                     "type": "value"
                   }
                 ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Device"
-            },
-            "properties": [
+              },
               {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Open device detail",
-                    "url": "/d/device-detail/device-detail?var-node=${__value.text}"
-                  }
-                ]
+                "id": "custom.width",
+                "value": 70
               }
             ]
           },
@@ -741,6 +728,22 @@
                     "url": "/d/link-detail/link-detail?var-link_id=${__value.text}"
                   }
                 ]
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Kind"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 85
               }
             ]
           }
@@ -761,7 +764,7 @@
       },
       "targets": [
         {
-          "expr": "link:oper_state_with_meta",
+          "expr": "label_join(max by (link_id, link_kind, node_a, node_b) (link:oper_state_with_meta * on(link_id) group_left(node_a, node_b) link_geo_segment), \"ends\", \" ↔ \", \"node_a\", \"node_b\")",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -774,35 +777,20 @@
           "options": {
             "excludeByName": {
               "Time": true,
-              "__name__": true,
-              "city": true,
-              "container": true,
-              "endpoint": true,
-              "instance": true,
-              "interface_name": true,
-              "job": true,
-              "namespace": true,
-              "pod": true,
-              "prometheus": true,
-              "role": true,
-              "service": true,
-              "site": true,
-              "source": true,
-              "subscription_name": true
+              "node_a": true,
+              "node_b": true
             },
             "indexByName": {
-              "Value": 4,
-              "interface": 3,
+              "Value": 3,
+              "ends": 2,
               "link_id": 0,
-              "link_kind": 1,
-              "node": 2
+              "link_kind": 1
             },
             "renameByName": {
               "Value": "State",
-              "interface": "Interface",
+              "ends": "Ends",
               "link_id": "Link",
-              "link_kind": "Kind",
-              "node": "Device"
+              "link_kind": "Kind"
             }
           }
         }

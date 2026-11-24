@@ -542,16 +542,11 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 25,
-            "lineInterpolation": "stepAfter",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "always",
-            "spanNulls": true
+            "fillOpacity": 85,
+            "lineWidth": 0
           },
           "mappings": [
             {
@@ -563,14 +558,34 @@
                 "2": {
                   "color": "red",
                   "text": "DOWN"
+                },
+                "7": {
+                  "color": "red",
+                  "text": "LOWER-LAYER-DOWN"
                 }
               },
               "type": "value"
             }
           ],
-          "max": 2.5,
-          "min": 0.5
-        }
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 1.5
+              }
+            ]
+          }
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 10,
@@ -580,12 +595,18 @@
       },
       "id": 7,
       "options": {
+        "alignValue": "left",
         "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right"
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": true,
+        "rowHeight": 0.8,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
@@ -596,7 +617,7 @@
         }
       ],
       "title": "Per-interface oper-state history",
-      "type": "timeseries"
+      "type": "state-timeline"
     },
     {
       "datasource": {
@@ -656,7 +677,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Per-interface input/output errors and discards per second. Cabinets are polled over SNMP every 5 minutes, so rates use a 15-minute window (at least two polls) and move in 5-minute steps.",
+      "description": "Per-interface input/output errors and discards per minute. Cabinets are polled over SNMP every 5 minutes, so rates use a 15-minute window (at least two polls) and move in 5-minute steps.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -668,7 +689,8 @@
             "lineWidth": 1,
             "spanNulls": true
           },
-          "unit": "pps"
+          "decimals": 1,
+          "unit": "suffix: pkt/min"
         }
       },
       "gridPos": {
@@ -686,22 +708,22 @@
       },
       "targets": [
         {
-          "expr": "rate(ifInErrors{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m])",
+          "expr": "(rate(ifInErrors{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m]) * 60)",
           "legendFormat": "{{ifName}} in-err",
           "refId": "A"
         },
         {
-          "expr": "rate(ifOutErrors{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m])",
+          "expr": "(rate(ifOutErrors{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m]) * 60)",
           "legendFormat": "{{ifName}} out-err",
           "refId": "B"
         },
         {
-          "expr": "rate(ifInDiscards{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m])",
+          "expr": "(rate(ifInDiscards{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m]) * 60)",
           "legendFormat": "{{ifName}} in-disc",
           "refId": "C"
         },
         {
-          "expr": "rate(ifOutDiscards{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m])",
+          "expr": "(rate(ifOutDiscards{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m]) * 60)",
           "legendFormat": "{{ifName}} out-disc",
           "refId": "D"
         }

@@ -339,7 +339,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
           "displayMode": "table",
           "placement": "right"
@@ -382,7 +382,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"argo-events\"} |~ \"Triggering actions|not interested|new event received|successfully dispatched\"",
+          "expr": "{namespace=\"argo-events\"} |~ \"Triggering actions|not interested|new event received|successfully dispatched\" | json | line_format \"{{.msg}}{{if .sensorName}}  [sensor {{.sensorName}}{{if .triggerName}} → {{.triggerName}}{{end}}]{{end}}\"",
           "refId": "A"
         }
       ],

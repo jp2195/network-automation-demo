@@ -96,7 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "State of every backbone link endpoint over the last hour. Red bands are outages.",
+      "description": "State of every backbone link over the last hour (DOWN if either end is down). Red bands are outages.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -161,8 +161,8 @@
       },
       "targets": [
         {
-          "expr": "link:oper_state_with_meta{link_kind=\"backbone\"}",
-          "legendFormat": "{{link_id}} ({{node}}/{{interface}})",
+          "expr": "max by (link_id) (link:oper_state_with_meta{link_kind=\"backbone\"})",
+          "legendFormat": "{{link_id}}",
           "refId": "A"
         }
       ],
@@ -365,6 +365,7 @@
           "exponent": 0.5,
           "fill": "dark-orange",
           "mode": "scheme",
+          "reverse": true,
           "scale": "exponential",
           "scheme": "Reds",
           "steps": 32

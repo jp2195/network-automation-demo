@@ -135,7 +135,7 @@
           ],
           "fields": ""
         },
-        "textMode": "value_and_name"
+        "textMode": "value"
       },
       "targets": [
         {
@@ -144,7 +144,7 @@
           "refId": "A"
         }
       ],
-      "title": "IS-IS adjacencies UP",
+      "title": "IS-IS adjacencies UP (of 22)",
       "type": "stat"
     },
     {
@@ -195,7 +195,7 @@
           ],
           "fields": ""
         },
-        "textMode": "value_and_name"
+        "textMode": "value"
       },
       "targets": [
         {
@@ -204,7 +204,7 @@
           "refId": "A"
         }
       ],
-      "title": "Cabinet eBGP — Established",
+      "title": "Cabinet eBGP — Established (of 4)",
       "type": "stat"
     },
     {
@@ -381,16 +381,16 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Uptime (s)"
+              "options": "Uptime"
             },
             "properties": [
               {
-                "id": "unit",
-                "value": "s"
-              },
-              {
                 "id": "custom.width",
                 "value": 110
+              },
+              {
+                "id": "unit",
+                "value": "dtdurations"
               }
             ]
           },
@@ -471,43 +471,33 @@
       "title": "IS-IS adjacencies",
       "transformations": [
         {
-          "id": "joinByField",
-          "options": {
-            "byField": "neighbor",
-            "mode": "outer"
-          }
+          "id": "merge",
+          "options": {}
         },
         {
           "id": "organize",
           "options": {
             "excludeByName": {
-              "Time 1": true,
-              "Time 2": true,
-              "__name__ 1": true,
-              "__name__ 2": true,
-              "interface 2": true,
-              "level 1": true,
-              "level 2": true,
-              "link_id 2": true,
-              "node 2": true,
-              "system_id 1": true,
-              "system_id 2": true
+              "Time": true,
+              "__name__": true,
+              "level": true,
+              "system_id": true
             },
             "indexByName": {
               "Value #A": 4,
               "Value #B": 5,
-              "interface 1": 1,
-              "link_id 1": 3,
+              "interface": 1,
+              "link_id": 3,
               "neighbor": 2,
-              "node 1": 0
+              "node": 0
             },
             "renameByName": {
               "Value #A": "State",
-              "Value #B": "Uptime (s)",
-              "interface 1": "Interface",
-              "link_id 1": "Link",
+              "Value #B": "Uptime",
+              "interface": "Interface",
+              "link_id": "Link",
               "neighbor": "Neighbor",
-              "node 1": "Node"
+              "node": "Node"
             }
           }
         }
@@ -665,16 +655,11 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 25,
-            "lineInterpolation": "stepAfter",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "always",
-            "spanNulls": true
+            "fillOpacity": 85,
+            "lineWidth": 0
           },
           "mappings": [
             {
@@ -691,35 +676,53 @@
               "type": "value"
             }
           ],
-          "max": 1.5,
-          "min": 0.5
-        }
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 14,
         "w": 24,
         "x": 0,
         "y": 18
       },
       "id": 7,
       "options": {
+        "alignValue": "left",
         "legend": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "right"
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": true,
+        "rowHeight": 0.8,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
         {
           "expr": "isis_adjacency_info * on(node, interface) (srl_nokia_interfaces_interface_oper_state == bool 1)",
-          "legendFormat": "{{node}} → {{neighbor}} ({{interface}})",
+          "legendFormat": "{{node}} {{interface}}",
           "refId": "A"
         }
       ],
-      "title": "IS-IS adjacency state — 30 minutes",
-      "type": "timeseries"
+      "title": "IS-IS adjacency state",
+      "type": "state-timeline"
     },
     {
       "datasource": {
@@ -746,7 +749,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 26
+        "y": 32
       },
       "id": 8,
       "options": {
@@ -787,7 +790,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 26
+        "y": 32
       },
       "id": 9,
       "options": {

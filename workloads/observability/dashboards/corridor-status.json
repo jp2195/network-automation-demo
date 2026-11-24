@@ -145,7 +145,7 @@
       "id": 1,
       "options": {
         "colorMode": "background",
-        "graphMode": "area",
+        "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
@@ -238,7 +238,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Every modeled cable with its corridor, provider and live state.",
+      "description": "Every modeled cable, one row each: corridor, provider, restoration SLA and live state (DOWN if either end is down).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -363,7 +363,7 @@
       },
       "targets": [
         {
-          "expr": "link:oper_state_with_meta{corridor!=\"\"}",
+          "expr": "max by (corridor, link_id, cable_label, provider_name, restoration_sla_hours) (link:oper_state_with_meta{corridor!=\"\"})",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -375,32 +375,14 @@
           "id": "organize",
           "options": {
             "excludeByName": {
-              "Time": true,
-              "__name__": true,
-              "city": true,
-              "container": true,
-              "endpoint": true,
-              "instance": true,
-              "interface": true,
-              "interface_name": true,
-              "job": true,
-              "link_kind": true,
-              "namespace": true,
-              "node": true,
-              "pod": true,
-              "prometheus": true,
-              "role": true,
-              "service": true,
-              "site": true,
-              "source": true,
-              "subscription_name": true
+              "Time": true
             },
             "indexByName": {
               "Value": 5,
               "cable_label": 2,
               "corridor": 0,
               "link_id": 1,
-              "provider": 3,
+              "provider_name": 3,
               "restoration_sla_hours": 4
             },
             "renameByName": {
@@ -408,7 +390,7 @@
               "cable_label": "Cable",
               "corridor": "Corridor",
               "link_id": "Link",
-              "provider": "Provider",
+              "provider_name": "Provider",
               "restoration_sla_hours": "SLA hrs"
             }
           }
