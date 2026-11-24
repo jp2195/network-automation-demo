@@ -142,6 +142,7 @@ class StrandedCabinetTests(unittest.TestCase):
         self.assertEqual(analyze_impact.stranded_cabinet_peers(
             cab_only, "hub-i20e", down_ifaces={"ethernet-1/4"}), [])
 
+
 class NetBoxOutageTest(unittest.TestCase):
     """analyze sits between enrich and notify: a NetBox outage must degrade
     the impact (and say so), not fail the step and swallow the incident."""
