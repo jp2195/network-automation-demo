@@ -96,6 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Hottest chassis sensor per device (synthetic: the containerized routers have no physical sensors).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -159,6 +160,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Every chassis temperature sensor over time (synthetic).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -206,6 +208,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Slowest fan per device (synthetic). A failing fan shows as a low reading.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -273,6 +276,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Lowest PSU input voltage per device (synthetic).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -344,6 +348,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Control-plane CPU per SR Linux node, 1-minute average, streamed over gNMI. Real data from the running routers.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -406,6 +411,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Control-plane memory utilization per SR Linux node, streamed over gNMI. Real data from the running routers.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -468,6 +474,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Power supplies per device and their state (synthetic).",
       "fieldConfig": {
         "defaults": {
           "color": {

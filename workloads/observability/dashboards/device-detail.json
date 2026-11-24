@@ -96,6 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Worst oper-state across the node's modeled links: UP only when all of them are up.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -168,6 +169,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Device role from the topology spec.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -235,6 +237,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Site the node is installed at.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -301,6 +304,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Total transmit rate across the node's modeled links (unused chassis ports excluded).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -352,6 +356,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Alerts firing right now whose node label is this device.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -407,6 +412,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "The node's modeled links with live oper-state (1 = up, 2 = down).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -567,6 +573,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Oper-state per modeled interface over time, streamed over gNMI: 1 = up, 2 = down.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -631,6 +638,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Per-link traffic: transmit above the axis, receive below.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -683,6 +691,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Input errors and discards per second on each modeled interface.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -730,6 +739,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Loki log lines labeled with this node.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -763,6 +773,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Optic case temperature per port (synthetic DOM: the lab's virtual ports have no real transceivers).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -810,6 +821,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Optic receive and transmit power per port in dBm (synthetic DOM). A falling Rx is the gray-failure signature.",
       "fieldConfig": {
         "defaults": {
           "color": {

@@ -96,6 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Whether the cabinet answered its last SNMP poll (UP) or not (DOWN). Cabinets are polled over SNMP every 5 minutes, so rates use a 15-minute window (at least two polls) and move in 5-minute steps.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -164,6 +165,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Device role from the topology spec (via the device_geo_info series).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -231,6 +233,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Site the cabinet is installed at.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -297,6 +300,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Total transmit rate across the cabinet's interfaces (loopback excluded). Cabinets are polled over SNMP every 5 minutes, so rates use a 15-minute window (at least two polls) and move in 5-minute steps.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -335,7 +339,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(ifHCOutOctets{node=\"$cabinet\", ifName!=\"lo\"}[1m])) * 8",
+          "expr": "sum(rate(ifHCOutOctets{node=\"$cabinet\", ifName!=\"lo\"}[15m])) * 8",
           "legendFormat": "bps",
           "refId": "A"
         }
@@ -348,6 +352,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Alerts firing right now whose node label is this cabinet.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -403,6 +408,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "The cabinet's eBGP sessions to its corridor hub, as modeled in the spec.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -532,6 +538,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "IF-MIB ifOperStatus per Ethernet interface over time: 1 = up, 2 = down. Cabinets are polled over SNMP every 5 minutes, so rates use a 15-minute window (at least two polls) and move in 5-minute steps.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -596,6 +603,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Per-interface traffic: transmit above the axis, receive below. Cabinets are polled over SNMP every 5 minutes, so rates use a 15-minute window (at least two polls) and move in 5-minute steps.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -630,12 +638,12 @@
       },
       "targets": [
         {
-          "expr": "rate(ifHCOutOctets{node=\"$cabinet\", ifName!=\"lo\"}[1m]) * 8",
+          "expr": "rate(ifHCOutOctets{node=\"$cabinet\", ifName!=\"lo\"}[15m]) * 8",
           "legendFormat": "{{ifName}} OUT",
           "refId": "A"
         },
         {
-          "expr": "-rate(ifHCInOctets{node=\"$cabinet\", ifName!=\"lo\"}[1m]) * 8",
+          "expr": "-rate(ifHCInOctets{node=\"$cabinet\", ifName!=\"lo\"}[15m]) * 8",
           "legendFormat": "{{ifName}} IN",
           "refId": "B"
         }
@@ -648,6 +656,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Per-interface input/output errors and discards per second. Cabinets are polled over SNMP every 5 minutes, so rates use a 15-minute window (at least two polls) and move in 5-minute steps.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -677,22 +686,22 @@
       },
       "targets": [
         {
-          "expr": "rate(ifInErrors{node=\"$cabinet\", ifName!=\"lo\"}[1m])",
+          "expr": "rate(ifInErrors{node=\"$cabinet\", ifName!=\"lo\"}[15m])",
           "legendFormat": "{{ifName}} in-err",
           "refId": "A"
         },
         {
-          "expr": "rate(ifOutErrors{node=\"$cabinet\", ifName!=\"lo\"}[1m])",
+          "expr": "rate(ifOutErrors{node=\"$cabinet\", ifName!=\"lo\"}[15m])",
           "legendFormat": "{{ifName}} out-err",
           "refId": "B"
         },
         {
-          "expr": "rate(ifInDiscards{node=\"$cabinet\", ifName!=\"lo\"}[1m])",
+          "expr": "rate(ifInDiscards{node=\"$cabinet\", ifName!=\"lo\"}[15m])",
           "legendFormat": "{{ifName}} in-disc",
           "refId": "C"
         },
         {
-          "expr": "rate(ifOutDiscards{node=\"$cabinet\", ifName!=\"lo\"}[1m])",
+          "expr": "rate(ifOutDiscards{node=\"$cabinet\", ifName!=\"lo\"}[15m])",
           "legendFormat": "{{ifName}} out-disc",
           "refId": "D"
         }
@@ -705,6 +714,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Loki log lines labeled with this cabinet.",
       "gridPos": {
         "h": 10,
         "w": 24,

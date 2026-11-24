@@ -96,6 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Worst link state per highway corridor right now: UP when every link in the corridor is up.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -172,6 +173,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Share of the last 24 hours each corridor had all its links up (sampled every minute).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -236,6 +238,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Every modeled cable with its corridor, provider and live state.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -418,6 +421,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Total egress across each corridor's links.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -465,6 +469,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Corridor state over the last 30 minutes. Red bands are outages.",
       "fieldConfig": {
         "defaults": {
           "color": {

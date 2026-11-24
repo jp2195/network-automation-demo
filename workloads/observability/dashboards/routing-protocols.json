@@ -96,6 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Modeled IS-IS adjacencies whose interface is up.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -151,6 +152,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Cabinet eBGP sessions whose cabinet is reachable.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -210,6 +212,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Modeled iBGP sessions between the two traffic management centers.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -261,6 +264,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Prefixes received across all modeled BGP sessions (synthetic counts from dom-synth).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -312,6 +316,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Each modeled IS-IS adjacency with its live state (1 = up) and a synthetic uptime.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -514,6 +519,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Every modeled BGP session: peer, group and ASN.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -655,6 +661,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "IS-IS adjacency state over time (1 = up, 0 = down).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -719,6 +726,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Prefixes received per BGP peer group over time (synthetic counts from dom-synth).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -762,6 +770,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Youngest, oldest and average IS-IS adjacency uptime (synthetic, from dom-synth).",
       "fieldConfig": {
         "defaults": {
           "color": {

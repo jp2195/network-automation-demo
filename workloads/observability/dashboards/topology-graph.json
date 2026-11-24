@@ -96,6 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "State of every backbone link endpoint over the last hour. Red bands are outages.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -173,6 +174,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "State of each hub's cabinet-facing port over the last hour.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -247,6 +249,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Whether each cabinet answered SNMP polls (5-minute cadence).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -317,6 +320,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "State changes per link in each 5-minute window.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -401,6 +405,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Backbone egress as a share of a 2 kb/s synthetic capacity, scaled to lab traffic.",
       "fieldConfig": {
         "defaults": {
           "color": {

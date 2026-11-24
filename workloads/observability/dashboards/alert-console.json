@@ -95,6 +95,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Prometheus alerts firing right now with severity=critical (link and cabinet outages).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -154,6 +155,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Alerts firing with severity=warning: gray-failure signals such as rising errors or degrading optics.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -210,6 +212,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Alerts whose condition is true but haven't held long enough to fire yet.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -266,6 +269,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Argo Workflows started in the last hour: enrichment/notify pipelines, incident collectors, drift audits and remediation.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -305,12 +309,12 @@
       },
       "targets": [
         {
-          "expr": "sum(argo_workflows_gauge) or vector(0)",
+          "expr": "round(sum(increase(argo_workflows_total_count{phase=\"Running\"}[1h]))) or vector(0)",
           "legendFormat": "runs",
           "refId": "A"
         }
       ],
-      "title": "Workflows triggered (1h)",
+      "title": "Workflow runs started (1h)",
       "type": "stat"
     },
     {
@@ -318,6 +322,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Every alert currently firing or pending, with its labels. Click a node or link to drill down.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -539,6 +544,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "How many alerts were firing at each point in time, split by severity.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -550,7 +556,8 @@
             "fillOpacity": 80,
             "gradientMode": "opacity",
             "lineWidth": 1
-          }
+          },
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -584,6 +591,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Notifications Prometheus pushed to Alertmanager per minute. Spikes line up with outages and recoveries.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -593,7 +601,8 @@
             "drawStyle": "line",
             "fillOpacity": 25,
             "lineWidth": 2
-          }
+          },
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -610,12 +619,12 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(prometheus_notifications_sent_total[1m]))",
-          "legendFormat": "notifications/s",
+          "expr": "sum(rate(prometheus_notifications_sent_total[$__rate_interval])) * 60",
+          "legendFormat": "notifications/min",
           "refId": "A"
         }
       ],
-      "title": "Alert change rate (per minute)",
+      "title": "Alert notifications sent (per minute)",
       "type": "timeseries"
     },
     {
@@ -623,6 +632,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Log lines from the enrich → analyze → notify pipeline: NetBox context, impact class and what was sent to Slack.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -656,6 +666,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Structured IncidentAnalysis records from the AI analyst's advisory lane. Empty until an incident has been analyzed (and only when a model endpoint is configured).",
       "gridPos": {
         "h": 10,
         "w": 24,

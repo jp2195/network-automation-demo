@@ -96,6 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "30-minute p95 of each backbone link's egress as a share of a 2 kb/s synthetic capacity, scaled to lab traffic so utilization is visible.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -159,6 +160,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Egress rate per backbone link (1-minute rate, from the link:rate_out_bps:1m recording rule).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -206,6 +208,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Rolling 30-minute 95th percentile of each backbone link's egress: the number capacity planning is sized against.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -252,6 +255,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Backbone links ranked by 30-minute p95 egress, with utilization against the 2 kb/s synthetic capacity. Click a link to open it.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -262,54 +266,27 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "p95 (Mbps)"
+              "options": "p95 egress"
             },
             "properties": [
               {
-                "id": "custom.cellOptions",
-                "value": {
-                  "mode": "gradient",
-                  "type": "gauge"
-                }
+                "id": "unit",
+                "value": "bps"
               },
               {
-                "id": "max",
-                "value": 10000
-              },
-              {
-                "id": "min",
+                "id": "decimals",
                 "value": 0
               },
               {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "yellow",
-                      "value": 5000
-                    },
-                    {
-                      "color": "red",
-                      "value": 8000
-                    }
-                  ]
-                }
-              },
-              {
                 "id": "custom.width",
-                "value": 200
+                "value": 160
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "Utilization"
+              "options": "Utilization (of 2 kb/s)"
             },
             "properties": [
               {
@@ -319,13 +296,6 @@
               {
                 "id": "decimals",
                 "value": 1
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "mode": "gradient",
-                  "type": "color-background"
-                }
               },
               {
                 "id": "thresholds",
@@ -346,6 +316,21 @@
                     }
                   ]
                 }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "gauge"
+                }
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
               }
             ]
           },
@@ -384,25 +369,25 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "Utilization"
+            "displayName": "Utilization (of 2 kb/s)"
           }
         ]
       },
       "targets": [
         {
-          "expr": "(link:p95_out_bps:30m{link_kind=\"backbone\"} / 1e6)",
+          "expr": "link:p95_out_bps:30m{link_kind=\"backbone\"}",
           "format": "table",
           "instant": true,
           "refId": "A"
         },
         {
-          "expr": "(link:p95_out_bps:30m{link_kind=\"backbone\"} / 1e10) * 100",
+          "expr": "100 * (link:p95_out_bps:30m{link_kind=\"backbone\"} / 2000)",
           "format": "table",
           "instant": true,
           "refId": "B"
         }
       ],
-      "title": "Capacity table — links sorted by 1h p95",
+      "title": "Capacity table — links sorted by 30m p95",
       "transformations": [
         {
           "id": "joinByField",
@@ -425,8 +410,8 @@
               "link_id": 0
             },
             "renameByName": {
-              "Value #A": "p95 (Mbps)",
-              "Value #B": "Utilization",
+              "Value #A": "p95 egress",
+              "Value #B": "Utilization (of 2 kb/s)",
               "link_id": "Link"
             }
           }
@@ -439,6 +424,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "The eight nodes sending the most traffic on modeled links.",
       "fieldConfig": {
         "defaults": {
           "color": {

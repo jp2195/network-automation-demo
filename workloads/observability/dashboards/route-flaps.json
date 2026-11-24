@@ -96,6 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Oper-state changes on modeled links in the last 5 minutes.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -155,6 +156,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Oper-state changes on modeled links in the last hour.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -214,6 +216,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Distinct links with at least one state change in the last hour.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -265,6 +268,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "SRLInterfaceFlapping alerts firing right now.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -320,6 +324,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "State changes per link in each 5-minute window. Hot cells are flapping links.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -365,7 +370,7 @@
           "steps": 32
         },
         "filterValues": {
-          "le": 1e-9
+          "le": 1e-09
         },
         "rowsFrame": {
           "layout": "auto"
@@ -393,6 +398,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "State changes per link per 5-minute window over the last hour.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -440,6 +446,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Links ranked by state changes in the last hour.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -608,6 +615,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Interface oper-up/down and admin-state log lines from the SR Linux routers.",
       "gridPos": {
         "h": 10,
         "w": 24,

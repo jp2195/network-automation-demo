@@ -96,6 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Oper-state of each end of the link: UP, or DOWN when that side lost the link.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -171,6 +172,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Oper-state changes on this link in the last 5 minutes. Repeated changes mean the link is flapping.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -231,6 +233,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Average egress across the link's two endpoints.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -282,6 +285,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Input errors and discards per second across both endpoints.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -343,6 +347,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Oper-state of each endpoint over time.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -409,6 +414,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Traffic per endpoint: transmit above the axis, receive below.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -461,6 +467,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Input errors and discards per second per endpoint.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -508,6 +515,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Modeled attributes of the link: endpoints, corridor and geography.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -584,6 +592,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Topology pod log lines that mention this link.",
       "gridPos": {
         "h": 8,
         "w": 24,
@@ -617,6 +626,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Optic case temperature on each end (synthetic DOM).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -664,6 +674,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Optic power on each end in dBm (synthetic DOM). A falling Rx is the gray-failure signature.",
       "fieldConfig": {
         "defaults": {
           "color": {

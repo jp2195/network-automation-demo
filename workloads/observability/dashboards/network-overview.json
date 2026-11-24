@@ -107,6 +107,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "SR Linux routers with at least one Ethernet interface up, from gNMI streaming.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -170,6 +171,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Backbone links with both ends up.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -230,6 +232,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Field cabinets that answered their last SNMP poll (5-minute cadence).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -286,6 +289,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Critical alerts firing right now.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -342,6 +346,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Total egress across all backbone links.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -393,6 +398,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Every device on the map: green when up, red when down.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -650,6 +656,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Every modeled link with live state. Click a link to open it.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -807,6 +814,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Egress per backbone link.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -854,6 +862,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Warning and error log lines from the topology: interface downs and IS-IS adjacency changes.",
       "gridPos": {
         "h": 8,
         "w": 24,
