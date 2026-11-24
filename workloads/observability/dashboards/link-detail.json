@@ -592,7 +592,7 @@
         "type": "loki",
         "uid": "loki"
       },
-      "description": "Topology pod log lines that mention this link.",
+      "description": "Log lines from the link's two endpoint devices that mention the link's interface (e.g. SR Linux portDown/portUp events). Endpoints come from link_membership_info.",
       "gridPos": {
         "h": 8,
         "w": 24,
@@ -614,11 +614,11 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"clabernetes\"} |~ \"$link_id\"",
+          "expr": "{namespace=\"clabernetes\", host=~\"${ep_node:regex}\"} |~ `${ep_intf:regex}\\b`",
           "refId": "A"
         }
       ],
-      "title": "Pod logs touching this link",
+      "title": "Device logs for this link (both endpoints)",
       "type": "logs"
     },
     {
@@ -747,6 +747,58 @@
         "name": "link_id",
         "query": {
           "query": "label_values(link_membership_info, link_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(link_membership_info{link_id=\"$link_id\"}, node)",
+        "hide": 2,
+        "includeAll": true,
+        "multi": true,
+        "name": "ep_node",
+        "query": {
+          "query": "label_values(link_membership_info{link_id=\"$link_id\"}, node)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(link_membership_info{link_id=\"$link_id\"}, interface)",
+        "hide": 2,
+        "includeAll": true,
+        "multi": true,
+        "name": "ep_intf",
+        "query": {
+          "query": "label_values(link_membership_info{link_id=\"$link_id\"}, interface)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
