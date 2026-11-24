@@ -124,7 +124,7 @@ spec:
           - name: node
           - name: interface
       container:
-        image: ghcr.io/openconfig/gnmic:0.44.1
+        image: ghcr.io/openconfig/gnmic:0.50.0
         command: [/app/gnmic]
         args:
           - -a
@@ -152,7 +152,7 @@ spec:
           - name: node
           - name: interface
       container:
-        image: ghcr.io/openconfig/gnmic:0.44.1
+        image: ghcr.io/openconfig/gnmic:0.50.0
         command: [/app/gnmic]
         args:
           - -a

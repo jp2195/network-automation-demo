@@ -73,7 +73,7 @@ spec:
         parameters:
           - name: node
       script:
-        image: ghcr.io/openconfig/gnmic:0.44.1
+        image: ghcr.io/openconfig/gnmic:0.50.0
         command: [sh]
         source: |
           /app/gnmic -a atlanta-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400 \
