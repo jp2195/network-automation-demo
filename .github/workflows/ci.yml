@@ -40,7 +40,7 @@ jobs:
     name: Python (eventing + dom-synth)
     runs-on: ubuntu-latest
     env:
-      UV_PYTHON: "3.12"
+      UV_PYTHON: "3.15"
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.4.0  # no floating major tag upstream
