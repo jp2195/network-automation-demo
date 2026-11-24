@@ -28,11 +28,11 @@ const (
 // all reference one source.
 const (
 	ImageSRLinux = "ghcr.io/nokia/srlinux:26.7.2"
-	// FRR stays on the public image — clabernetes' containerlab can't
-	// resolve atlas-demo-registry:5001/... refs from inside the nested
-	// docker (it prepends `docker.io/` and the ref becomes invalid).
-	// The pre-baked frr-snmpd Dockerfile + `make build` slot remain in
-	// place for a future imagePullThrough fix.
+	// FRR stays on the public image (snmpd installed at boot by
+	// wrapper.sh). Before Clabernetes 0.9 the nested docker couldn't pull
+	// from atlas-demo-registry:5001; kubelet pulls now, so the pre-baked
+	// images/frr-snmpd could replace it (needs the registry trusted as
+	// plain HTTP in globalConfig.imagePull) — not switched yet.
 	ImageFRR    = "quay.io/frrouting/frr:10.7.1"
 	ImagePython = "python:3.15-slim"
 	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.49.1"

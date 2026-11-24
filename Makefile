@@ -17,7 +17,6 @@ INOTIFY_MIN  ?= 512
 # demo-cut authenticates to the device as a NAMED operator (not admin/root)
 # so the change is attributed in the AAA syslog → Loki. The Set goes through
 # the gnmic pod, which already has reachability to every node's gNMI on 57400.
-TOPO_NAME    ?= atlanta
 MON_NS       ?= monitoring
 GNMI_PORT    ?= 57400
 NOC_USER     ?= noc-ops
@@ -134,7 +133,6 @@ urls:
 	printf '  %-12s %-44s %s\n' "NetBox"      "http://netbox.127-0-0-1.nip.io:8080"      "admin / admin"; \
 	printf '  %-12s %-44s %s\n' "Grafana"     "http://grafana.127-0-0-1.nip.io:8080"     "admin / admin"; \
 	printf '  %-12s %-44s %s\n' "Workflows"   "http://workflows.127-0-0-1.nip.io:8080"   "no auth (server mode)"; \
-	printf '  %-12s %-44s %s\n' "Clabernetes" "http://clabernetes.127-0-0-1.nip.io:8080" "no auth"; \
 	printf '  %-12s %-44s %s\n' "Console"     "http://console.127-0-0-1.nip.io:8080"     "no auth (scenario console)"
 
 # Point ArgoCD at a fork/branch. Rewrites the repo URL + revision in the two
@@ -301,10 +299,9 @@ _require_cut_vars:
 	@[ -n "$(NODE)" ]      || { echo "NODE is required (e.g. NODE=tmc-1)"; exit 1; }
 	@[ -n "$(INTERFACE)" ] || { echo "INTERFACE is required (e.g. INTERFACE=ethernet-1/1)"; exit 1; }
 
-## Clabernetes runs each lab node as a nested docker container inside the
-## launcher pod, so all sr_cli / vtysh invocations have to docker exec into
-## that inner container — kubectl exec lands in the launcher's docker daemon,
-## not the SR Linux / FRR process.
+## Clabernetes runs each lab node as its own Deployment named after the node;
+## `kubectl -n clabernetes exec deploy/<node> -- sr_cli ...` (or vtysh) lands
+## directly in the router container.
 
 # admin-state disable/enable as the named operator noc-ops, via a gNMI Set
 # through the gnmic pod. The device logs "committed ... by user noc-ops from
@@ -313,59 +310,41 @@ _require_cut_vars:
 demo-cut: _require_cut_vars
 	@echo "==> Disabling $(INTERFACE) on $(NODE) — gNMI Set as $(NOC_USER)"; \
 	  kubectl -n $(MON_NS) exec deploy/gnmic -- /app/gnmic \
-	    -a $(TOPO_NAME)-$(NODE).$(TOPO_NS).svc.cluster.local:$(GNMI_PORT) \
+	    -a $(NODE).$(TOPO_NS).svc.cluster.local:$(GNMI_PORT) \
 	    -u $(NOC_USER) -p '$(NOC_PASS)' --skip-verify -e json_ietf \
 	    set --update-path '/interface[name=$(INTERFACE)]/admin-state' --update-value disable
 
 demo-restore: _require_cut_vars
 	@echo "==> Enabling $(INTERFACE) on $(NODE) — gNMI Set as $(NOC_USER)"; \
 	  kubectl -n $(MON_NS) exec deploy/gnmic -- /app/gnmic \
-	    -a $(TOPO_NAME)-$(NODE).$(TOPO_NS).svc.cluster.local:$(GNMI_PORT) \
+	    -a $(NODE).$(TOPO_NS).svc.cluster.local:$(GNMI_PORT) \
 	    -u $(NOC_USER) -p '$(NOC_PASS)' --skip-verify -e json_ietf \
 	    set --update-path '/interface[name=$(INTERFACE)]/admin-state' --update-value enable
 
-# --- FRR cabinet failure injection (legacy-edge / SNMP-driven demo lane) ---
-# Inject a real carrier loss, not an admin shutdown. CabinetInterfaceOperDown
-# fires on ifOperStatus==down AND ifAdminStatus==up (a link failure, not
-# maintenance). A vtysh `shutdown` drops admin too, so the alert never fires.
-# Downing the pod-side veth (<node>-<iface>, e.g. fc-n-eth1) drops carrier on
-# the cabinet interface while admin stays up — the exact condition the alert
-# requires. The loss does not cross the VXLAN back to the SR Linux side.
+# --- Carrier-loss failure injection (fiber cuts) -------------------------
+# demo-cut sets admin-state=disable — a maintenance shutdown, which the AI
+# analyst correctly reads as a deliberate config action. These targets cut
+# the fiber instead: bin/cut-link.sh takes the FAR end of the link down, so
+# NODE's INTERFACE loses carrier while its admin-state stays up — the
+# hardware/link failure signature. Both ends go oper-down, as on a real cut.
+#
+#   demo-cut-cabinet  NODE=fc-n INTERFACE=eth1          (SNMP lane:
+#     CabinetInterfaceOperDown needs ifOperStatus down AND ifAdminStatus up,
+#     which a vtysh shutdown can't produce)
+#   demo-cut-fiber    NODE=hub-e INTERFACE=ethernet-1/2 (gNMI lane; leave it
+#     cut until the AI analysis runs — it reasons over live state)
 
 demo-cut-cabinet: _require_cut_vars
-	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
-	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
-	  echo "==> Carrier loss on $(NODE) $(INTERFACE) ($$POD): down pod-side veth $(NODE)-$(INTERFACE)"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- ip link set $(NODE)-$(INTERFACE) down
+	@TOPO_NS=$(TOPO_NS) bin/cut-link.sh $(NODE) $(INTERFACE) down
 
 demo-restore-cabinet: _require_cut_vars
-	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
-	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
-	  echo "==> Restore carrier on $(NODE) $(INTERFACE) ($$POD): up pod-side veth $(NODE)-$(INTERFACE)"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- ip link set $(NODE)-$(INTERFACE) up
-
-# --- SR Linux fiber cut (carrier loss) vs the admin-disable demo-cut ------
-# demo-cut sets admin-state=disable — a maintenance shutdown the AI analyst
-# correctly reads as a deliberate config action. For a REAL fault, down the
-# pod-side veth (<node>-e1-<x>, e.g. hub-e-e1-2 for ethernet-1/2): the SR Linux
-# interface goes oper-down while admin-state stays ENABLE, with a physical
-# oper-down-reason — a fiber-cut/carrier-loss the analyst diagnoses as a
-# hardware/link failure. Leave it cut until the analysis runs (it reasons over
-# live state). Same SRLInterfaceOperDown alert either way.
+	@TOPO_NS=$(TOPO_NS) bin/cut-link.sh $(NODE) $(INTERFACE) up
 
 demo-cut-fiber: _require_cut_vars
-	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
-	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
-	  VETH=$(NODE)-$$(echo $(INTERFACE) | sed 's#ethernet-#e#; s#/#-#'); \
-	  echo "==> Fiber cut (carrier loss) on $(NODE) $(INTERFACE) ($$POD): down pod veth $$VETH (admin-state stays up)"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- ip link set $$VETH down
+	@TOPO_NS=$(TOPO_NS) bin/cut-link.sh $(NODE) $(INTERFACE) down
 
 demo-restore-fiber: _require_cut_vars
-	@POD=$$(kubectl -n $(TOPO_NS) get pod -l clabernetes/topologyNode=$(NODE) -o jsonpath='{.items[0].metadata.name}' 2>/dev/null); \
-	  if [ -z "$$POD" ]; then echo "no pod for NODE=$(NODE) in ns $(TOPO_NS) - is the topology deployed?"; exit 1; fi; \
-	  VETH=$(NODE)-$$(echo $(INTERFACE) | sed 's#ethernet-#e#; s#/#-#'); \
-	  echo "==> Restore fiber on $(NODE) $(INTERFACE) ($$POD): up pod veth $$VETH"; \
-	  kubectl -n $(TOPO_NS) exec $$POD -- ip link set $$VETH up
+	@TOPO_NS=$(TOPO_NS) bin/cut-link.sh $(NODE) $(INTERFACE) up
 
 # --- Readiness gate -------------------------------------------------------
 # Functional readiness (telemetry flowing, eventing wired, cabinets polling),

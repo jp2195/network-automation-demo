@@ -130,11 +130,13 @@ interconnect, and 4 single-homed cabinet drops.
 | Certs | cert-manager (self-signed ClusterIssuer, Traefik ingresses on `*.127-0-0-1.nip.io`) |
 
 Apple Silicon / ARM64 is tested: the whole stack runs **natively** on arm64
-(no x86 emulation). Clabernetes 0.6.0 ships multi-arch manager/launcher
-images, and the node images are multi-arch too (SR Linux
+(no x86 emulation). Clabernetes 0.11.0 ships a multi-arch manager
+image, and the node images are multi-arch too (SR Linux
 `ghcr.io/nokia/srlinux` 26.7.2, FRR 10.7.1). Verified end-to-end on an Apple
-Silicon Mac via k3d (on SR Linux 25.3.3): full platform up, `atlanta`
-topology ready, all 12 nodes `aarch64`.
+Silicon Mac via k3d on Clabernetes 0.6 / SR Linux 25.3.3: full platform up,
+`atlanta` topology ready, all 12 nodes `aarch64`. Not yet re-verified on
+Clabernetes 0.11, whose link fabric needs VXLAN and nftables support in the
+Docker VM's kernel.
 
 ## Telemetry sources: the legacy / modern split
 
@@ -241,7 +243,6 @@ TLS warning):
 | <http://argocd.127-0-0-1.nip.io:8080> | admin / `make urls` shows the password |
 | <http://netbox.127-0-0-1.nip.io:8080> | admin / admin |
 | <http://workflows.127-0-0-1.nip.io:8080> | server mode, no auth |
-| <http://clabernetes.127-0-0-1.nip.io:8080> | Clabernetes UI |
 
 If those hostnames don't resolve (some corporate and conference networks
 block DNS answers that point at 127.0.0.1), see the

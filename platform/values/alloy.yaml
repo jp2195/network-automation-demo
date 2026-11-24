@@ -68,9 +68,9 @@ alloy:
       }
 
       loki.source.syslog "node_syslog" {
-        // FRR uses TCP (works); SRL uses UDP (only path that survives
-        // clabernetes' nested-netns return-path gap for outbound traffic
-        // initiated from a network-instance VRF).
+        // FRR uses TCP (works); SRL uses UDP (the only path that survives
+        // SR Linux's return-path gap for outbound traffic initiated from a
+        // network-instance VRF — see srl_render.go).
         listener {
           address               = "0.0.0.0:5514"
           protocol              = "tcp"

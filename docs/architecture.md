@@ -101,7 +101,7 @@ hub-sw); every cabinet is single-homed.
 | Layer | Why |
 |---|---|
 | **GitOps** | The whole thing is a story about *infrastructure as data*. ArgoCD watches `argocd/` and reconciles each workload Application. |
-| **Topology** | Clabernetes runs lab nodes as nested docker containers per pod, so you can stand up multi-vendor topologies with kubernetes scheduling. |
+| **Topology** | Clabernetes runs each lab node as its own Deployment (the router container plus a `clabwire` sidecar that carries its links as UDP tunnels), so you can stand up multi-vendor topologies with Kubernetes scheduling. |
 | **Telemetry — gNMI** | Modern, streaming, model-driven — what an operator buying SR Linux today would use. |
 | **Telemetry — SNMP** | The legacy edge story. Cabinets aren't SR Linux; they're FRR boxes that only speak SNMP. The same alert pipeline carries both. |
 | **Telemetry — DOM** | Synthetic transceiver metrics (no real SFPs in Clabernetes). Lets dashboards show optical health without faking the entire LLDP/optical YANG. |
@@ -205,9 +205,9 @@ argocd/
 ApplicationSet, whose `git` files generator globs both
 `manifests/platform/*.yaml` and `manifests/workloads/*.yaml` and templates one
 Application per stub (21 today, so `kubectl -n argocd get applications`
-shows 22 rows including `root`). Each owns one logical chunk. The `topology`, `gnmic`, and `snmp` stubs
-carry `ignoreDifferences` blocks so Clabernetes' admission webhook defaults and
-the Prometheus operator's stored `action: replace` don't register as drift. All
+shows 22 rows including `root`). Each owns one logical chunk. The `gnmic` and
+`snmp` stubs carry `ignoreDifferences` blocks so the Prometheus operator's
+stored `action: replace` doesn't register as drift. All
 stubs auto-sync (prune + selfHeal).
 
 ## Trade-offs / scope

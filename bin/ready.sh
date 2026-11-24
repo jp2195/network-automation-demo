@@ -117,16 +117,14 @@ seed=$(kubectl -n netbox get job netbox-seed -o jsonpath='{.status.succeeded}' 2
 if [ "${seed:-0}" -ge 1 ]; then ok "netbox: seed Complete"
 else bad "netbox: seed not Complete (enrichment will degrade to name-only)"; fi
 
-# 6. Topology — all emulated nodes' pods Running
-topo=$(kubectl -n clabernetes get pods -l clabernetes/topologyOwner=atlanta --no-headers 2>/dev/null)
-if [ -z "$topo" ]; then
-  bad "topology: no atlanta nodes found in clabernetes namespace"
-else
-  ttot=$(printf '%s\n' "$topo" | grep -c .)
-  trun=$(printf '%s\n' "$topo" | awk '{split($2,a,"/"); if(a[1]==a[2] && $3=="Running") c++} END{print c+0}')
-  if [ "$trun" -eq "$ttot" ]; then ok "topology: $trun/$ttot nodes Running"
-  else bad "topology: $trun/$ttot nodes Running"; fi
-fi
+# 6. Topology — Clabernetes reports every node ready (its status tracks the
+# device containers and their link wires, not just pod phase).
+read -r tready tok ttot tstate <<<"$(kubectl -n clabernetes get topologies.c9s.run atlanta \
+  -o jsonpath='{.status.topologyReady} {.status.readyNodeCount} {.status.nodeCount} {.status.topologyState}' 2>/dev/null)"
+if [ -z "${ttot:-}" ]; then
+  bad "topology: atlanta Topology not found in clabernetes namespace"
+elif [ "$tready" = true ]; then ok "topology: $tok/$ttot nodes ready"
+else bad "topology: $tok/$ttot nodes ready (${tstate:-unknown})"; fi
 
 echo
 if [ "$FAIL" -eq 0 ]; then

@@ -94,7 +94,7 @@ Fix it offline-proof by pinning every UI hostname in `/etc/hosts`
 from Windows rather than WSL):
 
 ```bash
-echo '127.0.0.1 argocd.127-0-0-1.nip.io clabernetes.127-0-0-1.nip.io console.127-0-0-1.nip.io grafana.127-0-0-1.nip.io netbox.127-0-0-1.nip.io workflows.127-0-0-1.nip.io' | sudo tee -a /etc/hosts
+echo '127.0.0.1 argocd.127-0-0-1.nip.io console.127-0-0-1.nip.io grafana.127-0-0-1.nip.io netbox.127-0-0-1.nip.io workflows.127-0-0-1.nip.io' | sudo tee -a /etc/hosts
 ```
 
 These are all the hostnames the ingresses use. Switching the host to a
@@ -103,15 +103,12 @@ present on an unfamiliar network.
 
 ### "ArgoCD apps stuck OutOfSync after a fresh `make up`"
 
-Almost always the Clabernetes admission webhook adding defaults to the
-Topology CR (`mode: read` on every `filesFromConfigMap` entry,
-`expose.disableExpose: false`, etc.) or the Prometheus operator storing
-the implicit `action: replace` on relabeling configs.
-
-These should already be ignored — `argocd/manifests/workloads/{topology,snmp,gnmic}.yaml`
-all carry `ignoreDifferences` blocks. If you've added a new app and
-hit drift on a Probe / ServiceMonitor / Topology, that's the pattern
-to copy.
+Usually the Prometheus operator storing the implicit `action: replace` on
+relabeling configs. That should already be ignored:
+`argocd/manifests/workloads/{snmp,gnmic}.yaml` carry `ignoreDifferences`
+blocks. If you've added a new app and hit drift on a Probe or
+ServiceMonitor, that's the pattern to copy. (The Topology needs none: the
+renderer emits every field the CRD would otherwise default.)
 
 ### "`make demo-cut` fails or does nothing"
 
@@ -127,9 +124,9 @@ as `noc-ops` through the gNMIc pod
 - `authentication failed` → the startup-config (which creates the
   `noc-ops` account) wasn't applied; see the hard reset below.
 
-Anything that *does* use `sr_cli` by hand must go through the launcher
-pod's Docker daemon: `kubectl exec POD -- docker exec <node> sr_cli`. The
-lab node is a nested container inside the launcher pod.
+To use `sr_cli` by hand, exec into the node's Deployment:
+`kubectl -n clabernetes exec -it deploy/<node> -- sr_cli`. Each lab node is
+its own Deployment named after the node.
 
 ### "Alert never fires"
 
@@ -253,9 +250,9 @@ This was a real bug. Two possible root causes — pick by how it fails:
 
 2. **Probe times out, snmpd is up.** Wrong port. The cabinet pod's
    container image only publishes the standard SNMP port (161), not
-   1161. Clabernetes' Service forwards :161 → :161 in the inner
-   container; if the renderer somehow pinned 1161, the probe goes
-   nowhere. Fix: `agentaddress udp:161` in `snmpd.conf`.
+   1161. The node's Service (`fc-n.clabernetes.svc`) forwards :161
+   straight to the cabinet container; if the renderer somehow pinned
+   1161, the probe goes nowhere. Fix: `agentaddress udp:161` in `snmpd.conf`.
 
 ### "A cabinet's SNMP lane goes green a few seconds after everything else (or never)"
 
@@ -273,8 +270,7 @@ up yet, wedging the cabinet — no FRR, no snmpd.) If a cabinet *never* gets
 internet, then install + start it by hand:
 
 ```bash
-POD=$(kubectl -n clabernetes get pod -l clabernetes/topologyNode=fc-n -o jsonpath='{.items[0].metadata.name}')
-kubectl -n clabernetes exec "$POD" -- docker exec fc-n sh -c \
+kubectl -n clabernetes exec deploy/fc-n -- sh -c \
   'command -v snmpd || (timeout 30 apk add --no-cache net-snmp && snmpd -Lf /tmp/snmpd.log &)'
 ```
 
@@ -458,21 +454,20 @@ make up
 # wait for the functional readiness gate (polls bin/ready.sh, up to ~25 min)
 make wait-ready
 
-# bounce the SR Linux pods once so each picks up its startup-config
+# restart the SR Linux nodes once so each re-applies its startup-config
 for n in tmc-1 tmc-2 hub-n hub-e hub-i20e hub-nw hub-sw hub-i20w; do
-  kubectl -n clabernetes delete pod -l clabernetes/topologyOwner=atlanta,clabernetes/topologyNode=$n --wait=false
+  kubectl -n clabernetes rollout restart deploy/$n
 done
 
-# wait for postdeploy on every node
-sleep 90
-for n in tmc-1 tmc-2 hub-n hub-e hub-i20e hub-nw hub-sw hub-i20w; do
-  P=$(kubectl -n clabernetes get pods -l clabernetes/topologyOwner=atlanta,clabernetes/topologyNode=$n -o jsonpath='{.items[0].metadata.name}')
-  kubectl -n clabernetes exec "$P" -- cat /clabernetes/containerlab.log 2>/dev/null | grep -E "postdeploy|ERRO" | tail -1
-done
+# every node should come back READINESS ready / RUNSTATE Running
+kubectl -n clabernetes get nodes.c9s.run
 ```
 
-Anything firing `ERRO` in the postdeploy log means a startup-config
-syntax error. The renderer is the source of truth — re-render and
+A node stuck not-ready usually has a failed plan (often a startup-config
+syntax error): `kubectl -n clabernetes describe nodes.c9s.run <node>` shows
+which condition (`PlanApplied`, `ContainersReady`, `ConnectivityReady`) is
+false and why, and `kubectl -n clabernetes logs deploy/<node> -c clabwire`
+shows link (wire) events. The renderer is the source of truth — re-render and
 re-apply the topology if you've edited the spec.
 
 ## Postmortem missing after a resolve
