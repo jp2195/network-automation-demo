@@ -274,10 +274,6 @@
                 "value": "bps"
               },
               {
-                "id": "decimals",
-                "value": 0
-              },
-              {
                 "id": "custom.width",
                 "value": 160
               }
@@ -402,16 +398,22 @@
             "excludeByName": {
               "Time": true,
               "Time 1": true,
-              "Time 2": true
+              "Time 2": true,
+              "__name__": true,
+              "corridor 2": true,
+              "link_kind 1": true,
+              "link_kind 2": true
             },
             "indexByName": {
-              "Value #A": 1,
-              "Value #B": 2,
+              "Value #A": 2,
+              "Value #B": 3,
+              "corridor 1": 1,
               "link_id": 0
             },
             "renameByName": {
               "Value #A": "p95 egress",
               "Value #B": "Utilization (of 2 kb/s)",
+              "corridor 1": "Corridor",
               "link_id": "Link"
             }
           }

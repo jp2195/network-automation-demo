@@ -761,7 +761,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"clabernetes\", host=\"$node\"}",
+          "expr": "{namespace=\"clabernetes\", host=\"$node\", app!=\"kernel\"}",
           "refId": "A"
         }
       ],

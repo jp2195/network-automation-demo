@@ -300,7 +300,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Total transmit rate across the cabinet's interfaces (loopback excluded). Cabinets are polled over SNMP every 5 minutes, so rates use a 15-minute window (at least two polls) and move in 5-minute steps.",
+      "description": "Total transmit rate across the cabinet's interfaces (its eth ports; Clabernetes plumbing interfaces excluded). Cabinets are polled over SNMP every 5 minutes, so rates use a 15-minute window (at least two polls) and move in 5-minute steps.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -339,7 +339,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(ifHCOutOctets{node=\"$cabinet\", ifName!=\"lo\"}[15m])) * 8",
+          "expr": "sum(rate(ifHCOutOctets{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m])) * 8",
           "legendFormat": "bps",
           "refId": "A"
         }
@@ -590,7 +590,7 @@
       },
       "targets": [
         {
-          "expr": "ifOperStatus{node=\"$cabinet\"} * on(node, ifIndex) group_left(ifType) ifType_info{node=\"$cabinet\", ifType=\"ethernetCsmacd\"}",
+          "expr": "ifOperStatus{node=\"$cabinet\", ifName=~\"eth[0-9]+\"} * on(node, ifIndex) group_left(ifType) ifType_info{node=\"$cabinet\", ifType=\"ethernetCsmacd\"}",
           "legendFormat": "{{ifName}}",
           "refId": "A"
         }
@@ -638,12 +638,12 @@
       },
       "targets": [
         {
-          "expr": "rate(ifHCOutOctets{node=\"$cabinet\", ifName!=\"lo\"}[15m]) * 8",
+          "expr": "rate(ifHCOutOctets{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m]) * 8",
           "legendFormat": "{{ifName}} OUT",
           "refId": "A"
         },
         {
-          "expr": "-rate(ifHCInOctets{node=\"$cabinet\", ifName!=\"lo\"}[15m]) * 8",
+          "expr": "-rate(ifHCInOctets{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m]) * 8",
           "legendFormat": "{{ifName}} IN",
           "refId": "B"
         }
@@ -686,22 +686,22 @@
       },
       "targets": [
         {
-          "expr": "rate(ifInErrors{node=\"$cabinet\", ifName!=\"lo\"}[15m])",
+          "expr": "rate(ifInErrors{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m])",
           "legendFormat": "{{ifName}} in-err",
           "refId": "A"
         },
         {
-          "expr": "rate(ifOutErrors{node=\"$cabinet\", ifName!=\"lo\"}[15m])",
+          "expr": "rate(ifOutErrors{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m])",
           "legendFormat": "{{ifName}} out-err",
           "refId": "B"
         },
         {
-          "expr": "rate(ifInDiscards{node=\"$cabinet\", ifName!=\"lo\"}[15m])",
+          "expr": "rate(ifInDiscards{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m])",
           "legendFormat": "{{ifName}} in-disc",
           "refId": "C"
         },
         {
-          "expr": "rate(ifOutDiscards{node=\"$cabinet\", ifName!=\"lo\"}[15m])",
+          "expr": "rate(ifOutDiscards{node=\"$cabinet\", ifName=~\"eth[0-9]+\"}[15m])",
           "legendFormat": "{{ifName}} out-disc",
           "refId": "D"
         }
@@ -736,7 +736,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"clabernetes\", host=\"$cabinet\"}",
+          "expr": "{namespace=\"clabernetes\", host=\"$cabinet\", app!=\"kernel\"}",
           "refId": "A"
         }
       ],
