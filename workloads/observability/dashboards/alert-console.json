@@ -322,7 +322,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Every alert currently firing or pending, with its labels. Click a node or link to drill down.",
+      "description": "Every alert currently firing or pending, with its labels. Click a node or link to drill down. Housekeeping alerts (Watchdog heartbeat, InfoInhibitor) are hidden, matching the console.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -476,7 +476,7 @@
       },
       "targets": [
         {
-          "expr": "ALERTS{alertstate=~\"firing|pending\"}",
+          "expr": "ALERTS{alertstate=~\"firing|pending\",alertname!=\"Watchdog\",alertname!=\"InfoInhibitor\"}",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -544,7 +544,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "How many alerts were firing at each point in time, split by severity.",
+      "description": "How many alerts were firing at each point in time, split by severity. Housekeeping alerts are excluded.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -578,7 +578,7 @@
       },
       "targets": [
         {
-          "expr": "count by (severity) (ALERTS{alertstate=\"firing\"})",
+          "expr": "count by (severity) (ALERTS{alertstate=\"firing\",alertname!=\"Watchdog\",alertname!=\"InfoInhibitor\"})",
           "legendFormat": "{{severity}}",
           "refId": "A"
         }

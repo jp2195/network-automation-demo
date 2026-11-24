@@ -46,7 +46,7 @@ NODE=""
 INTERFACE=""
 IFACES=""        # explicit "node:iface node:iface ..." rotation list (overrides defaults)
 OUT=""
-TIMEOUT="${MEASURE_TIMEOUT:-180}"        # per-hop wait ceiling
+TIMEOUT="${MEASURE_TIMEOUT:-}"           # per-hop wait ceiling (lane default below)
 SETTLE_BUFFER="${MEASURE_SETTLE:-10}"    # quiet seconds after a run resolves
 
 while getopts ":n:l:N:i:I:o:h" opt; do
@@ -66,6 +66,7 @@ case "$LANE" in
   gnmi)
     ALERTNAME=SRLInterfaceOperDown
     FOR_S=0
+    : "${TIMEOUT:=180}"
     MATCH_INTERFACE=1
     CUT()     { make -s demo-cut         NODE="$NODE" INTERFACE="$INTERFACE" >/dev/null; }
     RESTORE() { make -s demo-restore     NODE="$NODE" INTERFACE="$INTERFACE" >/dev/null 2>&1 || true; }
@@ -73,6 +74,9 @@ case "$LANE" in
   snmp)
     ALERTNAME=CabinetInterfaceOperDown
     FOR_S=60
+    # Worst case: one full 300s poll interval before the cut is seen, plus the
+    # alert's 60s for:, plus scrape/eval slack.
+    : "${TIMEOUT:=480}"
     MATCH_INTERFACE=0   # SNMP alert labels carry node+ifIndex, not an interface name
     # Realistic carrier loss (cable pull) via bin/cut-link.sh: the FAR end of
     # the cabinet uplink goes down, so the cabinet interface loses carrier
