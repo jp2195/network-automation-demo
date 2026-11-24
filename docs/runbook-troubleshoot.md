@@ -22,8 +22,10 @@ kubectl -n argo-events get pods
 kubectl -n netbox get pods
 
 # what alerts are firing
-PROM_POD=$(kubectl -n monitoring get pods -l app.kubernetes.io/name=prometheus -o jsonpath='{.items[0].metadata.name}')
-kubectl -n monitoring exec $PROM_POD -c prometheus -- wget -qO- http://localhost:9090/api/v1/alerts | python3 -c "
+# (Prometheus/Alertmanager images are distroless — no wget to exec; talk to
+# them through a port-forward instead.)
+kubectl -n monitoring port-forward svc/prometheus-operated 9090:9090 >/dev/null &
+curl -s :9090/api/v1/alerts | python3 -c "
 import sys, json
 from collections import Counter
 c = Counter(a['labels']['alertname'] for a in json.load(sys.stdin)['data']['alerts'])
@@ -139,15 +141,15 @@ kubectl -n monitoring port-forward svc/gnmic 9804:9804 &
 curl -s :9804/metrics | grep '^srl_nokia_interfaces_interface_oper_state{node="<X>",interface="<Y>"'
 
 # 2. is the alert *expression* matching?
-PROM_POD=$(kubectl -n monitoring get pods -l app.kubernetes.io/name=prometheus -o jsonpath='{.items[0].metadata.name}')
-kubectl -n monitoring exec $PROM_POD -c prometheus -- wget -qO- --post-data='query=(srl_nokia_interfaces_interface_oper_state == 2) * on(node, interface) group_left(link_id, link_kind) link_membership_info' http://localhost:9090/api/v1/query
+kubectl -n monitoring port-forward svc/prometheus-operated 9090:9090 >/dev/null &
+curl -s :9090/api/v1/query --data-urlencode 'query=(srl_nokia_interfaces_interface_oper_state == 2) * on(node, interface) group_left(link_id, link_kind) link_membership_info'
 
 # 3. is the alert in pending or firing?
-kubectl -n monitoring exec $PROM_POD -c prometheus -- wget -qO- http://localhost:9090/api/v1/alerts | python3 -m json.tool | grep -A3 SRLInterfaceOperDown
+curl -s :9090/api/v1/alerts | python3 -m json.tool | grep -A3 SRLInterfaceOperDown
 
 # 4. did Alertmanager get it?
-AM_POD=$(kubectl -n monitoring get pods -l app.kubernetes.io/name=alertmanager -o jsonpath='{.items[0].metadata.name}')
-kubectl -n monitoring exec $AM_POD -c alertmanager -- wget -qO- 'http://localhost:9093/api/v2/alerts'
+kubectl -n monitoring port-forward svc/alertmanager-operated 9093:9093 >/dev/null &
+curl -s :9093/api/v2/alerts
 
 # 5. did the EventSource webhook receive a POST?
 kubectl -n argo-events logs -l eventsource-name=webhook --tail=20
@@ -347,15 +349,15 @@ The route layer color is read from the `Value` field of a single query
 hasn't been picked up, the query returns empty.
 
 ```bash
-PROM_POD=$(kubectl -n monitoring get pods -l app.kubernetes.io/name=prometheus -o jsonpath='{.items[0].metadata.name}')
-kubectl -n monitoring exec $PROM_POD -c prometheus -- wget -qO- --post-data='query=count(link_endpoint_geo)' http://localhost:9090/api/v1/query
+kubectl -n monitoring port-forward svc/prometheus-operated 9090:9090 >/dev/null &
+curl -s :9090/api/v1/query --data-urlencode 'query=count(link_endpoint_geo)'
 # expected: 30 (15 links × 2 endpoints)
 ```
 
 If it's 0, force-reload Prometheus:
 
 ```bash
-kubectl -n monitoring exec $PROM_POD -c prometheus -- wget -qO- --post-data='' http://localhost:9090/-/reload
+curl -s -X POST :9090/-/reload
 ```
 
 ### "DOM panels are flat / empty"
@@ -367,7 +369,7 @@ kubectl -n monitoring port-forward svc/dom-synth 8000:8000 &
 curl -s :8000/metrics | head -10
 # expected: dom_temperature_celsius series
 
-kubectl -n monitoring exec $PROM_POD -c prometheus -- wget -qO- 'http://localhost:9090/api/v1/targets' | python3 -c "
+curl -s :9090/api/v1/targets | python3 -c "
 import sys, json
 for t in json.load(sys.stdin)['data']['activeTargets']:
   if 'dom-synth' in t['scrapePool']:

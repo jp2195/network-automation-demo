@@ -12,6 +12,7 @@
 #   bin/maintenance.sh list
 
 set -uo pipefail
+. "$(dirname "$0")/lib.sh"
 
 usage() {
   cat <<EOF
@@ -76,7 +77,7 @@ list() {
   am=$(kubectl -n monitoring get pods -l app.kubernetes.io/name=alertmanager -o jsonpath='{.items[0].metadata.name}')
   if [[ -z "$am" ]]; then echo "alertmanager pod not found" >&2; exit 1; fi
   printf "%-10s  %-14s  %-26s  %s\n" "id" "node" "endsAt" "comment"
-  kubectl -n monitoring exec "$am" -c alertmanager -- wget -qO- 'http://localhost:9093/api/v2/silences' \
+  podget monitoring "$am" 9093 /api/v2/silences \
     | jq -r '
         .[]
         | select(.createdBy == "atlas-maintenance")

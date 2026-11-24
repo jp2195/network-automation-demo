@@ -12,6 +12,7 @@
 # Designed to be safe to run repeatedly and to work headless (no Grafana).
 
 set -uo pipefail
+. "$(dirname "$0")/lib.sh"
 export PATH="$HOME/.local/bin:$PATH"
 
 # Repo root, derived from this script's own location so the gate can be run
@@ -28,16 +29,14 @@ PP=$(kubectl -n monitoring get pods -l app.kubernetes.io/name=prometheus \
 # promcount <urlencoded-query> -> number of series (0 on any failure)
 promcount() {
   [ -n "$PP" ] || { echo 0; return; }
-  kubectl -n monitoring exec "$PP" -c prometheus -- \
-    wget -qO- "http://localhost:9090/api/v1/query?query=$1" 2>/dev/null \
+  podget monitoring "$PP" 9090 "/api/v1/query?query=$1" 2>/dev/null \
     | python3 -c 'import json,sys
 try: print(len(json.load(sys.stdin)["data"]["result"]))
 except Exception: print(0)' 2>/dev/null || echo 0
 }
 promsum() {  # sum of values (e.g. count of up==1 targets)
   [ -n "$PP" ] || { echo 0; return; }
-  kubectl -n monitoring exec "$PP" -c prometheus -- \
-    wget -qO- "http://localhost:9090/api/v1/query?query=$1" 2>/dev/null \
+  podget monitoring "$PP" 9090 "/api/v1/query?query=$1" 2>/dev/null \
     | python3 -c 'import json,sys
 try: print(int(sum(float(r["value"][1]) for r in json.load(sys.stdin)["data"]["result"])))
 except Exception: print(0)' 2>/dev/null || echo 0

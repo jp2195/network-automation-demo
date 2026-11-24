@@ -38,6 +38,7 @@
 # Requires an up cluster with monitoring + argo-events deployed.
 
 set -uo pipefail
+. "$(dirname "$0")/lib.sh"
 
 N=10
 LANE=gnmi
@@ -141,8 +142,7 @@ prom_pod() {
     -o jsonpath='{.items[0].metadata.name}' 2>/dev/null
 }
 prom_alerts() {
-  kubectl -n monitoring exec "$PROM_POD" -c prometheus -- \
-    wget -qO- http://localhost:9090/api/v1/alerts 2>/dev/null || true
+  podget monitoring "$PROM_POD" 9090 /api/v1/alerts 2>/dev/null || true
 }
 
 # Print "activeAt<TAB>state" for the matching alert, or nothing.

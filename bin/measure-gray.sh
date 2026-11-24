@@ -31,6 +31,7 @@
 # Requires an up cluster with monitoring + dom-synth + valkey deployed.
 
 set -uo pipefail
+. "$(dirname "$0")/lib.sh"
 export PATH="$HOME/.local/bin:$PATH"
 
 DURATIONS="180 360 600"
@@ -64,7 +65,7 @@ if [ -z "$PP" ] || [ -z "$VPOD" ]; then
   echo "need prometheus (monitoring) + valkey pods; is the cluster up?" >&2; exit 1
 fi
 
-promget() { kubectl -n monitoring exec "$PP" -c prometheus -- wget -qO- "http://localhost:9090$1" 2>/dev/null; }
+promget() { podget monitoring "$PP" 9090 "$1" 2>/dev/null; }
 vcli()    { kubectl -n valkey exec "$VPOD" -c valkey -- valkey-cli "$@" 2>/dev/null; }
 
 # Discover ring (backbone) link_ids if none supplied.
@@ -121,7 +122,7 @@ for a in alerts:
 
   # Let the ramp finish, then clear and capture the full high-res signal.
   now=$(date +%s); end_inject=$((T0 + D + 15))
-  [ "$now" -lt "$end_inject" ] && kubectl -n monitoring exec "$PP" -c prometheus -- sleep $((end_inject - now)) 2>/dev/null
+  [ "$now" -lt "$end_inject" ] && sleep $((end_inject - now))
   vcli -n 3 DEL "gray:$link" >/dev/null
 
   q=$(python3 -c 'import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))' "min(dom_rx_power_dbm{link_id=\"$link\"})")
@@ -197,7 +198,7 @@ print(",".join(str(x) for x in
   echo "    $row"
 
   # settle: let alert resolve before next run
-  kubectl -n monitoring exec "$PP" -c prometheus -- sleep 20 2>/dev/null
+  sleep 20
 done
 
 trap - EXIT INT TERM
