@@ -7,15 +7,17 @@ manager:
     limits:
       memory: 256Mi
 
+# `deployment` sits directly under globalConfig. (It used to be nested under
+# a non-existent `config:` key, so these requests never applied and every
+# launcher requested the chart's 200m/512Mi — 6Gi for the 12 nodes.)
 globalConfig:
   enabled: true
-  config:
-    deployment:
-      resourcesDefault:
-        requests:
-          cpu: 100m
-          memory: 256Mi
-      privilegedLauncher: true
+  deployment:
+    resourcesDefault:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    privilegedLauncher: true
 
 ui:
   enabled: true
