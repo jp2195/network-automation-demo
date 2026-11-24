@@ -47,9 +47,6 @@ func TestWFTOutputsHaveNoSentinels(t *testing.T) {
 			// Positive value checks: a replacer-key/template-token rename
 			// would otherwise emit empty env values without tripping the
 			// sentinel guard above.
-			if !strings.Contains(out, `value: "`+s.Metadata.Name+`"`) {
-				t.Errorf("%s: CLAB_PREFIX value %q missing from output", name, s.Metadata.Name)
-			}
 			if !strings.Contains(out, `value: "`+ISISInstance+`"`) {
 				t.Errorf("%s: ISIS_INSTANCE value %q missing from output", name, ISISInstance)
 			}

@@ -15,9 +15,22 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	p("set / system name host-name %s", n.Name)
 	p("")
 
+	// SR Linux 26.x's factory config ships gRPC servers for Nokia EDA.
+	// eda-mgmt points at a TLS profile ("EDA") that only exists once EDA
+	// bootstraps the device, so it retries and logs "Unable to retrieve TLS
+	// profile 'EDA'" every second, burying real events in syslog/Loki; and
+	// eda-insecure-mgmt is an extra plaintext gNMI listener. This lab
+	// doesn't use EDA — turn all three off. (gNMIc uses the clab `mgmt`
+	// server on 57400.)
+	for _, srv := range []string{"eda-mgmt", "eda-discovery", "eda-insecure-mgmt"} {
+		p("set / system grpc-server %s admin-state disable", srv)
+	}
+	p("")
+
 	// Syslog goes out via the mgmt network-instance — the only VRF on
-	// these nodes with an IPv4 address (172.20.20.2/24) and a default
-	// route (172.20.20.1, the clabernetes launcher bridge). UDP is the
+	// these nodes with an IPv4 address (DHCP in 172.20.20.0/24) and a
+	// default route (172.20.20.1, the per-pod management gateway
+	// Clabernetes provides, which SNATs to the pod IP). UDP is the
 	// only viable transport: TCP from inside srbase-mgmt netns can't
 	// receive a SYN-ACK because SRL doesn't reclassify arriving replies
 	// back into the VRF netns. UDP needs no return packet.

@@ -373,7 +373,6 @@ load immediately, wait a minute — the software may still be starting.)
 | **ArgoCD** (shows all the pieces) | <http://argocd.127-0-0-1.nip.io:8080> | `admin` / run `make urls` for the password |
 | **NetBox** (the network "source of truth") | <http://netbox.127-0-0-1.nip.io:8080> | `admin` / `admin` |
 | **Argo Workflows** (the automation runs) | <http://workflows.127-0-0-1.nip.io:8080> | no login |
-| **Clabernetes** (the simulated routers) | <http://clabernetes.127-0-0-1.nip.io:8080> | no login |
 
 (Those `127-0-0-1.nip.io` addresses are a trick that always points back to
 your own computer — usually you don't need to configure anything. Some

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 )
 
@@ -25,7 +24,9 @@ func WriteSNMPProbe(w io.Writer, s *Spec) error {
 	// polls every 30s isn't legacy. This is the conservative, defensible baseline.
 	p("  interval: 300s")
 	p("  scrapeTimeout: 25s")
-	p("  module: if_mib")
+	// snmp_exporter >= 0.28 moved sysUpTime out of if_mib into the system
+	// module; the cabinet-detail uptime panel needs both.
+	p("  module: if_mib,system")
 	p("  prober:")
 	p("    url: snmp-exporter.monitoring.svc.cluster.local:9116")
 	p("    path: /snmp")
@@ -44,7 +45,7 @@ func WriteSNMPProbe(w io.Writer, s *Spec) error {
 	p("        # Promote the cabinet hostname from the target FQDN into a")
 	p("        # `node` label so it joins with link_membership_info.")
 	p("        - sourceLabels: [__param_target]")
-	p("          regex: %q", fmt.Sprintf(`%s-(fc-[a-z0-9]+)\.clabernetes\.svc\.cluster\.local:[0-9]+`, s.Metadata.Name))
+	p("          regex: %q", `(fc-[a-z0-9]+)\.clabernetes\.svc\.cluster\.local:[0-9]+`)
 	p("          targetLabel: node")
 	p("          replacement: \"$1\"")
 	p("        - targetLabel: __param_auth")

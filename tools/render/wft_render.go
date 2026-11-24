@@ -32,9 +32,8 @@ var wftAIAnalystTmpl string
 //go:embed templates/wft-gray-failure.yaml.tmpl
 var wftGrayFailureTmpl string
 
-// WriteWFTCutFiber emits the cut-fiber WorkflowTemplate. The clabernetes
-// FQDN baked into the gnmic -a flag is parameterized from
-// spec.Metadata.Name so renaming the cluster doesn't break the demo.
+// WriteWFTCutFiber emits the cut-fiber WorkflowTemplate. The node's gNMI
+// address is <node>.ClabDomain:GNMICPort.
 //
 // The Set authenticates as NocOps, NOT admin: this template is the console's
 // manual-cut lane, the exact counterpart of `make demo-cut`. Both must name
@@ -42,16 +41,16 @@ var wftGrayFailureTmpl string
 // "admin" — and the AI analyst, whose instructions tell it to look for
 // "committed successfully by user noc-ops", reports the wrong actor.
 func WriteWFTCutFiber(w io.Writer, s *Spec) error {
-	_, err := fmt.Fprintf(w, wftCutFiberTemplate, s.Metadata.Name, NocOpsUser, NocOpsPassword)
+	_, err := fmt.Fprintf(w, wftCutFiberTemplate, NocOpsUser, NocOpsPassword)
 	return err
 }
 
 // WriteWFTIncidentCollector emits the incident-collector WorkflowTemplate.
-// The cluster FQDN (gather-device), IS-IS instance name, and the
-// eventing-py bundle image are parameterized from spec.Metadata.Name,
-// ISISInstance, and ImageEventingPy.
+// The node FQDN suffix (gather-device), IS-IS instance name, and the
+// eventing-py bundle image come from ClabDomain, ISISInstance, and
+// ImageEventingPy.
 func WriteWFTIncidentCollector(w io.Writer, s *Spec) error {
-	_, err := fmt.Fprintf(w, wftIncidentCollectorTemplate, s.Metadata.Name, ISISInstance, ImageEventingPy)
+	_, err := fmt.Fprintf(w, wftIncidentCollectorTemplate, ISISInstance, ImageEventingPy)
 	return err
 }
 
@@ -71,14 +70,13 @@ func WriteWFTMaintenance(w io.Writer, _ *Spec) error {
 }
 
 // WriteWFTRemediation emits the remediate-link WorkflowTemplate from its
-// embedded template. The clabernetes FQDN prefix, eventing-py image, and
-// IS-IS instance name are parameterized; the gnmic set-metric /
+// embedded template. The eventing-py image and IS-IS instance name are
+// parameterized; the gnmic set-metric /
 // clear-metric steps are the only config-write capability in the cluster.
 func WriteWFTRemediation(w io.Writer, s *Spec) error {
 	body := strings.NewReplacer(
 		"@@EVENTING_IMAGE@@", ImageEventingPy,
 		"@@GNMIC_IMAGE@@", ImageGNMIC,
-		"@@CLUSTER@@", s.Metadata.Name,
 		"@@ISIS_INSTANCE@@", ISISInstance,
 		// The automated remediation authenticates as svc-automation, so its
 		// IS-IS cost-out is attributed to the automation lane (not admin) in
@@ -91,13 +89,12 @@ func WriteWFTRemediation(w io.Writer, s *Spec) error {
 }
 
 // WriteWFTAIAnalyst emits the advisory-lane WorkflowTemplate from its
-// embedded template. The analyst image, clabernetes FQDN prefix, and
-// IS-IS instance name are parameterized; the lane is read-only by
+// embedded template. The analyst image and IS-IS instance name are
+// parameterized; the lane is read-only by
 // construction (analyst_tools allowlists + gnmi_readonly Get-only).
 func WriteWFTAIAnalyst(w io.Writer, s *Spec) error {
 	body := strings.NewReplacer(
 		"@@AI_ANALYST_IMAGE@@", ImageAIAnalyst,
-		"@@CLUSTER@@", s.Metadata.Name,
 		"@@ISIS_INSTANCE@@", ISISInstance,
 	).Replace(wftAIAnalystTmpl)
 	_, err := fmt.Fprintf(w, "%s\n%s", renderBanner, body)
@@ -139,7 +136,7 @@ spec:
         command: [/app/gnmic]
         args:
           - -a
-          - "%s-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
+          - "{{inputs.parameters.node}}.` + ClabDomain + `:` + GNMICPort + `"
           - -u
           - "%s"
           - -p
@@ -331,7 +328,7 @@ spec:
             printf '## %%s — (no device)\n\n_no neighbor at this position._\n' "$ROLE"
             exit 0
           fi
-          ADDR="%s-${DEV}.clabernetes.svc.cluster.local:57400"
+          ADDR="${DEV}.` + ClabDomain + `:` + GNMICPort + `"
           gnmic_get() {
             timeout 8 /app/gnmic -a "$ADDR" -u admin -p 'NokiaSrl1!' --skip-verify \
               -e json_ietf get --path "$1" 2>/dev/null \

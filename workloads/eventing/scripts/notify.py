@@ -212,9 +212,10 @@ def _firing_blocks(enrichment, impact):
             + ", ".join(_pretty_agency(x) for x in impact["affected_agencies"])})
     if fields:
         blocks.append({"type": "section", "fields": fields})
-    if enrichment.get("degraded"):
+    degraded = (enrichment.get("degraded") or []) + (impact.get("degraded") or [])
+    if degraded:
         blocks.append({"type": "context", "elements": [{"type": "mrkdwn",
-            "text": "⚠ partial enrichment: " + "; ".join(enrichment["degraded"])}]})
+            "text": "⚠ partial enrichment: " + "; ".join(degraded)}]})
     blocks.append({"type": "context", "elements": [
         {"type": "mrkdwn", "text": _footer_line(enrichment, "detected", a.get("started"))}]})
     return color, blocks

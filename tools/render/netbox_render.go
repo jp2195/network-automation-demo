@@ -145,7 +145,6 @@ type nbCable struct {
 	Description  string                 `json:"description,omitempty"`
 	Length       float64                `json:"length,omitempty"`
 	LengthUnit   string                 `json:"length_unit,omitempty"`
-	InstallDate  string                 `json:"install_date,omitempty"`
 	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
 }
 
@@ -174,6 +173,9 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 		// cables run I-285 between sites whose groups are other corridors.
 		// Consumed by corridor_impact.py to pick a corridor's cut-set.
 		{Name: "corridor", Label: "Corridor", Type: "text", ObjectTypes: cab, Description: "Highway corridor the cable runs along"},
+		// NetBox cables have no native install date, so it rides as a
+		// custom field (a top-level key would be silently dropped).
+		{Name: "install_date", Label: "Install date", Type: "date", ObjectTypes: cab, Description: "Date the fiber was placed in service"},
 	}
 
 	// Regions: one per district. Sites inherit district via region membership.
@@ -348,10 +350,6 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 		}
 	}
 
-	providerNameBySlug := map[string]string{}
-	for _, p := range s.Providers {
-		providerNameBySlug[p.Slug] = p.Name
-	}
 	for _, l := range s.Links {
 		out.Cables = append(out.Cables, nbCable{
 			Label:       l.Cable.Label,
@@ -359,15 +357,15 @@ func WriteNetBox(w io.Writer, s *Spec) error {
 			B:           nbCableTermination{Device: l.B.Node, Interface: l.B.Intf},
 			Status:      "connected",
 			Type:        "smf-os2",
-			Owner:       providerNameBySlug[l.Cable.Provider],
+			Owner:       s.ProviderName(l.Cable.Provider),
 			Description: l.Cable.RouteDescription,
 			Length:      l.Cable.LengthKm,
 			LengthUnit:  "km",
-			InstallDate: l.Cable.Installed,
 			CustomFields: map[string]interface{}{
 				"circuit_id":            l.Cable.CircuitID,
 				"restoration_sla_hours": l.Cable.RestorationSLAHours,
 				"corridor":              l.Cable.Corridor,
+				"install_date":          l.Cable.Installed,
 			},
 		})
 	}

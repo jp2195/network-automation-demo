@@ -12,9 +12,11 @@ spec:
       rules:
         # ifOperStatus values: 1=up, 2=down, 3=testing, 4=unknown,
         # 5=dormant, 6=notPresent, 7=lowerLayerDown.
+        # Only the cabinet's own ports (eth*): Clabernetes adds plumbing
+        # interfaces (c9s*) inside each node that SNMP also reports.
         - alert: CabinetInterfaceOperDown
           expr: |
-            ifOperStatus{telemetry_source="snmp"} == 2
+            ifOperStatus{telemetry_source="snmp", ifName=~"eth[0-9]+"} == 2
             and on (instance, ifIndex)
             ifAdminStatus{telemetry_source="snmp"} == 1
           for: 1m

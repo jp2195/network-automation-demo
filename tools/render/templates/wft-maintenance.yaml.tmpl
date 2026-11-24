@@ -24,7 +24,7 @@ spec:
           - name: duration_hours
           - name: comment
       script:
-        image: python:3.12-slim
+        image: python:3.15-slim
         command: [python3]
         source: |
           import sys, runpy
@@ -74,7 +74,7 @@ spec:
         parameters:
           - name: node
       script:
-        image: python:3.12-slim
+        image: python:3.15-slim
         command: [python3]
         source: |
           import sys, runpy

@@ -7,8 +7,28 @@ to swallow); GET returns the parsed JSON body.
 
 import json
 import os
+import sys
 import urllib.parse
 import urllib.request
+
+
+def get_or_degrade(get, path, failures, **params):
+    """Call get(path, **params) but never raise: on any failure (HTTP error,
+    timeout, connection refused) record a short reason in `failures`, log it,
+    and return {}.
+
+    For the incident pipeline's critical path, where an exception fails the
+    Workflow and the incident is never announced — strictly worse than
+    announcing it with less context. Same contract prom.py and loki.py follow.
+    `get` is passed in (not bound here) so callers' tests can patch it.
+    """
+    try:
+        return get(path, **params) or {}
+    except Exception as e:
+        msg = f"netbox {path} unavailable ({type(e).__name__})"
+        failures.append(msg)
+        print(f"warning: {msg}: {e}", file=sys.stderr)
+        return {}
 
 
 class Client:

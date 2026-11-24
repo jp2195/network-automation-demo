@@ -27,15 +27,15 @@ const (
 // workloads/versions.yaml so dom-synth, eventing, and topology can
 // all reference one source.
 const (
-	ImageSRLinux = "ghcr.io/nokia/srlinux:25.3.3"
-	// FRR stays on the public image — clabernetes' containerlab can't
-	// resolve atlas-demo-registry:5001/... refs from inside the nested
-	// docker (it prepends `docker.io/` and the ref becomes invalid).
-	// The pre-baked frr-snmpd Dockerfile + `make build` slot remain in
-	// place for a future imagePullThrough fix.
-	ImageFRR    = "quay.io/frrouting/frr:10.6.2"
-	ImagePython = "python:3.12-slim"
-	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.44.1"
+	ImageSRLinux = "ghcr.io/nokia/srlinux:26.7.2"
+	// FRR stays on the public image (snmpd installed at boot by
+	// wrapper.sh). Before Clabernetes 0.9 the nested docker couldn't pull
+	// from atlas-demo-registry:5001; kubelet pulls now, so the pre-baked
+	// images/frr-snmpd could replace it (needs the registry trusted as
+	// plain HTTP in globalConfig.imagePull) — not switched yet.
+	ImageFRR    = "quay.io/frrouting/frr:10.7.1"
+	ImagePython = "python:3.15-slim"
+	ImageGNMIC  = "ghcr.io/openconfig/gnmic:0.49.1"
 	// ImageEventingPy is the pre-baked eventing image (python + slack-sdk +
 	// valkey + scripts) pushed to the in-cluster registry. Single source for
 	// the incident-collector bundle step and the enriched-notify WFT.
@@ -73,7 +73,8 @@ const (
 	AutomationPassword = "SvcAuto1!"
 
 	// ClabDomain is the in-cluster DNS suffix clabernetes exposes each
-	// topology node Service under (<topology>-<node>.<ClabDomain>).
+	// topology node Service under (<node>.<ClabDomain>). Mirrored as
+	// CLAB_DOMAIN in workloads/eventing/scripts/constants.py.
 	ClabDomain = "clabernetes.svc.cluster.local"
 
 	AlloySyslogHost = "alloy-syslog.monitoring.svc.cluster.local"

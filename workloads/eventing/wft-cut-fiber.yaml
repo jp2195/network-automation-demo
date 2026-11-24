@@ -20,11 +20,11 @@ spec:
           - name: interface
           - name: action
       container:
-        image: ghcr.io/openconfig/gnmic:0.44.1
+        image: ghcr.io/openconfig/gnmic:0.49.1
         command: [/app/gnmic]
         args:
           - -a
-          - "atlanta-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
+          - "{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
           - -u
           - "noc-ops"
           - -p

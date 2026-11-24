@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 from pydantic_ai import ModelRetry
 
 import gnmi_readonly
-from constants import CABINET_NAME_PREFIX
+from constants import CABINET_NAME_PREFIX, CLAB_DOMAIN
 from loki import loki_query_range
 from prom import prom_query, prom_query_range
 
@@ -187,7 +187,7 @@ def query_loki(logql: str, minutes: int = 30, around: str | None = None) -> list
     the root cause.
 
     Streams worth knowing:
-      {namespace="clabernetes"} |= "hub-e"        device pod stdout
+      {namespace="clabernetes", container=~"node-.*"}  device container stdout
       {namespace="argo-events"}                    workflow logs
       {source_type="syslog", host="hub-e"}         SR Linux syslog, per node
     Config changes name the operator in the SR Linux AAA syslog:
@@ -290,8 +290,7 @@ async def snmp_get(node: str, oid: str) -> dict:
     _repeat_guard("snmp_get", (node, oid))
     try:
         from puresnmp import V2C, Client as SnmpClient, PyWrapper
-        host = (f"{os.environ['CLAB_PREFIX']}-{node}"
-                ".clabernetes.svc.cluster.local")
+        host = f"{node}.{CLAB_DOMAIN}"
         client = PyWrapper(SnmpClient(
             host, V2C(os.environ.get("SNMP_COMMUNITY", "public"))))
         value = await asyncio.wait_for(client.get(oid.lstrip(".")), timeout=10)

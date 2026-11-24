@@ -19,6 +19,7 @@
  "links": [],
  "panels": [
   {
+   "description": "Every node and link on the map. A link turns red when either endpoint reports oper-down; a node turns red when it is unreachable.",
    "datasource": {
     "type": "prometheus",
     "uid": "prometheus"

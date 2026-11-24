@@ -64,13 +64,24 @@ alloy:
 
       loki.source.file "pod_logs" {
         targets    = local.file_match.pod_logs.targets
+        forward_to = [loki.process.pod_logs.receiver]
+      }
+
+      // Files under /var/log/pods are in the container runtime's (CRI) log
+      // format: "<timestamp> <stream> <P|F> <message>". Without this stage
+      // that prefix stays in every line (so structured JSON logs can't be
+      // parsed with `| json`) and long lines arrive split into partial (P)
+      // fragments. stage.cri strips the prefix, takes the runtime's
+      // timestamp, and reassembles partial lines.
+      loki.process "pod_logs" {
+        stage.cri {}
         forward_to = [loki.write.default.receiver]
       }
 
       loki.source.syslog "node_syslog" {
-        // FRR uses TCP (works); SRL uses UDP (only path that survives
-        // clabernetes' nested-netns return-path gap for outbound traffic
-        // initiated from a network-instance VRF).
+        // FRR uses TCP (works); SRL uses UDP (the only path that survives
+        // SR Linux's return-path gap for outbound traffic initiated from a
+        // network-instance VRF — see srl_render.go).
         listener {
           address               = "0.0.0.0:5514"
           protocol              = "tcp"

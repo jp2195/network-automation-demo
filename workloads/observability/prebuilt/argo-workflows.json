@@ -1,1355 +1,956 @@
 {
- "annotations": {
-  "list": [
-   {
-    "builtIn": 1,
-    "datasource": "-- Grafana --",
-    "enable": true,
-    "hide": true,
-    "iconColor": "rgba(0, 211, 255, 1)",
-    "name": "Annotations & Alerts",
-    "type": "dashboard"
-   }
-  ]
- },
- "editable": true,
- "gnetId": 13927,
- "graphTooltip": 0,
- "iteration": 1614070847797,
- "links": [],
- "panels": [
-  {
-   "collapsed": false,
-   "datasource": null,
-   "gridPos": {
-    "h": 1,
-    "w": 24,
-    "x": 0,
-    "y": 0
-   },
-   "id": 28,
-   "panels": [],
-   "title": "Currently",
-   "type": "row"
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
   },
-  {
-   "datasource": null,
-   "fieldConfig": {
-    "defaults": {
-     "custom": {}
-    },
-    "overrides": []
-   },
-   "gridPos": {
-    "h": 5,
-    "w": 2,
-    "x": 0,
-    "y": 1
-   },
-   "id": 5,
-   "options": {
-    "content": "![argoimage](https://avatars1.githubusercontent.com/u/30269780?s=110&v=4)",
-    "mode": "markdown"
-   },
-   "pluginVersion": "8.0.0",
-   "targets": [
+  "description": "Argo Workflows controller and pipeline health (metrics from the v4 OpenTelemetry exporter).",
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
     {
-     "queryType": "randomWalk",
-     "refId": "A"
-    }
-   ],
-   "timeFrom": null,
-   "timeShift": null,
-   "title": "",
-   "type": "text"
-  },
-  {
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "fieldConfig": {
-    "defaults": {
-     "color": {
-      "mode": "thresholds"
-     },
-     "custom": {},
-     "mappings": [],
-     "thresholds": {
-      "mode": "absolute",
-      "steps": [
-       {
-        "color": "green",
-        "value": null
-       },
-       {
-        "color": "orange",
-        "value": 1
-       }
+      "type": "row",
+      "id": 1,
+      "title": "Workflows now",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "id": 2,
+      "title": "Running",
+      "description": "Workflows the controller currently holds in phase Running (argo_workflows_gauge). Completed workflows count until they are garbage-collected.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "expr": "sum(argo_workflows_gauge{phase=\"Running\"}) or vector(0)",
+          "refId": "A",
+          "instant": false
+        }
       ]
-     }
     },
-    "overrides": []
-   },
-   "gridPos": {
-    "h": 6,
-    "w": 3,
-    "x": 2,
-    "y": 1
-   },
-   "id": 10,
-   "options": {
-    "colorMode": "value",
-    "graphMode": "area",
-    "justifyMode": "auto",
-    "orientation": "auto",
-    "reduceOptions": {
-     "calcs": [
-      "lastNotNull"
-     ],
-     "fields": "",
-     "values": false
-    },
-    "text": {},
-    "textMode": "auto"
-   },
-   "pluginVersion": "7.4.2",
-   "targets": [
     {
-     "expr": "argo_workflows_gauge{namespace=~\"$ns\",phase=\"Pending\"} ",
-     "instant": true,
-     "interval": "",
-     "legendFormat": "",
-     "queryType": "randomWalk",
-     "refId": "A"
-    }
-   ],
-   "title": "WF Pending",
-   "transparent": true,
-   "type": "stat"
-  },
-  {
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "fieldConfig": {
-    "defaults": {
-     "color": {
-      "mode": "thresholds"
-     },
-     "custom": {},
-     "mappings": [],
-     "thresholds": {
-      "mode": "absolute",
-      "steps": [
-       {
-        "color": "green",
-        "value": null
-       },
-       {
-        "color": "#EAB839",
-        "value": 1
-       }
+      "type": "stat",
+      "id": 3,
+      "title": "Pending",
+      "description": "Workflows the controller currently holds in phase Pending (argo_workflows_gauge). Completed workflows count until they are garbage-collected.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "yellow"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "expr": "sum(argo_workflows_gauge{phase=\"Pending\"}) or vector(0)",
+          "refId": "A",
+          "instant": false
+        }
       ]
-     }
     },
-    "overrides": []
-   },
-   "gridPos": {
-    "h": 6,
-    "w": 3,
-    "x": 5,
-    "y": 1
-   },
-   "id": 11,
-   "options": {
-    "colorMode": "value",
-    "graphMode": "area",
-    "justifyMode": "auto",
-    "orientation": "auto",
-    "reduceOptions": {
-     "calcs": [
-      "lastNotNull"
-     ],
-     "fields": "",
-     "values": false
-    },
-    "text": {},
-    "textMode": "auto"
-   },
-   "pluginVersion": "7.4.2",
-   "targets": [
     {
-     "expr": "argo_workflows_gauge{namespace=~\"$ns\",phase=\"Running\"}",
-     "instant": true,
-     "interval": "",
-     "legendFormat": "",
-     "queryType": "randomWalk",
-     "refId": "A"
-    }
-   ],
-   "title": "WF Running",
-   "transparent": true,
-   "type": "stat"
-  },
-  {
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "fieldConfig": {
-    "defaults": {
-     "color": {
-      "mode": "thresholds"
-     },
-     "custom": {},
-     "mappings": [],
-     "thresholds": {
-      "mode": "absolute",
-      "steps": [
-       {
-        "color": "green",
-        "value": null
-       },
-       {
-        "color": "red",
-        "value": 1
-       }
+      "type": "stat",
+      "id": 4,
+      "title": "Succeeded",
+      "description": "Workflows the controller currently holds in phase Succeeded (argo_workflows_gauge). Completed workflows count until they are garbage-collected.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "expr": "sum(argo_workflows_gauge{phase=\"Succeeded\"}) or vector(0)",
+          "refId": "A",
+          "instant": false
+        }
       ]
-     }
     },
-    "overrides": []
-   },
-   "gridPos": {
-    "h": 6,
-    "w": 3,
-    "x": 8,
-    "y": 1
-   },
-   "id": 8,
-   "options": {
-    "colorMode": "value",
-    "graphMode": "area",
-    "justifyMode": "auto",
-    "orientation": "auto",
-    "reduceOptions": {
-     "calcs": [
-      "lastNotNull"
-     ],
-     "fields": "",
-     "values": false
-    },
-    "text": {},
-    "textMode": "auto"
-   },
-   "pluginVersion": "7.4.2",
-   "targets": [
     {
-     "expr": "argo_workflows_gauge{namespace=~\"$ns\",phase=\"Error\"}",
-     "instant": true,
-     "interval": "",
-     "legendFormat": "",
-     "queryType": "randomWalk",
-     "refId": "A"
-    }
-   ],
-   "title": "WF Errors",
-   "transparent": true,
-   "type": "stat"
-  },
-  {
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "fieldConfig": {
-    "defaults": {
-     "color": {
-      "mode": "thresholds"
-     },
-     "custom": {},
-     "mappings": [],
-     "thresholds": {
-      "mode": "absolute",
-      "steps": [
-       {
-        "color": "green",
-        "value": null
-       },
-       {
-        "color": "red",
-        "value": 1
-       }
+      "type": "stat",
+      "id": 5,
+      "title": "Failed",
+      "description": "Workflows the controller currently holds in phase Failed (argo_workflows_gauge). Completed workflows count until they are garbage-collected.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "expr": "sum(argo_workflows_gauge{phase=\"Failed\"}) or vector(0)",
+          "refId": "A",
+          "instant": false
+        }
       ]
-     }
     },
-    "overrides": []
-   },
-   "gridPos": {
-    "h": 6,
-    "w": 3,
-    "x": 11,
-    "y": 1
-   },
-   "id": 9,
-   "options": {
-    "colorMode": "value",
-    "graphMode": "area",
-    "justifyMode": "auto",
-    "orientation": "auto",
-    "reduceOptions": {
-     "calcs": [
-      "lastNotNull"
-     ],
-     "fields": "",
-     "values": false
-    },
-    "text": {},
-    "textMode": "auto"
-   },
-   "pluginVersion": "7.4.2",
-   "targets": [
     {
-     "expr": "argo_workflows_gauge{namespace=~\"$ns\",phase=\"Failed\"}",
-     "instant": true,
-     "interval": "",
-     "legendFormat": "",
-     "queryType": "randomWalk",
-     "refId": "A"
-    }
-   ],
-   "title": "WF Failed",
-   "transparent": true,
-   "type": "stat"
-  },
-  {
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "fieldConfig": {
-    "defaults": {
-     "color": {
-      "mode": "thresholds"
-     },
-     "custom": {},
-     "mappings": [],
-     "thresholds": {
-      "mode": "absolute",
-      "steps": [
-       {
-        "color": "green",
-        "value": null
-       },
-       {
-        "color": "red",
-        "value": 80
-       }
+      "type": "stat",
+      "id": 6,
+      "title": "Error",
+      "description": "Workflows the controller currently holds in phase Error (argo_workflows_gauge). Completed workflows count until they are garbage-collected.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "dark-red"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "expr": "sum(argo_workflows_gauge{phase=\"Error\"}) or vector(0)",
+          "refId": "A",
+          "instant": false
+        }
       ]
-     }
     },
-    "overrides": []
-   },
-   "gridPos": {
-    "h": 6,
-    "w": 3,
-    "x": 14,
-    "y": 1
-   },
-   "id": 12,
-   "options": {
-    "colorMode": "value",
-    "graphMode": "area",
-    "justifyMode": "auto",
-    "orientation": "auto",
-    "reduceOptions": {
-     "calcs": [
-      "lastNotNull"
-     ],
-     "fields": "",
-     "values": false
-    },
-    "text": {},
-    "textMode": "auto"
-   },
-   "pluginVersion": "7.4.2",
-   "targets": [
     {
-     "expr": "argo_workflows_gauge{namespace=~\"$ns\",phase=\"Skipped\"}",
-     "instant": true,
-     "interval": "",
-     "legendFormat": "",
-     "queryType": "randomWalk",
-     "refId": "A"
-    }
-   ],
-   "title": "WF Skipped",
-   "transparent": true,
-   "type": "stat"
-  },
-  {
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "fieldConfig": {
-    "defaults": {
-     "color": {
-      "mode": "thresholds"
-     },
-     "custom": {},
-     "mappings": [],
-     "thresholds": {
-      "mode": "absolute",
-      "steps": [
-       {
-        "color": "green",
-        "value": null
-       }
+      "type": "stat",
+      "id": 7,
+      "title": "Controller leader",
+      "description": "1 when this controller replica holds the leader lease and is reconciling workflows.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "standby",
+                  "color": "orange"
+                },
+                "1": {
+                  "text": "leader",
+                  "color": "green"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "textMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "expr": "max(argo_workflows_is_leader) or vector(0)",
+          "refId": "A",
+          "instant": false
+        }
       ]
-     }
     },
-    "overrides": []
-   },
-   "gridPos": {
-    "h": 6,
-    "w": 3,
-    "x": 17,
-    "y": 1
-   },
-   "id": 13,
-   "options": {
-    "colorMode": "value",
-    "graphMode": "area",
-    "justifyMode": "auto",
-    "orientation": "auto",
-    "reduceOptions": {
-     "calcs": [
-      "lastNotNull"
-     ],
-     "fields": "",
-     "values": false
-    },
-    "text": {},
-    "textMode": "auto"
-   },
-   "pluginVersion": "7.4.2",
-   "targets": [
     {
-     "expr": "argo_workflows_gauge{namespace=~\"$ns\",phase=\"Succeeded\"}",
-     "instant": true,
-     "interval": "",
-     "legendFormat": "",
-     "queryType": "randomWalk",
-     "refId": "A"
+      "type": "row",
+      "id": 8,
+      "title": "Pipelines",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "id": 9,
+      "title": "Workflows by phase",
+      "description": "Workflows held by the controller, stacked by phase.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 20,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (phase) (argo_workflows_gauge)",
+          "legendFormat": "{{phase}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 10,
+      "title": "Pipeline runs by template (per 5m)",
+      "description": "Completed runs of each WorkflowTemplate (enriched-notify, incident-collector, drift-audit, ...) in each 5-minute window.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (name) (increase(argo_workflows_workflowtemplate_runtime_count[5m]))",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 11,
+      "title": "Pipeline runtime p95 by template",
+      "description": "95th-percentile wall-clock runtime of each WorkflowTemplate over a 15-minute window. Empty until a template has completed runs in that window.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, name) (rate(argo_workflows_workflowtemplate_runtime_bucket[15m])))",
+          "legendFormat": "{{name}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 12,
+      "title": "Workflow pods by phase",
+      "description": "Step pods the controller is tracking, by pod phase.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 20,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (phase) (argo_workflows_pods_gauge)",
+          "legendFormat": "{{phase}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 13,
+      "title": "Controller internals",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "id": 14,
+      "title": "Queue depth",
+      "description": "Items waiting in each controller work queue. Sustained growth means the controller can't keep up.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 23
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (queue_name) (argo_workflows_queue_depth_gauge)",
+          "legendFormat": "{{queue_name}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 15,
+      "title": "Queue adds / s",
+      "description": "Rate at which items are added to each controller work queue.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 23
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (queue_name) (rate(argo_workflows_queue_adds_count[$__rate_interval]))",
+          "legendFormat": "{{queue_name}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 16,
+      "title": "Queue wait (avg)",
+      "description": "Average time an item waits in a queue before a worker picks it up.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 23
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (queue_name) (rate(argo_workflows_queue_latency_sum[$__rate_interval])) / sum by (queue_name) (rate(argo_workflows_queue_latency_count[$__rate_interval]))",
+          "legendFormat": "{{queue_name}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 17,
+      "title": "Reconcile duration p95",
+      "description": "95th-percentile duration of one workflow reconcile (operate) pass.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 31
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(argo_workflows_operation_duration_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p95",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 18,
+      "title": "Controller log messages / s",
+      "description": "Controller log lines per second by level. A rise in error/warning usually precedes failed workflows.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 31
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (level) (rate(argo_workflows_log_messages[$__rate_interval]))",
+          "legendFormat": "{{level}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 19,
+      "title": "Controller errors (per 5m)",
+      "description": "Internal controller errors by cause (e.g. OperationPanic, CronWorkflowSubmissionError).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 31
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (cause) (increase(argo_workflows_error_count[5m]))",
+          "legendFormat": "{{cause}}",
+          "refId": "A"
+        }
+      ]
     }
-   ],
-   "title": "WF Succeeded",
-   "transparent": true,
-   "type": "stat"
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "argo"
+  ],
+  "templating": {
+    "list": []
   },
-  {
-   "collapsed": false,
-   "datasource": null,
-   "gridPos": {
-    "h": 1,
-    "w": 24,
-    "x": 0,
-    "y": 7
-   },
-   "id": 18,
-   "panels": [],
-   "title": "Number of Workflows currently accessible by the controller by status",
-   "type": "row"
+  "time": {
+    "from": "now-1h",
+    "to": "now"
   },
-  {
-   "aliasColors": {},
-   "bars": false,
-   "dashLength": 10,
-   "dashes": false,
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "decimals": 0,
-   "fieldConfig": {
-    "defaults": {
-     "custom": {}
-    },
-    "overrides": []
-   },
-   "fill": 0,
-   "fillGradient": 1,
-   "gridPos": {
-    "h": 9,
-    "w": 12,
-    "x": 0,
-    "y": 8
-   },
-   "hiddenSeries": false,
-   "id": 2,
-   "legend": {
-    "alignAsTable": true,
-    "avg": false,
-    "current": true,
-    "hideEmpty": true,
-    "max": true,
-    "min": false,
-    "rightSide": false,
-    "show": true,
-    "sort": "current",
-    "sortDesc": true,
-    "total": false,
-    "values": true
-   },
-   "lines": true,
-   "linewidth": 2,
-   "nullPointMode": "null",
-   "options": {
-    "alertThreshold": true
-   },
-   "percentage": false,
-   "pluginVersion": "7.4.2",
-   "pointradius": 2,
-   "points": false,
-   "renderer": "flot",
-   "seriesOverrides": [],
-   "spaceLength": 10,
-   "stack": false,
-   "steppedLine": false,
-   "targets": [
-    {
-     "expr": "argo_workflows_gauge{phase!~\"(Error|Failed)\",namespace=~\"$ns\"}",
-     "interval": "",
-     "legendFormat": "{{app}} : {{namespace}} : {{status}}",
-     "queryType": "randomWalk",
-     "refId": "A"
-    }
-   ],
-   "thresholds": [],
-   "timeFrom": null,
-   "timeRegions": [],
-   "timeShift": null,
-   "title": "Workflow Status  ",
-   "tooltip": {
-    "shared": false,
-    "sort": 2,
-    "value_type": "individual"
-   },
-   "transparent": true,
-   "type": "graph",
-   "xaxis": {
-    "buckets": null,
-    "mode": "time",
-    "name": null,
-    "show": true,
-    "values": []
-   },
-   "yaxes": [
-    {
-     "$$hashKey": "object:151",
-     "decimals": 0,
-     "format": "short",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    },
-    {
-     "$$hashKey": "object:152",
-     "decimals": null,
-     "format": "short",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    }
-   ],
-   "yaxis": {
-    "align": false,
-    "alignLevel": null
-   }
-  },
-  {
-   "aliasColors": {},
-   "bars": false,
-   "dashLength": 10,
-   "dashes": false,
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "decimals": 0,
-   "fieldConfig": {
-    "defaults": {
-     "custom": {}
-    },
-    "overrides": []
-   },
-   "fill": 0,
-   "fillGradient": 1,
-   "gridPos": {
-    "h": 9,
-    "w": 12,
-    "x": 12,
-    "y": 8
-   },
-   "hiddenSeries": false,
-   "id": 29,
-   "legend": {
-    "alignAsTable": true,
-    "avg": false,
-    "current": true,
-    "hideEmpty": true,
-    "max": true,
-    "min": false,
-    "rightSide": false,
-    "show": true,
-    "sort": "current",
-    "sortDesc": true,
-    "total": false,
-    "values": true
-   },
-   "lines": true,
-   "linewidth": 2,
-   "nullPointMode": "null",
-   "options": {
-    "alertThreshold": true
-   },
-   "percentage": false,
-   "pluginVersion": "7.4.2",
-   "pointradius": 2,
-   "points": false,
-   "renderer": "flot",
-   "seriesOverrides": [],
-   "spaceLength": 10,
-   "stack": false,
-   "steppedLine": false,
-   "targets": [
-    {
-     "expr": "argo_workflows_gauge{phase=~\"(Error|Failed)\"}",
-     "interval": "",
-     "legendFormat": "{{app}} : {{namespace}} : {{status}}",
-     "queryType": "randomWalk",
-     "refId": "A"
-    }
-   ],
-   "thresholds": [
-    {
-     "colorMode": "critical",
-     "fill": true,
-     "line": true,
-     "op": "gt",
-     "value": 0,
-     "visible": true
-    }
-   ],
-   "timeFrom": null,
-   "timeRegions": [],
-   "timeShift": null,
-   "title": "Workflow Errors Alerting ",
-   "tooltip": {
-    "shared": false,
-    "sort": 2,
-    "value_type": "individual"
-   },
-   "transparent": true,
-   "type": "graph",
-   "xaxis": {
-    "buckets": null,
-    "mode": "time",
-    "name": null,
-    "show": true,
-    "values": []
-   },
-   "yaxes": [
-    {
-     "$$hashKey": "object:151",
-     "decimals": 0,
-     "format": "short",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    },
-    {
-     "$$hashKey": "object:152",
-     "decimals": null,
-     "format": "short",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    }
-   ],
-   "yaxis": {
-    "align": false,
-    "alignLevel": null
-   }
-  },
-  {
-   "collapsed": false,
-   "datasource": null,
-   "gridPos": {
-    "h": 1,
-    "w": 24,
-    "x": 0,
-    "y": 17
-   },
-   "id": 20,
-   "panels": [],
-   "title": "Histogram of durations of operations",
-   "type": "row"
-  },
-  {
-   "aliasColors": {},
-   "bars": false,
-   "dashLength": 10,
-   "dashes": false,
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "decimals": 2,
-   "fieldConfig": {
-    "defaults": {
-     "custom": {}
-    },
-    "overrides": []
-   },
-   "fill": 1,
-   "fillGradient": 1,
-   "gridPos": {
-    "h": 9,
-    "w": 24,
-    "x": 0,
-    "y": 18
-   },
-   "hiddenSeries": false,
-   "id": 14,
-   "legend": {
-    "alignAsTable": true,
-    "avg": true,
-    "current": true,
-    "hideEmpty": true,
-    "max": true,
-    "min": true,
-    "rightSide": false,
-    "show": true,
-    "sort": "current",
-    "sortDesc": true,
-    "total": false,
-    "values": true
-   },
-   "lines": true,
-   "linewidth": 1,
-   "nullPointMode": "null",
-   "options": {
-    "alertThreshold": true
-   },
-   "percentage": false,
-   "pluginVersion": "7.4.2",
-   "pointradius": 2,
-   "points": true,
-   "renderer": "flot",
-   "seriesOverrides": [],
-   "spaceLength": 10,
-   "stack": false,
-   "steppedLine": false,
-   "targets": [
-    {
-     "expr": "histogram_quantile(0.95, sum(rate(argo_workflows_operation_duration_seconds_bucket{namespace=~\"^$ns$\"}[5m])) by (le)) ",
-     "interval": "",
-     "legendFormat": "95th percentile",
-     "refId": "B"
-    }
-   ],
-   "thresholds": [],
-   "timeFrom": null,
-   "timeRegions": [],
-   "timeShift": null,
-   "title": "Workflow operation duration",
-   "tooltip": {
-    "shared": false,
-    "sort": 2,
-    "value_type": "individual"
-   },
-   "transparent": true,
-   "type": "graph",
-   "xaxis": {
-    "buckets": null,
-    "mode": "time",
-    "name": null,
-    "show": true,
-    "values": []
-   },
-   "yaxes": [
-    {
-     "$$hashKey": "object:151",
-     "decimals": 2,
-     "format": "s",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    },
-    {
-     "$$hashKey": "object:152",
-     "decimals": null,
-     "format": "short",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    }
-   ],
-   "yaxis": {
-    "align": false,
-    "alignLevel": null
-   }
-  },
-  {
-   "collapsed": false,
-   "datasource": null,
-   "gridPos": {
-    "h": 1,
-    "w": 24,
-    "x": 0,
-    "y": 27
-   },
-   "id": 22,
-   "panels": [],
-   "title": "Adds to the queue",
-   "type": "row"
-  },
-  {
-   "aliasColors": {},
-   "bars": false,
-   "dashLength": 10,
-   "dashes": false,
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "decimals": 2,
-   "fieldConfig": {
-    "defaults": {
-     "custom": {}
-    },
-    "overrides": []
-   },
-   "fill": 1,
-   "fillGradient": 1,
-   "gridPos": {
-    "h": 9,
-    "w": 24,
-    "x": 0,
-    "y": 28
-   },
-   "hiddenSeries": false,
-   "id": 15,
-   "legend": {
-    "alignAsTable": true,
-    "avg": false,
-    "current": true,
-    "hideEmpty": true,
-    "max": true,
-    "min": false,
-    "rightSide": false,
-    "show": true,
-    "sort": "current",
-    "sortDesc": true,
-    "total": false,
-    "values": true
-   },
-   "lines": true,
-   "linewidth": 2,
-   "nullPointMode": "null",
-   "options": {
-    "alertThreshold": true
-   },
-   "percentage": false,
-   "pluginVersion": "7.4.2",
-   "pointradius": 2,
-   "points": false,
-   "renderer": "flot",
-   "seriesOverrides": [],
-   "spaceLength": 10,
-   "stack": false,
-   "steppedLine": false,
-   "targets": [
-    {
-     "expr": "delta(argo_workflows_queue_adds_count{namespace=~\"$ns\"}[2m])",
-     "interval": "",
-     "legendFormat": "{{app}} : {{namespace}} : {{queue_name}}",
-     "queryType": "randomWalk",
-     "refId": "A"
-    }
-   ],
-   "thresholds": [],
-   "timeFrom": null,
-   "timeRegions": [],
-   "timeShift": null,
-   "title": "Workflow queue adds ",
-   "tooltip": {
-    "shared": false,
-    "sort": 2,
-    "value_type": "individual"
-   },
-   "transparent": true,
-   "type": "graph",
-   "xaxis": {
-    "buckets": null,
-    "mode": "time",
-    "name": null,
-    "show": true,
-    "values": []
-   },
-   "yaxes": [
-    {
-     "$$hashKey": "object:151",
-     "decimals": 2,
-     "format": "short",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    },
-    {
-     "$$hashKey": "object:152",
-     "decimals": null,
-     "format": "short",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    }
-   ],
-   "yaxis": {
-    "align": false,
-    "alignLevel": null
-   }
-  },
-  {
-   "aliasColors": {},
-   "bars": false,
-   "dashLength": 10,
-   "dashes": false,
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "decimals": 2,
-   "fieldConfig": {
-    "defaults": {
-     "custom": {}
-    },
-    "overrides": []
-   },
-   "fill": 1,
-   "fillGradient": 1,
-   "gridPos": {
-    "h": 9,
-    "w": 12,
-    "x": 0,
-    "y": 37
-   },
-   "hiddenSeries": false,
-   "id": 16,
-   "legend": {
-    "alignAsTable": true,
-    "avg": false,
-    "current": true,
-    "hideEmpty": true,
-    "max": true,
-    "min": false,
-    "rightSide": false,
-    "show": true,
-    "sort": "current",
-    "sortDesc": true,
-    "total": false,
-    "values": true
-   },
-   "lines": true,
-   "linewidth": 2,
-   "nullPointMode": "null",
-   "options": {
-    "alertThreshold": true
-   },
-   "percentage": false,
-   "pluginVersion": "7.4.2",
-   "pointradius": 2,
-   "points": false,
-   "renderer": "flot",
-   "seriesOverrides": [],
-   "spaceLength": 10,
-   "stack": false,
-   "steppedLine": false,
-   "targets": [
-    {
-     "expr": "argo_workflows_queue_depth_count{namespace=~\"$ns\"}",
-     "interval": "",
-     "legendFormat": "{{app}} : {{namespace}} : {{queue_name}}",
-     "queryType": "randomWalk",
-     "refId": "A"
-    }
-   ],
-   "thresholds": [],
-   "timeFrom": null,
-   "timeRegions": [],
-   "timeShift": null,
-   "title": "Depth of the queue",
-   "tooltip": {
-    "shared": false,
-    "sort": 2,
-    "value_type": "individual"
-   },
-   "transparent": true,
-   "type": "graph",
-   "xaxis": {
-    "buckets": null,
-    "mode": "time",
-    "name": null,
-    "show": true,
-    "values": []
-   },
-   "yaxes": [
-    {
-     "$$hashKey": "object:151",
-     "decimals": 2,
-     "format": "short",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": "0",
-     "show": true
-    },
-    {
-     "$$hashKey": "object:152",
-     "decimals": null,
-     "format": "short",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    }
-   ],
-   "yaxis": {
-    "align": false,
-    "alignLevel": null
-   }
-  },
-  {
-   "aliasColors": {},
-   "bars": false,
-   "dashLength": 10,
-   "dashes": false,
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "decimals": 2,
-   "fieldConfig": {
-    "defaults": {
-     "custom": {}
-    },
-    "overrides": []
-   },
-   "fill": 0,
-   "fillGradient": 1,
-   "gridPos": {
-    "h": 9,
-    "w": 12,
-    "x": 12,
-    "y": 37
-   },
-   "hiddenSeries": false,
-   "id": 23,
-   "legend": {
-    "alignAsTable": true,
-    "avg": false,
-    "current": true,
-    "hideEmpty": true,
-    "max": true,
-    "min": false,
-    "rightSide": false,
-    "show": true,
-    "sort": "current",
-    "sortDesc": true,
-    "total": false,
-    "values": true
-   },
-   "lines": true,
-   "linewidth": 1,
-   "nullPointMode": "null",
-   "options": {
-    "alertThreshold": true
-   },
-   "percentage": false,
-   "pluginVersion": "7.4.2",
-   "pointradius": 2,
-   "points": false,
-   "renderer": "flot",
-   "seriesOverrides": [],
-   "spaceLength": 10,
-   "stack": false,
-   "steppedLine": false,
-   "targets": [
-    {
-     "expr": "  rate(argo_workflows_queue_latency_sum{queue_name=\"cron_wf_queue\",namespace=~\"^$ns$\"}[5m])\n/\n  rate(argo_workflows_queue_latency_count{queue_name=\"cron_wf_queue\",namespace=~\"^$ns$\"}[5m])",
-     "interval": "2m",
-     "legendFormat": "{{app}} : {{namespace}} : {{queue_name}}",
-     "queryType": "randomWalk",
-     "refId": "A"
-    },
-    {
-     "expr": "  rate(argo_workflows_queue_latency_sum{queue_name=\"pod_queue\",namespace=~\"^$ns$\"}[5m])\n/\n  rate(argo_workflows_queue_latency_count{queue_name=\"pod_queue\",namespace=~\"^$ns$\"}[5m])",
-     "interval": "",
-     "legendFormat": "{{app}} : {{namespace}} : {{queue_name}}",
-     "refId": "B"
-    },
-    {
-     "expr": "  rate(argo_workflows_queue_latency_sum{queue_name=\"wf_cron_queue\",namespace=~\"^$ns$\"}[5m])\n/\n  rate(argo_workflows_queue_latency_count{queue_name=\"wf_cron_queue\",namespace=~\"^$ns$\"}[5m])",
-     "hide": false,
-     "interval": "",
-     "legendFormat": "{{app}} : {{namespace}} : {{queue_name}}",
-     "refId": "C"
-    },
-    {
-     "expr": "  rate(argo_workflows_queue_latency_sum{queue_name=\"workflow_queue\",namespace=~\"^$ns$\"}[5m])\n/\n  rate(argo_workflows_queue_latency_count{queue_name=\"workflow_queue\",namespace=~\"^$ns$\"}[5m])",
-     "hide": false,
-     "interval": "",
-     "legendFormat": "{{app}} : {{namespace}} : {{queue_name}}",
-     "refId": "D"
-    }
-   ],
-   "thresholds": [],
-   "timeFrom": null,
-   "timeRegions": [],
-   "timeShift": null,
-   "title": "Time objects spend waiting in the queue",
-   "tooltip": {
-    "shared": false,
-    "sort": 2,
-    "value_type": "individual"
-   },
-   "transparent": true,
-   "type": "graph",
-   "xaxis": {
-    "buckets": null,
-    "mode": "time",
-    "name": null,
-    "show": true,
-    "values": []
-   },
-   "yaxes": [
-    {
-     "$$hashKey": "object:151",
-     "decimals": 2,
-     "format": "s",
-     "label": "avg",
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    },
-    {
-     "$$hashKey": "object:152",
-     "decimals": null,
-     "format": "short",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    }
-   ],
-   "yaxis": {
-    "align": false,
-    "alignLevel": null
-   }
-  },
-  {
-   "collapsed": false,
-   "datasource": null,
-   "gridPos": {
-    "h": 1,
-    "w": 24,
-    "x": 0,
-    "y": 46
-   },
-   "id": 25,
-   "panels": [],
-   "title": "Total number of log messages",
-   "type": "row"
-  },
-  {
-   "aliasColors": {},
-   "bars": true,
-   "dashLength": 10,
-   "dashes": false,
-   "datasource": {
-    "type": "prometheus",
-    "uid": "prometheus"
-   },
-   "decimals": 2,
-   "description": "",
-   "fieldConfig": {
-    "defaults": {
-     "custom": {}
-    },
-    "overrides": []
-   },
-   "fill": 1,
-   "fillGradient": 1,
-   "gridPos": {
-    "h": 9,
-    "w": 24,
-    "x": 0,
-    "y": 47
-   },
-   "hiddenSeries": false,
-   "id": 26,
-   "legend": {
-    "alignAsTable": true,
-    "avg": false,
-    "current": true,
-    "hideEmpty": true,
-    "max": true,
-    "min": false,
-    "rightSide": false,
-    "show": true,
-    "sort": "current",
-    "sortDesc": true,
-    "total": false,
-    "values": true
-   },
-   "lines": false,
-   "linewidth": 2,
-   "nullPointMode": "null",
-   "options": {
-    "alertThreshold": true
-   },
-   "percentage": false,
-   "pluginVersion": "7.4.2",
-   "pointradius": 2,
-   "points": false,
-   "renderer": "flot",
-   "seriesOverrides": [],
-   "spaceLength": 10,
-   "stack": false,
-   "steppedLine": false,
-   "targets": [
-    {
-     "expr": "rate(log_messages{namespace=~\"$ns\"}[2m])",
-     "interval": "",
-     "legendFormat": "{{app}} : {{namespace}} : {{level}}",
-     "queryType": "randomWalk",
-     "refId": "A"
-    }
-   ],
-   "thresholds": [],
-   "timeFrom": null,
-   "timeRegions": [],
-   "timeShift": null,
-   "title": "Log messages",
-   "tooltip": {
-    "shared": false,
-    "sort": 2,
-    "value_type": "individual"
-   },
-   "transparent": true,
-   "type": "graph",
-   "xaxis": {
-    "buckets": null,
-    "mode": "time",
-    "name": null,
-    "show": true,
-    "values": []
-   },
-   "yaxes": [
-    {
-     "$$hashKey": "object:151",
-     "decimals": 2,
-     "format": "short",
-     "label": "count/sec",
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    },
-    {
-     "$$hashKey": "object:152",
-     "decimals": null,
-     "format": "short",
-     "label": null,
-     "logBase": 1,
-     "max": null,
-     "min": null,
-     "show": true
-    }
-   ],
-   "yaxis": {
-    "align": false,
-    "alignLevel": null
-   }
-  }
- ],
- "refresh": "1m",
- "schemaVersion": 27,
- "style": "dark",
- "tags": [],
- "templating": {
-  "list": [
-   {
-    "allValue": null,
-    "current": {},
-    "datasource": {
-     "type": "prometheus",
-     "uid": "prometheus"
-    },
-    "definition": "label_values(argo_workflows_gauge,namespace) ",
-    "description": "Kubernetes namespace",
-    "error": null,
-    "hide": 0,
-    "includeAll": false,
-    "label": "k8s_ns",
-    "multi": false,
-    "name": "ns",
-    "options": [],
-    "query": {
-     "query": "label_values(argo_workflows_gauge,namespace) ",
-     "refId": "StandardVariableQuery"
-    },
-    "refresh": 2,
-    "regex": "",
-    "skipUrlSync": false,
-    "sort": 0,
-    "tagValuesQuery": "",
-    "tags": [],
-    "tagsQuery": "",
-    "type": "query",
-    "useTags": false
-   }
-  ]
- },
- "time": {
-  "from": "now-3h",
-  "to": "now"
- },
- "timepicker": {},
- "timezone": "",
- "title": "Argo Workflows (controller)",
- "uid": "argo-workflows",
- "version": 35
+  "timepicker": {},
+  "timezone": "",
+  "title": "Argo Workflows (controller)",
+  "uid": "argo-workflows",
+  "version": 1
 }

@@ -10,7 +10,7 @@ import json
 import os
 import sys
 
-from netbox_client import Client
+from netbox_client import Client, get_or_degrade
 
 
 _nb = Client()
@@ -22,32 +22,15 @@ _failures = []
 
 
 def _get(path, **params):
-    """NetBox GET that never raises.
-
-    netbox_client raises on any non-2xx, and urllib raises on timeout or
-    connection-refused. enrich is the FIRST step of the incident pipeline,
-    so an exception here fails the whole Workflow and the incident is never
-    announced at all — strictly worse than announcing it with less context.
-    A missing *device* was already handled; a NetBox *outage* was not.
-
-    Mirrors the contract prom.py and loki.py already follow (degrade to
-    empty, let the caller carry on) rather than being the one lookup on the
-    critical path that can take the notification down with it.
-    """
-    try:
-        return get(path, **params) or {}
-    except Exception as e:
-        msg = f"netbox {path} unavailable ({type(e).__name__})"
-        _failures.append(msg)
-        print(f"warning: {msg}: {e}", file=sys.stderr)
-        return {}
+    """NetBox GET that never raises (see netbox_client.get_or_degrade).
+    enrich is the FIRST step of the incident pipeline."""
+    return get_or_degrade(get, path, _failures, **params)
 
 
 def device_name_from_source(source):
-    # source label looks like "atlanta-tmc-1.clabernetes.svc.cluster.local:57400"
-    host = source.split(":", 1)[0]
-    short = host.split(".", 1)[0]
-    return short.split("-", 1)[1] if "-" in short else short
+    # source label looks like "tmc-1.clabernetes.svc.cluster.local:57400"
+    # (clabernetes >= 0.7 names node Services after the node, unprefixed).
+    return source.split(":", 1)[0].split(".", 1)[0]
 
 
 def main():

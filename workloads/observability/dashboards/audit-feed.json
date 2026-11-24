@@ -96,6 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Workflow runs that finished in the last 24 hours: succeeded vs failed or errored.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -134,12 +135,12 @@
       },
       "targets": [
         {
-          "expr": "sum(argo_workflows_gauge{phase=\"Succeeded\"}) or vector(0)",
+          "expr": "round(sum(increase(argo_workflows_total_count{phase=\"Succeeded\"}[24h]))) or vector(0)",
           "legendFormat": "succeeded",
           "refId": "A"
         },
         {
-          "expr": "sum(argo_workflows_gauge{phase=~\"Failed|Error\"}) or vector(0)",
+          "expr": "round(sum(increase(argo_workflows_total_count{phase=~\"Failed|Error\"}[24h]))) or vector(0)",
           "legendFormat": "failed",
           "refId": "B"
         }
@@ -152,6 +153,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Notifications Prometheus sent to Alertmanager in the last 24 hours.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -203,6 +205,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Postmortems generated in the last 24 hours (one per resolved incident).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -259,6 +262,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Argo CD sync operations across all applications in the last 24 hours.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -310,6 +314,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Workflows the Argo controller currently holds, by phase. Completed runs stay until garbage-collected, so this climbs as incidents are handled.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -320,7 +325,8 @@
             "drawStyle": "bars",
             "fillOpacity": 80,
             "lineWidth": 1
-          }
+          },
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -333,7 +339,7 @@
       "options": {
         "legend": {
           "calcs": [
-            "sum"
+            "lastNotNull"
           ],
           "displayMode": "table",
           "placement": "right"
@@ -346,7 +352,7 @@
           "refId": "A"
         }
       ],
-      "title": "Workflow runs over time (by phase)",
+      "title": "Workflows on record (by phase)",
       "type": "timeseries"
     },
     {
@@ -354,6 +360,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Argo Events sensors receiving alerts and triggering workflows: the hand-off between monitoring and automation.",
       "gridPos": {
         "h": 12,
         "w": 12,
@@ -375,7 +382,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"argo-events\"} |~ \"Triggering actions|not interested|new event received|successfully dispatched\"",
+          "expr": "{namespace=\"argo-events\"} |~ \"Triggering actions|not interested|new event received|successfully dispatched\" | json | line_format \"{{.msg}}{{if .sensorName}}  [sensor {{.sensorName}}{{if .triggerName}} → {{.triggerName}}{{end}}]{{end}}\"",
           "refId": "A"
         }
       ],
@@ -387,6 +394,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "What each pipeline step concluded: NetBox enrichment, impact class, Slack delivery and postmortem generation.",
       "gridPos": {
         "h": 12,
         "w": 12,
@@ -420,6 +428,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "SR Linux AAA commit log lines from syslog: which named operator changed configuration, from which session and source.",
       "gridPos": {
         "h": 10,
         "w": 24,
@@ -453,6 +462,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Argo CD controller events for application syncs and reconciles: GitOps changes landing on the cluster.",
       "gridPos": {
         "h": 10,
         "w": 24,

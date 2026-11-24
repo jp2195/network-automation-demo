@@ -13,7 +13,7 @@ import json
 import os
 import sys
 
-from netbox_client import Client
+from netbox_client import Client, get_or_degrade
 from prom import prom_query
 from constants import (
     ROLE_FIELD_CABINET, CABINET_NAME_PREFIX,
@@ -149,6 +149,15 @@ def _down_interfaces(prom_url, device):
 _nb = Client()
 get = _nb.get
 
+# Reasons this run produced thinner impact than usual. analyze sits between
+# enrich and notify, so a NetBox outage here must degrade, not fail the step:
+# notify depends on it, and a failed analyze means no incident card at all.
+_failures = []
+
+
+def _get(path, **params):
+    return get_or_degrade(get, path, _failures, **params)
+
 
 def main():
     enrichment = json.loads(os.environ["ENRICHMENT_JSON"])
@@ -159,7 +168,7 @@ def main():
     # `name__in` lookups are silently ignored on this serializer.
     # Each cable's terminations include the peer interface inline
     # (object.device.name, object.name), so we don't need a second fetch.
-    cables = get(
+    cables = _get(
         "/api/dcim/cables/", device=affected_device, limit=100,
     ).get("results", [])
 
@@ -186,7 +195,7 @@ def main():
     agencies = set()
     roles = {}
     if affected_devices:
-        dev_resp = get("/api/dcim/devices/", name=affected_devices, limit=200)
+        dev_resp = _get("/api/dcim/devices/", name=affected_devices, limit=200)
         for d in dev_resp.get("results", []):
             # Modeled role from the source of truth — drives severity below.
             roles[d.get("name")] = (d.get("role") or {}).get("slug")
@@ -227,6 +236,8 @@ def main():
         "severity_class": severity_class,
         "backup_path": compute_backup_path(alert, roles.get(affected_device)),
     }
+    if _failures:
+        impact["degraded"] = list(_failures)
     json.dump(impact, sys.stdout)
 
 

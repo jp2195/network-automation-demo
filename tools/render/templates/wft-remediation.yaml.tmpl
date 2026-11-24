@@ -127,7 +127,7 @@ spec:
         command: [/app/gnmic]
         args:
           - -a
-          - "@@CLUSTER@@-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
+          - "{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
           - -u
           - @@AUTOMATION_USER@@
           - -p
@@ -155,7 +155,7 @@ spec:
         command: [/app/gnmic]
         args:
           - -a
-          - "@@CLUSTER@@-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
+          - "{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
           - -u
           - @@AUTOMATION_USER@@
           - -p

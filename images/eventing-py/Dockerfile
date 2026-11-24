@@ -4,9 +4,9 @@
 # read-write source of truth for the Python source — this image just
 # carries the pinned dependencies and a copy that runs without the mount
 # for one-off use (the mount overrides /scripts/* at workflow runtime).
-FROM python:3.14.7-slim
+FROM python:3.15.2-slim
 
-RUN pip install --no-cache-dir slack-sdk==3.48.0 valkey==6.2.0
+RUN pip install --no-cache-dir slack-sdk==3.46.0 valkey==6.2.0
 
 # Build context is workloads/eventing/. Copy the scripts dir to /scripts/
 # so the same path works whether the workflow mounts the ConfigMap or not.

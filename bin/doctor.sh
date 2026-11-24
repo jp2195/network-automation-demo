@@ -166,7 +166,7 @@ PY
 then
   ok "*.127-0-0-1.nip.io resolves to 127.0.0.1"
 else
-  warn "*.127-0-0-1.nip.io does not resolve (offline or DNS-rebind protection) — add to /etc/hosts: 127.0.0.1 argocd.127-0-0-1.nip.io netbox.127-0-0-1.nip.io grafana.127-0-0-1.nip.io workflows.127-0-0-1.nip.io clabernetes.127-0-0-1.nip.io console.127-0-0-1.nip.io"
+  warn "*.127-0-0-1.nip.io does not resolve (offline or DNS-rebind protection) — add to /etc/hosts: 127.0.0.1 argocd.127-0-0-1.nip.io netbox.127-0-0-1.nip.io grafana.127-0-0-1.nip.io workflows.127-0-0-1.nip.io console.127-0-0-1.nip.io"
 fi
 
 # --- 6. inotify (argo-events data plane) ---------------------------------

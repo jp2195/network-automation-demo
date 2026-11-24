@@ -138,7 +138,7 @@ spec:
         image: %s
         command: [sh]
         source: |
-          /app/gnmic -a %s-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400 \
+          /app/gnmic -a {{inputs.parameters.node}}.`+ClabDomain+`:`+GNMICPort+` \
             -u admin -p 'NokiaSrl1!' --skip-verify -e json_ietf \
             get --type config \
             --path "/interface" \
@@ -151,7 +151,7 @@ spec:
     - name: compare
       inputs:
         parameters:
-`, ImageGNMIC, s.Metadata.Name, ISISInstance)
+`, ImageGNMIC, ISISInstance)
 	for _, n := range nodes {
 		fmt.Fprintf(&b, "          - name: live_%s\n", strings.ToLower(envSafe(n)))
 	}

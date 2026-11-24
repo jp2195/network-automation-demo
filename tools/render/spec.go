@@ -6,7 +6,7 @@ import (
 	"os"
 	"regexp"
 
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // Interface naming is load-bearing: srl_render/frr_render/clabIntf all
@@ -241,6 +241,17 @@ func (s *Spec) Validate() error {
 		}
 	}
 	return nil
+}
+
+// ProviderName returns the display name for a provider slug, or "" when the
+// slug isn't in spec.providers.
+func (s *Spec) ProviderName(slug string) string {
+	for _, p := range s.Providers {
+		if p.Slug == slug {
+			return p.Name
+		}
+	}
+	return ""
 }
 
 func (s *Spec) NodeByName(name string) *Node {

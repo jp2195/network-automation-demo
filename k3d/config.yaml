@@ -5,7 +5,7 @@ metadata:
 servers: 1
 # Pinned so a k3d upgrade cannot silently
 # move the lab to a new Kubernetes minor. Bump deliberately.
-image: rancher/k3s:v1.35.5-k3s1
+image: rancher/k3s:v1.37.2-k3s1
 agents: 2
 ports:
   - port: 8080:80

@@ -19,10 +19,11 @@ func newPrinter(w io.Writer) printer {
 	}
 }
 
-// clabFQDN returns the in-cluster DNS name clabernetes exposes a topology
-// node under: <topology>-<node>.<ClabDomain>.
-func clabFQDN(topology, node string) string {
-	return fmt.Sprintf("%s-%s.%s", topology, node, ClabDomain)
+// clabFQDN returns the in-cluster DNS name clabernetes (>= 0.7) exposes a
+// topology node under: <node>.<ClabDomain>. Node names are not prefixed with
+// the topology name, so they must be unique per namespace.
+func clabFQDN(node string) string {
+	return node + "." + ClabDomain
 }
 
 // renderTo opens path for writing, calls emit(f), closes the file, and

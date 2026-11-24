@@ -3,6 +3,8 @@
   "extends": ["config:recommended"],
   "dependencyDashboard": true,
   "labels": ["dependencies"],
+  "minimumReleaseAge": "14 days",
+  "internalChecksFilter": "strict",
   "kubernetes": {
     "managerFilePatterns": ["/^workloads/.+\\.ya?ml$/"]
   },

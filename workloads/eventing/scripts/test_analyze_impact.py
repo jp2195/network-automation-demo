@@ -142,5 +142,38 @@ class StrandedCabinetTests(unittest.TestCase):
         self.assertEqual(analyze_impact.stranded_cabinet_peers(
             cab_only, "hub-i20e", down_ifaces={"ethernet-1/4"}), [])
 
+
+class NetBoxOutageTest(unittest.TestCase):
+    """analyze sits between enrich and notify: a NetBox outage must degrade
+    the impact (and say so), not fail the step and swallow the incident."""
+
+    def test_main_degrades_instead_of_raising(self):
+        import io
+        import json
+        from unittest import mock
+        import urllib.error
+
+        def down(path, **params):
+            raise urllib.error.URLError("connection refused")
+
+        enrichment = {"device": {"name": "fc-n", "site_slug": "fc-n-site"},
+                      "alert": {"link_kind": LINK_KIND_CABINET, "link_id": "hubn-fcn",
+                                "interface": "eth1", "severity": "critical"}}
+        out = io.StringIO()
+        analyze_impact._failures.clear()
+        with mock.patch.object(analyze_impact, "get", side_effect=down), \
+             mock.patch.dict(os.environ, {"ENRICHMENT_JSON": json.dumps(enrichment)}), \
+             mock.patch("sys.stdout", out), mock.patch("sys.stderr", io.StringIO()):
+            os.environ.pop("PROM_URL", None)
+            analyze_impact.main()
+        impact = json.loads(out.getvalue())
+        self.assertEqual(impact["affected_device"], "fc-n")
+        self.assertEqual(impact["downstream_devices"], [])
+        # Role lookup failed, so the name-prefix fallback still escalates.
+        self.assertEqual(impact["severity_class"], "high")
+        self.assertEqual(len(impact["degraded"]), 2)
+        self.assertTrue(all("unavailable (URLError)" in d for d in impact["degraded"]))
+
+
 if __name__ == "__main__":
     unittest.main()

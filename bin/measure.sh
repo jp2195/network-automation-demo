@@ -38,6 +38,7 @@
 # Requires an up cluster with monitoring + argo-events deployed.
 
 set -uo pipefail
+. "$(dirname "$0")/lib.sh"
 
 N=10
 LANE=gnmi
@@ -45,7 +46,7 @@ NODE=""
 INTERFACE=""
 IFACES=""        # explicit "node:iface node:iface ..." rotation list (overrides defaults)
 OUT=""
-TIMEOUT="${MEASURE_TIMEOUT:-180}"        # per-hop wait ceiling
+TIMEOUT="${MEASURE_TIMEOUT:-}"           # per-hop wait ceiling (lane default below)
 SETTLE_BUFFER="${MEASURE_SETTLE:-10}"    # quiet seconds after a run resolves
 
 while getopts ":n:l:N:i:I:o:h" opt; do
@@ -65,6 +66,7 @@ case "$LANE" in
   gnmi)
     ALERTNAME=SRLInterfaceOperDown
     FOR_S=0
+    : "${TIMEOUT:=180}"
     MATCH_INTERFACE=1
     CUT()     { make -s demo-cut         NODE="$NODE" INTERFACE="$INTERFACE" >/dev/null; }
     RESTORE() { make -s demo-restore     NODE="$NODE" INTERFACE="$INTERFACE" >/dev/null 2>&1 || true; }
@@ -72,18 +74,19 @@ case "$LANE" in
   snmp)
     ALERTNAME=CabinetInterfaceOperDown
     FOR_S=60
+    # Worst case: one full 300s poll interval before the cut is seen, plus the
+    # alert's 60s for:, plus scrape/eval slack.
+    : "${TIMEOUT:=480}"
     MATCH_INTERFACE=0   # SNMP alert labels carry node+ifIndex, not an interface name
-    # Realistic carrier loss (cable pull): down the POD-SIDE veth (<node>-<iface>,
-    # e.g. fc-n-eth1) so the cabinet interface goes oper-down while admin stays up
-    # — the exact ifOperStatus==2 AND ifAdminStatus==1 the alert requires. vtysh
-    # `shutdown` would trip admin-down too, which the alert deliberately excludes,
-    # so it never fires. The carrier loss does NOT propagate back across the VXLAN
-    # to the SR Linux side, so only CabinetInterfaceOperDown fires (no gNMI-lane
-    # contamination of the notify timing).
-    _cabpod() { kubectl -n clabernetes get pod -l clabernetes/topologyNode="$NODE" \
-                  -o jsonpath='{.items[0].metadata.name}' 2>/dev/null; }
-    CUT()     { kubectl -n clabernetes exec "$(_cabpod)" -- ip link set "$NODE-$INTERFACE" down >/dev/null 2>&1; }
-    RESTORE() { kubectl -n clabernetes exec "$(_cabpod)" -- ip link set "$NODE-$INTERFACE" up   >/dev/null 2>&1 || true; }
+    # Realistic carrier loss (cable pull) via bin/cut-link.sh: the FAR end of
+    # the cabinet uplink goes down, so the cabinet interface loses carrier
+    # while admin stays up — the exact ifOperStatus==2 AND ifAdminStatus==1
+    # the alert requires (a vtysh `shutdown` would trip admin-down too, which
+    # the alert deliberately excludes). Like a real cut, the hub end goes
+    # oper-down as well and fires its own SRLInterfaceOperDown; the workflow
+    # match below keys on the cabinet node, so that incident isn't timed here.
+    CUT()     { "$REPO_ROOT/bin/cut-link.sh" "$NODE" "$INTERFACE" down >/dev/null; }
+    RESTORE() { "$REPO_ROOT/bin/cut-link.sh" "$NODE" "$INTERFACE" up >/dev/null 2>&1 || true; }
     ;;
   *) echo "lane must be gnmi or snmp (got '$LANE')" >&2; exit 64 ;;
 esac
@@ -141,8 +144,7 @@ prom_pod() {
     -o jsonpath='{.items[0].metadata.name}' 2>/dev/null
 }
 prom_alerts() {
-  kubectl -n monitoring exec "$PROM_POD" -c prometheus -- \
-    wget -qO- http://localhost:9090/api/v1/alerts 2>/dev/null || true
+  podget monitoring "$PROM_POD" 9090 /api/v1/alerts 2>/dev/null || true
 }
 
 # Print "activeAt<TAB>state" for the matching alert, or nothing.

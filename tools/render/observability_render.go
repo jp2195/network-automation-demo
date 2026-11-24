@@ -51,6 +51,9 @@ func WriteLinkMembership(w io.Writer, s *Spec) error {
 			}
 			if l.Cable.Provider != "" {
 				p("            provider: %q", l.Cable.Provider)
+				if name := s.ProviderName(l.Cable.Provider); name != "" {
+					p("            provider_name: %q", name)
+				}
 			}
 			if l.Cable.RestorationSLAHours != 0 {
 				p("            restoration_sla_hours: %q", fmt.Sprintf("%d", l.Cable.RestorationSLAHours))

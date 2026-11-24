@@ -4,9 +4,9 @@
 # Prometheus/Loki/NetBox + the corridor_impact graph walk). Same
 # convention as ai-analyst: the workflow-scripts ConfigMap mount overrides
 # /scripts/* at runtime; the baked copy keeps the image runnable standalone.
-FROM python:3.14.7-slim
+FROM python:3.15.2-slim
 
-RUN pip install --no-cache-dir "pydantic-ai-slim[openai]==2.73.0" fastapi==0.165.0 uvicorn==0.54.0
+RUN pip install --no-cache-dir "pydantic-ai-slim[openai]==2.66.0" fastapi==0.162.4 uvicorn==0.54.0
 
 # Build context is workloads/eventing/.
 COPY scripts/ /scripts/

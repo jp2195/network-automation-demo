@@ -1,18 +1,20 @@
 fullnameOverride: valkey
 
-# Chart valkey-0.9.4 defaults to appVersion 9.0.2; pin the latest 9.0.x
-# patch for security fixes without moving the chart.
-image:
-  tag: "9.0.6"
-
 replica:
   enabled: false
 
 auth:
   enabled: false
 
-dataStorage:
+# Chart 1.0 replaced dataStorage with persistence (and refuses to render
+# while dataStorage is set). The ledger is ephemeral demo state: emptyDir.
+persistence:
   enabled: false
+
+# 1.0 defaults standalone to Recreate (for RWO volumes). Without a volume,
+# RollingUpdate keeps upgrades downtime-free and avoids the server-side-apply
+# "rollingUpdate may not be specified" error on clusters created on 0.x.
+deploymentStrategy: RollingUpdate
 
 service:
   type: ClusterIP

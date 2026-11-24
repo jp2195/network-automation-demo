@@ -14,6 +14,7 @@
 # Requires an up cluster with monitoring + argo-events deployed.
 
 set -uo pipefail
+. "$(dirname "$0")/lib.sh"
 
 NODE="${1:-hub-n}"
 INTERFACE="${2:-ethernet-1/1}"
@@ -26,8 +27,7 @@ prom_pod() {
 
 prom_query_alerts() {
   local pod=$1
-  kubectl -n monitoring exec "$pod" -c prometheus -- \
-    wget -qO- http://localhost:9090/api/v1/alerts 2>/dev/null || true
+  podget monitoring "$pod" 9090 /api/v1/alerts 2>/dev/null || true
 }
 
 restore() {

@@ -24,7 +24,7 @@ from drift_compare import (
 # json_ietf payloads. parse_live() walks it structurally so module-prefix
 # differences don't matter.
 GNMIC_OUTPUT = json.dumps([{
-    "source": "atlanta-hub-e.clabernetes.svc.cluster.local:57400",
+    "source": "hub-e.clabernetes.svc.cluster.local:57400",
     "timestamp": 1,
     "updates": [
         {

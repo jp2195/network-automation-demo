@@ -2,8 +2,12 @@ superuser:
   name: admin
   email: admin@atlas-demo.local
   password: admin
+  # Pinned (never injected into NetBox — see extraEnvs below). Left empty,
+  # the chart defaults it to uuidv4, which re-randomizes on every Argo CD
+  # render; that changes checksum/secret and rolls the Deployment forever.
+  apiToken: atlas-demo-not-secret-0000000000000000
 
-# netbox-chart 8.2.9 only injects SUPERUSER_NAME and SUPERUSER_EMAIL into
+# netbox-chart 8.3.x (like 8.2.x) only injects SUPERUSER_NAME and SUPERUSER_EMAIL into
 # the pod env, so the bootstrap admin lands without the password from
 # values. Inject it so the seed Job's `tokens/provision/` call succeeds.
 # (We deliberately do NOT inject SUPERUSER_API_TOKEN: NetBox 4.x stores
@@ -17,6 +21,12 @@ extraEnvs:
         key: password
 
 secretKey: atlas-demo-not-secret-but-50-plus-chars-long-padding-yes
+
+# Same reason as superuser.apiToken: the chart preserves a generated pepper
+# via Helm `lookup`, which Argo CD can't evaluate, so it re-randomizes every
+# render. Pin it. (The seed mints v1 tokens, which don't use peppers.)
+apiTokenPeppers:
+  "1": atlas-demo-not-secret-pepper-50-plus-chars-long-padding-yes
 
 allowedHosts:
   - "*"
@@ -90,5 +100,7 @@ ingress:
 metrics:
   enabled: false
 
+# NetBox 4.7 removed `manage.py housekeeping` (it runs as an internal
+# system job since 4.6), so the chart CronJob would fail nightly.
 housekeeping:
-  enabled: true
+  enabled: false

@@ -287,11 +287,16 @@ def main():
     log_lines, analysis = [], None
     if loki_url:
         device_name = enrichment.get("device", {}).get("name", "")
-        if device_name:
-            raw = loki_query_range(
-                loki_url, '{namespace="clabernetes"} |~ "(?i)commit|admin-state"',
-                start, end)
-            log_lines = [(ts, ln) for ts, ln in raw if device_name in ln][:20]
+        # The device is the syslog `host` label, not part of the message
+        # text, so select on it (spec-shaped names only — it's interpolated
+        # into LogQL). Match change events — AAA commits and admin
+        # disables — not every line that merely mentions admin-state.
+        if device_name and re.fullmatch(r"[A-Za-z0-9_-]+", device_name):
+            log_lines = loki_query_range(
+                loki_url,
+                f'{{source_type="syslog", host="{device_name}"}} '
+                '|~ "(?i)committed successfully|port-admin-disabled"',
+                start, end)[:20]
         # Short incidents can resolve before the (async, advisory)
         # analyst finishes — its marker then lands in Loki minutes after
         # the resolve. This is the final workflow step, so a bounded

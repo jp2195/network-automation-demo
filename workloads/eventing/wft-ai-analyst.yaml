@@ -100,8 +100,6 @@ spec:
                 name: netbox-api
                 key: token
                 optional: true
-          - name: CLAB_PREFIX
-            value: "atlanta"
           - name: ISIS_INSTANCE
             value: "atlas"
           - name: GNMI_USER

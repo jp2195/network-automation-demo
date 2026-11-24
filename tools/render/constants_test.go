@@ -25,6 +25,7 @@ func TestConstantsMirrorPython(t *testing.T) {
 		"SEVERITY_WARNING":    SeverityWarning,
 		"SEVERITY_LOW":        SeverityLow,
 		"CABINET_NAME_PREFIX": CabinetNamePrefix,
+		"CLAB_DOMAIN":         ClabDomain,
 	}
 
 	src, err := os.ReadFile("../../workloads/eventing/scripts/constants.py")

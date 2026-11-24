@@ -96,6 +96,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Oper-state of each end of the link: UP, or DOWN when that side lost the link.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -171,6 +172,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Oper-state changes on this link in the last 5 minutes. Repeated changes mean the link is flapping.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -231,6 +233,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Average egress across the link's two endpoints.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -282,12 +285,13 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Input errors and discards per minute across both endpoints.",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 0,
+          "decimals": 1,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -301,7 +305,7 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "suffix: pkt/min"
         }
       },
       "gridPos": {
@@ -325,17 +329,17 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(srl_nokia_interfaces_interface_statistics_in_error_packets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}) or vector(0)",
+          "expr": "sum((rate(srl_nokia_interfaces_interface_statistics_in_error_packets[1m]) * 60) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}) or vector(0)",
           "legendFormat": "in-err",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(srl_nokia_interfaces_interface_statistics_in_discarded_packets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}) or vector(0)",
+          "expr": "sum((rate(srl_nokia_interfaces_interface_statistics_in_discarded_packets[1m]) * 60) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}) or vector(0)",
           "legendFormat": "in-disc",
           "refId": "B"
         }
       ],
-      "title": "Errors / s",
+      "title": "Errors / min",
       "type": "stat"
     },
     {
@@ -343,19 +347,15 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Oper-state of each endpoint over time.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "custom": {
-            "drawStyle": "line",
-            "fillOpacity": 30,
-            "lineInterpolation": "stepAfter",
-            "lineWidth": 3,
-            "pointSize": 6,
-            "showPoints": "always",
-            "spanNulls": true
+            "fillOpacity": 85,
+            "lineWidth": 0
           },
           "mappings": [
             {
@@ -372,9 +372,25 @@
               "type": "value"
             }
           ],
-          "max": 2.5,
-          "min": 0.5
-        }
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 1.5
+              }
+            ]
+          }
+        },
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -384,14 +400,18 @@
       },
       "id": 2,
       "options": {
+        "alignValue": "left",
         "legend": {
-          "calcs": [
-            "lastNotNull",
-            "min",
-            "max"
-          ],
-          "displayMode": "table",
-          "placement": "right"
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "mergeValues": true,
+        "rowHeight": 0.8,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
@@ -401,14 +421,15 @@
           "refId": "A"
         }
       ],
-      "title": "Oper-state history (1=UP, 2=DOWN)",
-      "type": "timeseries"
+      "title": "Oper-state history",
+      "type": "state-timeline"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Traffic per endpoint: transmit above the axis, receive below.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -461,6 +482,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Input errors and discards per second per endpoint.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -472,7 +494,8 @@
             "lineWidth": 1,
             "spanNulls": true
           },
-          "unit": "pps"
+          "decimals": 1,
+          "unit": "suffix: pkt/min"
         }
       },
       "gridPos": {
@@ -490,12 +513,12 @@
       },
       "targets": [
         {
-          "expr": "rate(srl_nokia_interfaces_interface_statistics_in_error_packets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}",
+          "expr": "(rate(srl_nokia_interfaces_interface_statistics_in_error_packets[1m]) * 60) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}",
           "legendFormat": "{{node}} {{interface}} in-errors",
           "refId": "A"
         },
         {
-          "expr": "rate(srl_nokia_interfaces_interface_statistics_in_discarded_packets[1m]) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}",
+          "expr": "(rate(srl_nokia_interfaces_interface_statistics_in_discarded_packets[1m]) * 60) * on(node, interface) group_left(link_id) link_membership_info{link_id=\"$link_id\"}",
           "legendFormat": "{{node}} {{interface}} in-discards",
           "refId": "B"
         }
@@ -508,6 +531,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Modeled attributes of the link: endpoints, corridor and geography.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -584,6 +608,7 @@
         "type": "loki",
         "uid": "loki"
       },
+      "description": "Log lines from the link's two endpoint devices that mention the link's interface (e.g. SR Linux portDown/portUp events). Endpoints come from link_membership_info.",
       "gridPos": {
         "h": 8,
         "w": 24,
@@ -605,11 +630,11 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"clabernetes\"} |~ \"$link_id\"",
+          "expr": "{namespace=\"clabernetes\", host=~\"${ep_node:regex}\"} |~ `${ep_intf:regex}\\b`",
           "refId": "A"
         }
       ],
-      "title": "Pod logs touching this link",
+      "title": "Device logs for this link (both endpoints)",
       "type": "logs"
     },
     {
@@ -617,6 +642,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Optic case temperature on each end (synthetic DOM).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -664,6 +690,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Optic power on each end in dBm (synthetic DOM). A falling Rx is the gray-failure signature.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -736,6 +763,58 @@
         "name": "link_id",
         "query": {
           "query": "label_values(link_membership_info, link_id)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(link_membership_info{link_id=\"$link_id\"}, node)",
+        "hide": 2,
+        "includeAll": true,
+        "multi": true,
+        "name": "ep_node",
+        "query": {
+          "query": "label_values(link_membership_info{link_id=\"$link_id\"}, node)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(link_membership_info{link_id=\"$link_id\"}, interface)",
+        "hide": 2,
+        "includeAll": true,
+        "multi": true,
+        "name": "ep_intf",
+        "query": {
+          "query": "label_values(link_membership_info{link_id=\"$link_id\"}, interface)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,

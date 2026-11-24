@@ -35,6 +35,15 @@
         "dcim.cable"
       ],
       "description": "Highway corridor the cable runs along"
+    },
+    {
+      "name": "install_date",
+      "label": "Install date",
+      "type": "date",
+      "object_types": [
+        "dcim.cable"
+      ],
+      "description": "Date the fiber was placed in service"
     }
   ],
   "regions": [
@@ -2200,10 +2209,10 @@
       "description": "I-285 NB MM 30-37",
       "length": 14.2,
       "length_unit": "km",
-      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-RING-NE-001",
         "corridor": "I-285",
+        "install_date": "2022-09-14",
         "restoration_sla_hours": 4
       }
     },
@@ -2223,10 +2232,10 @@
       "description": "I-285 EB MM 39-46",
       "length": 12.8,
       "length_unit": "km",
-      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-RING-EI20E-002",
         "corridor": "I-285",
+        "install_date": "2022-09-14",
         "restoration_sla_hours": 4
       }
     },
@@ -2246,10 +2255,10 @@
       "description": "I-285 SB MM 47-58",
       "length": 21.3,
       "length_unit": "km",
-      "install_date": "2023-02-08",
       "custom_fields": {
         "circuit_id": "CSC-RING-I20ESW-103",
         "corridor": "I-285",
+        "install_date": "2023-02-08",
         "restoration_sla_hours": 4
       }
     },
@@ -2269,10 +2278,10 @@
       "description": "I-285 WB MM 1-6",
       "length": 9.7,
       "length_unit": "km",
-      "install_date": "2023-02-08",
       "custom_fields": {
         "circuit_id": "CSC-RING-SWI20W-104",
         "corridor": "I-285",
+        "install_date": "2023-02-08",
         "restoration_sla_hours": 4
       }
     },
@@ -2292,10 +2301,10 @@
       "description": "I-285 NB MM 11-19",
       "length": 13.1,
       "length_unit": "km",
-      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-RING-I20WNW-005",
         "corridor": "I-285",
+        "install_date": "2022-09-14",
         "restoration_sla_hours": 4
       }
     },
@@ -2315,10 +2324,10 @@
       "description": "I-285 NB MM 21-29",
       "length": 12.6,
       "length_unit": "km",
-      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-RING-NWN-006",
         "corridor": "I-285",
+        "install_date": "2022-09-14",
         "restoration_sla_hours": 4
       }
     },
@@ -2338,10 +2347,10 @@
       "description": "I-75 NB MM 257-262",
       "length": 4.8,
       "length_unit": "km",
-      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-NW-01-007",
         "corridor": "I-75 NW",
+        "install_date": "2022-09-14",
         "restoration_sla_hours": 4
       }
     },
@@ -2361,10 +2370,10 @@
       "description": "I-85 SB MM 73-77",
       "length": 5.6,
       "length_unit": "km",
-      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "APX-SW-01-008",
         "corridor": "I-85 SW",
+        "install_date": "2022-09-14",
         "restoration_sla_hours": 4
       }
     },
@@ -2384,10 +2393,10 @@
       "description": "GA-400 NB MM 5-9",
       "length": 6.4,
       "length_unit": "km",
-      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "CSC-N-01-109",
         "corridor": "GA-400",
+        "install_date": "2022-09-14",
         "restoration_sla_hours": 4
       }
     },
@@ -2407,10 +2416,10 @@
       "description": "I-285 EB MM 38-43",
       "length": 7.9,
       "length_unit": "km",
-      "install_date": "2022-09-14",
       "custom_fields": {
         "circuit_id": "CSC-E-01-110",
         "corridor": "I-285 East",
+        "install_date": "2022-09-14",
         "restoration_sla_hours": 4
       }
     },
@@ -2430,10 +2439,10 @@
       "description": "Forest Park ↔ Buckhead diverse path",
       "length": 23.4,
       "length_unit": "km",
-      "install_date": "2022-11-02",
       "custom_fields": {
         "circuit_id": "ADOT-TMC-XC-201",
         "corridor": "TMC Interconnect",
+        "install_date": "2022-11-02",
         "restoration_sla_hours": 8
       }
     },
@@ -2453,10 +2462,10 @@
       "description": "GA-400 NB MM 12-15 (cabinet drop)",
       "length": 3.2,
       "length_unit": "km",
-      "install_date": "2023-04-02",
       "custom_fields": {
         "circuit_id": "ADOT-CAB-N-301",
         "corridor": "GA-400",
+        "install_date": "2023-04-02",
         "restoration_sla_hours": 8
       }
     },
@@ -2476,10 +2485,10 @@
       "description": "I-75 NB MM 268-272 (cabinet drop)",
       "length": 2.1,
       "length_unit": "km",
-      "install_date": "2023-04-02",
       "custom_fields": {
         "circuit_id": "ADOT-CAB-NW-302",
         "corridor": "I-75 NW",
+        "install_date": "2023-04-02",
         "restoration_sla_hours": 8
       }
     },
@@ -2499,10 +2508,10 @@
       "description": "I-20 EB MM 53-56 (cabinet drop)",
       "length": 4.1,
       "length_unit": "km",
-      "install_date": "2023-05-18",
       "custom_fields": {
         "circuit_id": "ADOT-CAB-I20E-303",
         "corridor": "I-20 East",
+        "install_date": "2023-05-18",
         "restoration_sla_hours": 8
       }
     },
@@ -2522,10 +2531,10 @@
       "description": "I-85 SB MM 41-43 (cabinet drop)",
       "length": 2.8,
       "length_unit": "km",
-      "install_date": "2023-05-18",
       "custom_fields": {
         "circuit_id": "ADOT-CAB-SW-304",
         "corridor": "I-85 SW",
+        "install_date": "2023-05-18",
         "restoration_sla_hours": 8
       }
     }

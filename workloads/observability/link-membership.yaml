@@ -24,6 +24,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -38,6 +39,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -52,6 +54,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -66,6 +69,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -80,6 +84,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "cascade-telecom"
+            provider_name: "Cascade Telecom Group"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -94,6 +99,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "cascade-telecom"
+            provider_name: "Cascade Telecom Group"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -108,6 +114,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "cascade-telecom"
+            provider_name: "Cascade Telecom Group"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -122,6 +129,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "cascade-telecom"
+            provider_name: "Cascade Telecom Group"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -136,6 +144,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -150,6 +159,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -164,6 +174,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -178,6 +189,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -192,6 +204,7 @@ spec:
             role: "tmc"
             corridor: "I-75 NW"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -206,6 +219,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-75 NW"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -220,6 +234,7 @@ spec:
             role: "tmc"
             corridor: "I-85 SW"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -234,6 +249,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-85 SW"
             provider: "apex-fiber"
+            provider_name: "Apex Fiber Networks"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -248,6 +264,7 @@ spec:
             role: "tmc"
             corridor: "GA-400"
             provider: "cascade-telecom"
+            provider_name: "Cascade Telecom Group"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -262,6 +279,7 @@ spec:
             role: "corridor-hub"
             corridor: "GA-400"
             provider: "cascade-telecom"
+            provider_name: "Cascade Telecom Group"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -276,6 +294,7 @@ spec:
             role: "tmc"
             corridor: "I-285 East"
             provider: "cascade-telecom"
+            provider_name: "Cascade Telecom Group"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -290,6 +309,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-285 East"
             provider: "cascade-telecom"
+            provider_name: "Cascade Telecom Group"
             restoration_sla_hours: "4"
         - record: link_membership_info
           expr: vector(1)
@@ -304,6 +324,7 @@ spec:
             role: "tmc"
             corridor: "TMC Interconnect"
             provider: "adot-owned"
+            provider_name: "ADOT-owned fiber"
             restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
@@ -318,6 +339,7 @@ spec:
             role: "tmc"
             corridor: "TMC Interconnect"
             provider: "adot-owned"
+            provider_name: "ADOT-owned fiber"
             restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
@@ -332,6 +354,7 @@ spec:
             role: "corridor-hub"
             corridor: "GA-400"
             provider: "adot-owned"
+            provider_name: "ADOT-owned fiber"
             restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
@@ -346,6 +369,7 @@ spec:
             role: "field-cabinet"
             corridor: "GA-400"
             provider: "adot-owned"
+            provider_name: "ADOT-owned fiber"
             restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
@@ -360,6 +384,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-75 NW"
             provider: "adot-owned"
+            provider_name: "ADOT-owned fiber"
             restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
@@ -374,6 +399,7 @@ spec:
             role: "field-cabinet"
             corridor: "I-75 NW"
             provider: "adot-owned"
+            provider_name: "ADOT-owned fiber"
             restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
@@ -388,6 +414,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-20 East"
             provider: "adot-owned"
+            provider_name: "ADOT-owned fiber"
             restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
@@ -402,6 +429,7 @@ spec:
             role: "field-cabinet"
             corridor: "I-20 East"
             provider: "adot-owned"
+            provider_name: "ADOT-owned fiber"
             restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
@@ -416,6 +444,7 @@ spec:
             role: "corridor-hub"
             corridor: "I-85 SW"
             provider: "adot-owned"
+            provider_name: "ADOT-owned fiber"
             restoration_sla_hours: "8"
         - record: link_membership_info
           expr: vector(1)
@@ -430,6 +459,7 @@ spec:
             role: "field-cabinet"
             corridor: "I-85 SW"
             provider: "adot-owned"
+            provider_name: "ADOT-owned fiber"
             restoration_sla_hours: "8"
         - record: device_geo_info
           expr: vector(1)

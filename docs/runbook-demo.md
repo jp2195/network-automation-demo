@@ -15,14 +15,13 @@ kubectl -n argocd get applications --no-headers | awk '$2!="Synced" || $3!="Heal
 # generates) auto-sync to Synced/Healthy.
 # (netbox-seed shows Progressing for a minute while its seed Job runs.)
 
-# 2. all 12 lab pods ready
-kubectl -n clabernetes get pods | awk '/atlanta/ && !/1\/1.*Running/'
-# expected: empty output
+# 2. all 12 lab nodes ready
+kubectl -n clabernetes get topologies.c9s.run atlanta
+# expected: STATE running, READY true (12/12 nodes)
 
 # 3. IS-IS converged (adjacency count = backbone links on that node)
 for n in tmc-1 tmc-2 hub-n hub-e hub-i20e hub-nw hub-sw hub-i20w; do
-  P=$(kubectl -n clabernetes get pods -l clabernetes/topologyOwner=atlanta,clabernetes/topologyNode=$n -o jsonpath='{.items[0].metadata.name}')
-  CNT=$(kubectl -n clabernetes exec "$P" -- docker exec $n bash -c "echo 'show network-instance default protocols isis adjacency' | sr_cli" 2>/dev/null | grep -c "| up ")
+  CNT=$(kubectl -n clabernetes exec deploy/$n -- sr_cli -d "show network-instance default protocols isis adjacency" 2>/dev/null | grep -c "| up ")
   printf "%-12s %s adjacencies\n" "$n" "$CNT"
 done
 # expected: tmc-1=3 tmc-2=3 hub-n=3 hub-e=3 hub-nw=3 hub-sw=3
@@ -39,7 +38,7 @@ curl -s http://127.0.0.1:9804/metrics | grep -c "^srl_nokia_interfaces_interface
 # 5. snmp probes return 200
 for n in fc-n fc-nw fc-i20e fc-sw; do
   echo -n "$n: "
-  kubectl -n monitoring exec deploy/snmp-exporter -- wget -qO- "http://localhost:9116/snmp?target=atlanta-$n.clabernetes.svc.cluster.local:161&module=if_mib&auth=public_v2" >/dev/null 2>&1 && echo OK || echo FAIL
+  kubectl -n monitoring exec deploy/snmp-exporter -- wget -qO- "http://localhost:9116/snmp?target=$n.clabernetes.svc.cluster.local:161&module=if_mib,system&auth=public_v2" >/dev/null 2>&1 && echo OK || echo FAIL
 done
 
 # 6. argo-events sensor connected
@@ -75,7 +74,6 @@ generated Argo CD admin password).
 | ArgoCD | http://argocd.127-0-0-1.nip.io:8080 |
 | NetBox | http://netbox.127-0-0-1.nip.io:8080 |
 | Argo Workflows UI | http://workflows.127-0-0-1.nip.io:8080 |
-| Clabernetes UI | http://clabernetes.127-0-0-1.nip.io:8080 |
 
 ## The demo (≈10 minutes)
 
