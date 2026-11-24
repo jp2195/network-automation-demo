@@ -25,7 +25,9 @@ func WriteSNMPProbe(w io.Writer, s *Spec) error {
 	// polls every 30s isn't legacy. This is the conservative, defensible baseline.
 	p("  interval: 300s")
 	p("  scrapeTimeout: 25s")
-	p("  module: if_mib")
+	// snmp_exporter >= 0.28 moved sysUpTime out of if_mib into the system
+	// module; the cabinet-detail uptime panel needs both.
+	p("  module: if_mib,system")
 	p("  prober:")
 	p("    url: snmp-exporter.monitoring.svc.cluster.local:9116")
 	p("    path: /snmp")

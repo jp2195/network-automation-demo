@@ -39,7 +39,7 @@ curl -s http://127.0.0.1:9804/metrics | grep -c "^srl_nokia_interfaces_interface
 # 5. snmp probes return 200
 for n in fc-n fc-nw fc-i20e fc-sw; do
   echo -n "$n: "
-  kubectl -n monitoring exec deploy/snmp-exporter -- wget -qO- "http://localhost:9116/snmp?target=atlanta-$n.clabernetes.svc.cluster.local:161&module=if_mib&auth=public_v2" >/dev/null 2>&1 && echo OK || echo FAIL
+  kubectl -n monitoring exec deploy/snmp-exporter -- wget -qO- "http://localhost:9116/snmp?target=atlanta-$n.clabernetes.svc.cluster.local:161&module=if_mib,system&auth=public_v2" >/dev/null 2>&1 && echo OK || echo FAIL
 done
 
 # 6. argo-events sensor connected

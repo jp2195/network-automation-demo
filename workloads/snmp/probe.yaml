@@ -9,7 +9,7 @@ spec:
   jobName: snmp-frr-cabinets
   interval: 300s
   scrapeTimeout: 25s
-  module: if_mib
+  module: if_mib,system
   prober:
     url: snmp-exporter.monitoring.svc.cluster.local:9116
     path: /snmp
