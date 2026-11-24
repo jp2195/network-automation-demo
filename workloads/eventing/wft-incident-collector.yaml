@@ -169,7 +169,7 @@ spec:
             printf '## %s — (no device)\n\n_no neighbor at this position._\n' "$ROLE"
             exit 0
           fi
-          ADDR="atlanta-${DEV}.clabernetes.svc.cluster.local:57400"
+          ADDR="${DEV}.clabernetes.svc.cluster.local:57400"
           gnmic_get() {
             timeout 8 /app/gnmic -a "$ADDR" -u admin -p 'NokiaSrl1!' --skip-verify \
               -e json_ietf get --path "$1" 2>/dev/null \

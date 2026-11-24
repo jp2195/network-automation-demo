@@ -24,7 +24,7 @@ func WriteGNMIC(w io.Writer, s *Spec) error {
 		}
 		// Clabernetes default `naming: prefixed` exposes each topology node as a
 		// Service named `<topology>-<node>` in the topology's namespace.
-		addr := fmt.Sprintf("%s:%s", clabFQDN(s.Metadata.Name, n.Name), GNMICPort)
+		addr := fmt.Sprintf("%s:%s", clabFQDN(n.Name), GNMICPort)
 		p("  %s:", addr)
 		p("    tags:")
 		p("      - role=%s", n.Role)

@@ -128,7 +128,7 @@ spec:
         command: [/app/gnmic]
         args:
           - -a
-          - "atlanta-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
+          - "{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
           - -u
           - svc-automation
           - -p
@@ -156,7 +156,7 @@ spec:
         command: [/app/gnmic]
         args:
           - -a
-          - "atlanta-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
+          - "{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400"
           - -u
           - svc-automation
           - -p

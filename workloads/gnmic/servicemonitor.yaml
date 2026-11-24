@@ -18,7 +18,7 @@ spec:
       # join on (node, interface) regardless of telemetry source.
       metricRelabelings:
         - sourceLabels: [source]
-          regex: "atlanta-([a-z0-9-]+)\\.clabernetes\\.svc\\.cluster\\.local:[0-9]+"
+          regex: "([a-z0-9-]+)\\.clabernetes\\.svc\\.cluster\\.local:[0-9]+"
           targetLabel: node
           replacement: "$1"
         - sourceLabels: [interface_name]

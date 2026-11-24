@@ -28,6 +28,10 @@ LINK_KIND_CABINET  = "cabinet"
 # downstream cabinets without round-tripping NetBox.
 CABINET_NAME_PREFIX = "fc-"
 
+# In-cluster DNS suffix clabernetes (>= 0.7) exposes each topology node
+# Service under: <node>.<CLAB_DOMAIN>. No topology-name prefix.
+CLAB_DOMAIN = "clabernetes.svc.cluster.local"
+
 # Alertmanager silence `createdBy` stamp. maintenance_off only deletes
 # silences carrying this marker, so the two maintenance scripts must
 # agree on it. Python-only — no Go mirror.

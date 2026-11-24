@@ -88,7 +88,7 @@ func TestWFTDriftAuditShape(t *testing.T) {
 		"{{tasks.get-hub-e.outputs.result}}",
 		ImageGNMIC,
 		ImageEventingPy,
-		"atlanta-{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400",
+		"{{inputs.parameters.node}}.clabernetes.svc.cluster.local:57400",
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("WFT output missing %q", want)

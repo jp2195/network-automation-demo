@@ -1,5 +1,10 @@
+# Clabernetes 0.11: each lab node runs as its own Deployment (no nested
+# docker launcher), links are UDP "wires" between per-pod clabwire sidecars,
+# and a planner pool compiles the containerlab definition into Node/Link
+# resources. The web UI was removed upstream in 0.7.
+
 manager:
-  replicaCount: 1
+  replicaCount: 1 # chart default is 3; one is plenty on a laptop
   resources:
     requests:
       cpu: 30m
@@ -7,29 +12,16 @@ manager:
     limits:
       memory: 256Mi
 
-# `deployment` sits directly under globalConfig. (It used to be nested under
-# a non-existent `config:` key, so these requests never applied and every
-# launcher requested the chart's 200m/512Mi — 6Gi for the 12 nodes.)
+plannerPool:
+  replicas: 1 # chart default is 4
+
 globalConfig:
   enabled: true
   deployment:
+    # Requests only (no limits): SR Linux needs well over this at runtime,
+    # but requests drive scheduling and the chart's 200m/512Mi per node
+    # would reserve 6Gi for the 12 nodes before anything else lands.
     resourcesDefault:
       requests:
         cpu: 100m
         memory: 256Mi
-    privilegedLauncher: true
-
-ui:
-  enabled: true
-  replicaCount: 1
-  resources:
-    requests:
-      cpu: 30m
-      memory: 64Mi
-    limits:
-      memory: 256Mi
-  ingress:
-    enabled: true
-    ingressClass: traefik
-    host: clabernetes.127-0-0-1.nip.io
-    tls: []

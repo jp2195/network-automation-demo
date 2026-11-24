@@ -130,27 +130,23 @@ class DegradeContractTests(unittest.TestCase):
 
 
 class DeviceNameDerivationTests(unittest.TestCase):
-    """The fallback used only when an alert carries no `node` label: strip
-    the clabernetes `<topology>-` prefix off the gNMIc target FQDN."""
+    """The fallback used only when an alert carries no `node` label: the
+    gNMIc target FQDN's first label is the node name."""
 
-    def test_strips_topology_prefix_from_gnmic_source(self):
+    def test_node_name_from_gnmic_source(self):
         self.assertEqual(
             enrich.device_name_from_source(
-                "atlanta-tmc-1.clabernetes.svc.cluster.local:57400"),
+                "tmc-1.clabernetes.svc.cluster.local:57400"),
             "tmc-1")
 
     def test_hyphenated_node_name_survives(self):
         self.assertEqual(
             enrich.device_name_from_source(
-                "atlanta-hub-i20e.clabernetes.svc.cluster.local:57400"),
+                "hub-i20e.clabernetes.svc.cluster.local:57400"),
             "hub-i20e")
 
-    def test_bare_name_without_prefix_is_out_of_contract(self):
-        """Documents a sharp edge rather than asserting it is desirable:
-        the split is unconditional, so a source lacking the topology prefix
-        loses its first segment. Harmless today because gNMIc always emits
-        the prefixed FQDN — but it is why the `node` label is preferred."""
-        self.assertEqual(enrich.device_name_from_source("hub-e:57400"), "e")
+    def test_bare_name(self):
+        self.assertEqual(enrich.device_name_from_source("hub-e:57400"), "hub-e")
 
 
 if __name__ == "__main__":

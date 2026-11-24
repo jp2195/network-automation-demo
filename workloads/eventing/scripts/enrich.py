@@ -28,10 +28,9 @@ def _get(path, **params):
 
 
 def device_name_from_source(source):
-    # source label looks like "atlanta-tmc-1.clabernetes.svc.cluster.local:57400"
-    host = source.split(":", 1)[0]
-    short = host.split(".", 1)[0]
-    return short.split("-", 1)[1] if "-" in short else short
+    # source label looks like "tmc-1.clabernetes.svc.cluster.local:57400"
+    # (clabernetes >= 0.7 names node Services after the node, unprefixed).
+    return source.split(":", 1)[0].split(".", 1)[0]
 
 
 def main():

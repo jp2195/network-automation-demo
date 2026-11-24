@@ -12,6 +12,8 @@ pygnmi (grpcio) is imported lazily so unit tests run without it.
 import os
 import re
 
+from constants import CLAB_DOMAIN
+
 __all__ = ["get"]
 
 # Spec-shaped node names (hub-e, tmc-1, ...). Rejecting dots and slashes
@@ -34,10 +36,7 @@ def get(node, path, timeout=10):
         raise ValueError(f"invalid node name: {node!r}")
     if not _PATH_RE.fullmatch(path or ""):
         raise ValueError(f"invalid gNMI path: {path!r}")
-    prefix = os.environ.get("CLAB_PREFIX", "").strip()
-    if not prefix:
-        raise RuntimeError("CLAB_PREFIX env var is required (set by the WFT)")
-    host = f"{prefix}-{node}.clabernetes.svc.cluster.local"
+    host = f"{node}.{CLAB_DOMAIN}"
     from pygnmi.client import gNMIclient
     with gNMIclient(target=(host, _PORT),
                     username=os.environ.get("GNMI_USER", "admin"),

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 )
 
@@ -46,7 +45,7 @@ func WriteSNMPProbe(w io.Writer, s *Spec) error {
 	p("        # Promote the cabinet hostname from the target FQDN into a")
 	p("        # `node` label so it joins with link_membership_info.")
 	p("        - sourceLabels: [__param_target]")
-	p("          regex: %q", fmt.Sprintf(`%s-(fc-[a-z0-9]+)\.clabernetes\.svc\.cluster\.local:[0-9]+`, s.Metadata.Name))
+	p("          regex: %q", `(fc-[a-z0-9]+)\.clabernetes\.svc\.cluster\.local:[0-9]+`)
 	p("          targetLabel: node")
 	p("          replacement: \"$1\"")
 	p("        - targetLabel: __param_auth")

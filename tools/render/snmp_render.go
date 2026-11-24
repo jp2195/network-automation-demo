@@ -127,7 +127,7 @@ func FRRSNMPTargets(s *Spec) []string {
 		if n.Kind != KindFRR {
 			continue
 		}
-		out = append(out, clabFQDN(s.Metadata.Name, n.Name))
+		out = append(out, clabFQDN(n.Name))
 	}
 	return out
 }

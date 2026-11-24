@@ -2,8 +2,8 @@ name: clabernetes
 namespace: clabernetes
 syncWave: "0"
 chart:
-  repo: ghcr.io/srl-labs/clabernetes
+  repo: ghcr.io/clabernetes/clabernetes
   name: clabernetes
-  version: 0.6.0
+  version: 0.11.0
   releaseName: clabernetes
   values: platform/values/clabernetes.yaml

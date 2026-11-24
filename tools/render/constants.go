@@ -73,7 +73,8 @@ const (
 	AutomationPassword = "SvcAuto1!"
 
 	// ClabDomain is the in-cluster DNS suffix clabernetes exposes each
-	// topology node Service under (<topology>-<node>.<ClabDomain>).
+	// topology node Service under (<node>.<ClabDomain>). Mirrored as
+	// CLAB_DOMAIN in workloads/eventing/scripts/constants.py.
 	ClabDomain = "clabernetes.svc.cluster.local"
 
 	AlloySyslogHost = "alloy-syslog.monitoring.svc.cluster.local"
