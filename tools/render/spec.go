@@ -6,7 +6,7 @@ import (
 	"os"
 	"regexp"
 
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 // Interface naming is load-bearing: srl_render/frr_render/clabIntf all

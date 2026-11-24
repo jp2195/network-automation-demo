@@ -16,7 +16,7 @@ spec/atlanta.yaml   ──►   tools/render/   ──►   workloads/{topology,
 ```
 
 `spec/atlanta.yaml` is the single source of truth: 12 nodes, 15 links, 11
-agencies. The Go renderer (`tools/render/`, one dependency: `yaml.v3`) emits
+agencies. The Go renderer (`tools/render/`, one dependency: `go.yaml.in/yaml/v3`) emits
 everything topology-shaped downstream — SR Linux startup configs, FRR daemon
 configs, the gNMIc target list, the Clabernetes Topology CR, the NetBox seed
 JSON, link-membership and link-rate recording rules, the SNMP Probe,
