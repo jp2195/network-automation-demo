@@ -225,7 +225,7 @@ def build_dashboard(enrichment, impact, fp):
             pid, f"Device logs — {device}", 0, y, 24, 8,
             type="logs", datasource=_LOKI,
             targets=[{"datasource": _LOKI, "refId": "A",
-                      "expr": f'{{namespace="clabernetes"}} |= "{device}"'}],
+                      "expr": f'{{namespace="clabernetes", host="{device}"}}'}],
             options=_logs_options()))
 
     return {

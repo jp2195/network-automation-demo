@@ -187,7 +187,7 @@ def query_loki(logql: str, minutes: int = 30, around: str | None = None) -> list
     the root cause.
 
     Streams worth knowing:
-      {namespace="clabernetes"} |= "hub-e"        device pod stdout
+      {namespace="clabernetes", container=~"node-.*"}  device container stdout
       {namespace="argo-events"}                    workflow logs
       {source_type="syslog", host="hub-e"}         SR Linux syslog, per node
     Config changes name the operator in the SR Linux AAA syslog:

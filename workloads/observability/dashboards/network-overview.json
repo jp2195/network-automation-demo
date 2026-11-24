@@ -884,7 +884,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"clabernetes\", severity=~\"warning|error|emergency\"} |~ \"(?i)(error|warn|fail|down|adjacency)\"",
+          "expr": "{namespace=\"clabernetes\", container!~\"manager|clabwire|init|planner\", severity=~\"warning|error|emergency\"} |~ \"(?i)(error|warn|fail|down|adjacency)\"",
           "refId": "A"
         }
       ],

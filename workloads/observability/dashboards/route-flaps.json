@@ -637,7 +637,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{namespace=\"clabernetes\"} |~ \"(?i)(oper-down|oper-up|interface ethernet|admin-state)\"",
+          "expr": "{namespace=\"clabernetes\", container!~\"manager|clabwire|init|planner\"} |~ \"(?i)(oper-down|oper-up|interface ethernet|admin-state)\"",
           "refId": "A"
         }
       ],
