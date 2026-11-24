@@ -3,7 +3,7 @@ superuser:
   email: admin@atlas-demo.local
   password: admin
 
-# netbox-chart 8.2.9 only injects SUPERUSER_NAME and SUPERUSER_EMAIL into
+# netbox-chart 8.3.x (like 8.2.x) only injects SUPERUSER_NAME and SUPERUSER_EMAIL into
 # the pod env, so the bootstrap admin lands without the password from
 # values. Inject it so the seed Job's `tokens/provision/` call succeeds.
 # (We deliberately do NOT inject SUPERUSER_API_TOKEN: NetBox 4.x stores
@@ -90,5 +90,7 @@ ingress:
 metrics:
   enabled: false
 
+# NetBox 4.7 removed `manage.py housekeeping` (it runs as an internal
+# system job since 4.6), so the chart CronJob would fail nightly.
 housekeeping:
-  enabled: true
+  enabled: false

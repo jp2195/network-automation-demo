@@ -35,6 +35,15 @@
         "dcim.cable"
       ],
       "description": "Highway corridor the cable runs along"
+    },
+    {
+      "name": "install_date",
+      "label": "Install date",
+      "type": "date",
+      "object_types": [
+        "dcim.cable"
+      ],
+      "description": "Date the fiber was placed in service"
     }
   ],
   "regions": [
@@ -373,6 +382,7 @@
       "custom_fields": {
         "circuit_id": "",
         "corridor": "",
+        "install_date": "",
         "restoration_sla_hours": 0
       }
     },
@@ -392,10 +402,10 @@
       "description": "I-00 trench",
       "length": 1.2,
       "length_unit": "km",
-      "install_date": "2020-01-01",
       "custom_fields": {
         "circuit_id": "RF-0001",
         "corridor": "",
+        "install_date": "2020-01-01",
         "restoration_sla_hours": 8
       }
     }

@@ -64,10 +64,11 @@ def wait_ready():
 def provision_token():
     """Mint a fresh API token via /api/users/tokens/provision/.
 
-    Force v1 (legacy `Token <plaintext>` header). NetBox 4.6 defaults new
-    tokens to v2 (peppered HMAC with `Bearer nbt_<key>.<plaintext>`), but
-    v2 requires API_TOKEN_PEPPERS in NetBox's settings — netbox-chart 8.2.9
-    doesn't expose that config, so v2 tokens authenticate as 403.
+    Force v1 (legacy `Token <plaintext>` header). NetBox 4.6+ defaults new
+    tokens to v2 (peppered HMAC with `Bearer nbt_<key>.<plaintext>`).
+    netbox-chart generates API_TOKEN_PEPPERS but preserves it via Helm
+    `lookup`, which Argo CD can't evaluate, so the pepper re-randomizes on
+    every render and v2 tokens would stop validating. v1 avoids that.
     """
     code, body = http(
         "POST",
@@ -415,8 +416,6 @@ def main():
         if c.get("length"):
             payload["length"] = c["length"]
             payload["length_unit"] = c.get("length_unit", "km")
-        if c.get("install_date"):
-            payload["install_date"] = c["install_date"]
         code, body = http("POST", "/api/dcim/cables/", body=payload)
         if code in (200, 201):
             cable_ids[c["label"]] = body["id"]
