@@ -3,7 +3,7 @@ set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-argocd}"
 RELEASE="${RELEASE:-argocd}"
-CHART_VERSION="${ARGOCD_CHART_VERSION:-10.17.1}"
+CHART_VERSION="${ARGOCD_CHART_VERSION:-10.18.0}"
 HOSTNAME="${ARGOCD_HOSTNAME:-argocd.127-0-0-1.nip.io}"
 
 echo "==> Ensuring argo helm repo"
