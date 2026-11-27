@@ -132,11 +132,16 @@ interconnect, and 4 single-homed cabinet drops.
 Apple Silicon / ARM64 is tested: the whole stack runs **natively** on arm64
 (no x86 emulation). Clabernetes 0.11.0 ships a multi-arch manager
 image, and the node images are multi-arch too (SR Linux
-`ghcr.io/nokia/srlinux` 26.7.2, FRR 10.7.1). Verified end-to-end on an Apple
-Silicon Mac via k3d on Clabernetes 0.6 / SR Linux 25.3.3: full platform up,
-`atlanta` topology ready, all 12 nodes `aarch64`. Not yet re-verified on
-Clabernetes 0.11, whose link fabric needs VXLAN and nftables support in the
-Docker VM's kernel.
+`ghcr.io/nokia/srlinux` 25.3.3, FRR 10.7.1). Verified end-to-end on an Apple
+Silicon Mac (Docker Desktop) via k3d on Clabernetes 0.11 / SR Linux 25.3.3:
+`make wait-ready` green in under 4 minutes, all 12 nodes `aarch64`, both
+incident lanes and the canned scenarios working.
+
+SR Linux is held on 25.3.3 on purpose: every 26.x image crashloops on Apple
+Silicon (`net_inst_mgr` fails creating its management gateway veth), even
+under plain `docker run`. Tracked in
+[#38](https://github.com/jp2195/network-automation-demo/issues/38); Renovate
+won't offer 26 until it's lifted.
 
 ## Telemetry sources: the legacy / modern split
 

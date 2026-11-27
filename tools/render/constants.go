@@ -27,7 +27,10 @@ const (
 // workloads/versions.yaml so dom-synth, eventing, and topology can
 // all reference one source.
 const (
-	ImageSRLinux = "ghcr.io/nokia/srlinux:26.7.2"
+	// SR Linux held on 25.3.3: every 26.x image crashloops on Apple
+	// Silicon (net_inst_mgr "File exists" creating the mgmt gateway
+	// veth), see issue #38. renovate.json holds it below 26 to match.
+	ImageSRLinux = "ghcr.io/nokia/srlinux:25.3.3"
 	// FRR stays on the public image (snmpd installed at boot by
 	// wrapper.sh). Before Clabernetes 0.9 the nested docker couldn't pull
 	// from atlas-demo-registry:5001; kubelet pulls now, so the pre-baked
