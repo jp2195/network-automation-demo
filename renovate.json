@@ -133,6 +133,11 @@
       "prBodyNotes": [
         ":warning: Major bump of a dependency flagged `breaking-risk`. Check upstream release notes / upgrade guide and run the full demo (`make up`, `make demo-cut`) before merging."
       ]
+    },
+    {
+      "description": "SR Linux 26.x crashloops on Apple Silicon (net_inst_mgr veth 'File exists'); hold on 25.x until it boots there. See issue #38.",
+      "matchPackageNames": ["ghcr.io/nokia/srlinux"],
+      "allowedVersions": "<26"
     }
   ]
 }

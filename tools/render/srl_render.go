@@ -15,7 +15,7 @@ func WriteSRL(w io.Writer, n *Node, s *Spec) error {
 	p("set / system name host-name %s", n.Name)
 	p("")
 
-	// SR Linux 26.x's factory config ships gRPC servers for Nokia EDA.
+	// SR Linux's factory config (25.3 and 26.x) ships gRPC servers for Nokia EDA.
 	// eda-mgmt points at a TLS profile ("EDA") that only exists once EDA
 	// bootstraps the device, so it retries and logs "Unable to retrieve TLS
 	// profile 'EDA'" every second, burying real events in syslog/Loki; and
