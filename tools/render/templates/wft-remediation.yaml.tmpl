@@ -122,6 +122,19 @@ spec:
         parameters:
           - name: node
           - name: interface
+      # SR Linux allows one exclusive candidate session at a time, and two
+      # alerts on one link (SRLOpticalDegrading + SRLInterfaceErrorsHigh)
+      # start two remediations that Set the same nodes concurrently; the
+      # loser got "Cannot start an exclusive configuration session" and
+      # failed. Serialize config writes per node, and retry the odd
+      # collision with a human session (make demo-cut) with backoff.
+      synchronization:
+        mutexes:
+          - name: "srl-config-{{inputs.parameters.node}}"
+      retryStrategy:
+        limit: "4"
+        retryPolicy: OnFailure
+        backoff: {duration: "3s", factor: "2"}
       container:
         image: @@GNMIC_IMAGE@@
         command: [/app/gnmic]
@@ -150,6 +163,14 @@ spec:
         parameters:
           - name: node
           - name: interface
+      # Same per-node serialization and retry as set-metric.
+      synchronization:
+        mutexes:
+          - name: "srl-config-{{inputs.parameters.node}}"
+      retryStrategy:
+        limit: "4"
+        retryPolicy: OnFailure
+        backoff: {duration: "3s", factor: "2"}
       container:
         image: @@GNMIC_IMAGE@@
         command: [/app/gnmic]

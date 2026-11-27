@@ -47,7 +47,6 @@ spec:
                 - {name: device,    value: "{{tasks.targets.outputs.parameters.peer_node}}"}
                 - {name: interface, value: "{{tasks.targets.outputs.parameters.peer_interface}}"}
                 - {name: role,      value: "link peer (other end of cut)"}
-            when: "'{{tasks.targets.outputs.parameters.peer_node}}' != ''"
 
           # Ring neighbors of the affected device on its *other* backbone
           # links — confirms IS-IS converged around the fault.
@@ -59,7 +58,6 @@ spec:
                 - {name: device,    value: "{{tasks.targets.outputs.parameters.ring_a}}"}
                 - {name: interface, value: ""}
                 - {name: role,      value: "ring neighbor A"}
-            when: "'{{tasks.targets.outputs.parameters.ring_a}}' != ''"
           - name: gather-ring-b
             template: gather-device
             depends: "targets"
@@ -68,7 +66,6 @@ spec:
                 - {name: device,    value: "{{tasks.targets.outputs.parameters.ring_b}}"}
                 - {name: interface, value: ""}
                 - {name: role,      value: "ring neighbor B"}
-            when: "'{{tasks.targets.outputs.parameters.ring_b}}' != ''"
 
           # DOM snapshot from Prometheus for both ends of the cut link.
           - name: gather-dom
@@ -84,14 +81,15 @@ spec:
 
           - name: bundle
             template: bundle
-            # `when:`-gated tasks reach Skipped (not Omitted) — accept
-            # all terminal states so the bundle runs even if peers are
-            # absent in this topology.
+            # No gather task is `when:`-gated: Argo Workflows v4 never
+            # schedules a task whose arguments read outputs.result of a
+            # Skipped task, so the workflow hung in Running. gather-device
+            # prints a "no neighbor" stub for an empty device instead.
             depends: >-
               (gather-affected.Succeeded || gather-affected.Failed) &&
-              (gather-peer.Succeeded     || gather-peer.Skipped     || gather-peer.Failed) &&
-              (gather-ring-a.Succeeded   || gather-ring-a.Skipped   || gather-ring-a.Failed) &&
-              (gather-ring-b.Succeeded   || gather-ring-b.Skipped   || gather-ring-b.Failed) &&
+              (gather-peer.Succeeded     || gather-peer.Failed) &&
+              (gather-ring-a.Succeeded   || gather-ring-a.Failed) &&
+              (gather-ring-b.Succeeded   || gather-ring-b.Failed) &&
               (gather-dom.Succeeded      || gather-dom.Failed)
             arguments:
               parameters:

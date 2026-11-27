@@ -19,6 +19,22 @@ controller:
       memory: 64Mi
     limits:
       memory: 256Mi
+  # Every alert fans out into several workflows (enrich-notify,
+  # ai-analyze, incident-collect, remediate), and nothing cleaned up
+  # their pods: a long scenario session left 600+ Completed pods, and
+  # Alloy, which tails every pod's log, pegged several cores and went
+  # unready. Delete pods 10m after they finish (long enough for
+  # `make last-notify` and the UI's log view mid-demo) and expire the
+  # Workflow objects after 2h (24h when they failed). A template's own
+  # ttlStrategy (cron-drift-audit) still wins.
+  workflowDefaults:
+    spec:
+      podGC:
+        strategy: OnPodCompletion
+        deleteDelayDuration: 10m
+      ttlStrategy:
+        secondsAfterSuccess: 7200
+        secondsAfterFailure: 86400
   metricsConfig:
     enabled: true
   serviceMonitor:
